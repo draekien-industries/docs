@@ -26,12 +26,12 @@ safeParseResult.IsErrAnd(error => error.Code == ErrorCodes.MalformedDateTime); /
 ## Transform
 
 {% hint style="info" %}
-Refer to the [#transform](using-the-library/core-functionality.md#transform "mention")section on the [core-functionality.md](using-the-library/core-functionality.md "mention") page to learn about the other transforms available for a `Result<T, E>`
+Refer to the [#transform](core-functionality.md#transform "mention")section on the [core-functionality.md](core-functionality.md "mention") page to learn about the other transforms available for a `Result<T, E>`
 {% endhint %}
 
 ### MapErr
 
-The counterpart to [#map](using-the-library/core-functionality.md#map "mention"), use `MapErr` when you need to transform the contained value if it is an `Err`. It is useful when you need to transform the `Err` type in order to continue chaining monadic operations.
+The counterpart to [#map](core-functionality.md#map "mention"), use `MapErr` when you need to transform the contained value if it is an `Err`. It is useful when you need to transform the `Err` type in order to continue chaining monadic operations.
 
 ```csharp
 Result<string, string> GenerateName();
@@ -45,7 +45,7 @@ Result<int, Error> lengthResult = GenerateName() // Result<string, string>
 ```
 
 {% hint style="info" %}
-Some [#logical-operators](result-less-than-t-e-greater-than.md#logical-operators "mention") can actually be used as transforms. The last 2 lines of the above example can be rewritten with [#andthen](result-less-than-t-e-greater-than.md#andthen "mention").
+Some [#logical-operators](result-of-t-and-e.md#logical-operators "mention") can actually be used as transforms. The last 2 lines of the above example can be rewritten with [#andthen](result-of-t-and-e.md#andthen "mention").
 
 ```csharp
 Result<int, Error> lengthResult = GenerateName() // Result<string, string>
@@ -57,12 +57,12 @@ Result<int, Error> lengthResult = GenerateName() // Result<string, string>
 ## Consume
 
 {% hint style="info" %}
-Refer to the [#consume](using-the-library/core-functionality.md#consume "mention") section on the [core-functionality.md](using-the-library/core-functionality.md "mention") page to learn about the other consume methods available for a `Result<T, E>`
+Refer to the [#consume](core-functionality.md#consume "mention") section on the [core-functionality.md](core-functionality.md "mention") page to learn about the other consume methods available for a `Result<T, E>`
 {% endhint %}
 
 ### ExpectErr
 
-The counterpart to [#inspect](using-the-library/core-functionality.md#inspect "mention"), use `ExpectErr` when you want to consume the monadic wrapper and fail loudly when the `Result` is an `Ok`. It allows you to provide a meaningful exception message to explain why the error is expected.
+The counterpart to [#inspect](core-functionality.md#inspect "mention"), use `ExpectErr` when you want to consume the monadic wrapper and fail loudly when the `Result` is an `Ok`. It allows you to provide a meaningful exception message to explain why the error is expected.
 
 ```csharp
 Result<int, string> result = Result.Ok<int, string>(10);
@@ -75,10 +75,10 @@ An `UnmetExpectationException` with your provided message will be thrown when th
 
 ### UnwrapErr
 
-The counterpart to [#unwrap](using-the-library/core-functionality.md#unwrap "mention"), use `UnwrapErr` when you are certain the `Result` is an `Err` and you want to fail loudly if it is an `Ok`.
+The counterpart to [#unwrap](core-functionality.md#unwrap "mention"), use `UnwrapErr` when you are certain the `Result` is an `Err` and you want to fail loudly if it is an `Ok`.
 
 {% hint style="info" %}
-Avoid `UnwrapErr` unless you've validated the presence of an `Err` upstream. It's an intentional point of failure, like `First` on an empty sequence. In most cases, you should reach for [#match](result-less-than-t-e-greater-than.md#match "mention") or [#map](result-less-than-t-e-greater-than.md#map "mention").
+Avoid `UnwrapErr` unless you've validated the presence of an `Err` upstream. It's an intentional point of failure, like `First` on an empty sequence. In most cases, you should reach for [#match](result-of-t-and-e.md#match "mention") or [#map](result-of-t-and-e.md#map "mention").
 {% endhint %}
 
 ```csharp
@@ -96,15 +96,15 @@ An `UnwrapException` will be thrown if the `Result` is an `Ok`.
 ## Side-Effect
 
 {% hint style="info" %}
-Refer to the [#side-effect](using-the-library/core-functionality.md#side-effect "mention")section on the [core-functionality.md](using-the-library/core-functionality.md "mention") page to learn about the other side-effects available for a `Result<T, E>`
+Refer to the [#side-effect](core-functionality.md#side-effect "mention")section on the [core-functionality.md](core-functionality.md "mention") page to learn about the other side-effects available for a `Result<T, E>`
 {% endhint %}
 
 ### InspectErr
 
-The counterpart to [#inspect](using-the-library/core-functionality.md#inspect "mention"), use `InspectErr` when you want to run a side effect against an `Err` without modifying the underlying value. The most common use case for `InspectErr` is to log an error in the event of a failure.
+The counterpart to [#inspect](core-functionality.md#inspect "mention"), use `InspectErr` when you want to run a side effect against an `Err` without modifying the underlying value. The most common use case for `InspectErr` is to log an error in the event of a failure.
 
 {% hint style="info" %}
-Reach for [#maperr](result-less-than-t-e-greater-than.md#maperr "mention")if you want to transform the value of an `Err`
+Reach for [#maperr](result-of-t-and-e.md#maperr "mention")if you want to transform the value of an `Err`
 {% endhint %}
 
 ```csharp
@@ -121,7 +121,7 @@ Result<string, string> result = GetUser("John")
 Use `And` when you need to chain together a series of `Result` instances and you want to know about the first `Err` or the last `Ok` in the chain.
 
 {% hint style="warning" %}
-Arguments passed to `And` are eagerly evaluated. If your arguments are the result of a function call, use [#andthen](result-less-than-t-e-greater-than.md#andthen "mention") instead, which is lazily evaluated.
+Arguments passed to `And` are eagerly evaluated. If your arguments are the result of a function call, use [#andthen](result-of-t-and-e.md#andthen "mention") instead, which is lazily evaluated.
 {% endhint %}
 
 {% hint style="info" %}
@@ -155,7 +155,7 @@ Debug.Assert(x.And(y) == Result.Ok<int, string>(2));
 
 ### AndThen
 
-Use `AndThen` when you need to chain a series of functions together that all return `Result` instances and you only care about the first `Err` or the last `Ok` . It performs the same operation as [#and](result-less-than-t-e-greater-than.md#and "mention") for each lazily evaluated function.
+Use `AndThen` when you need to chain a series of functions together that all return `Result` instances and you only care about the first `Err` or the last `Ok` . It performs the same operation as [#and](result-of-t-and-e.md#and "mention") for each lazily evaluated function.
 
 ```csharp
 Result<string, string> SquareThenToString(int value)
@@ -179,7 +179,7 @@ Debug.Assert(x.AndThen(SquareThenToString) == Result.Err<string, string>("NaN"))
 Use `Or` when you need to chain together a series of `Result` instances and you want to know about the first `Ok` or the last `Err` in the chain.
 
 {% hint style="warning" %}
-Arguments passed to `Or` are eagerly evaluated. If your arguments are the result of a function call, use [#orelse](result-less-than-t-e-greater-than.md#orelse "mention") instead, which is lazily evaluated.
+Arguments passed to `Or` are eagerly evaluated. If your arguments are the result of a function call, use [#orelse](result-of-t-and-e.md#orelse "mention") instead, which is lazily evaluated.
 {% endhint %}
 
 {% hint style="info" %}
@@ -214,7 +214,7 @@ Debug.Assert(x.Or(y) == Result.Err<int, string>("error 2"));
 
 ### OrElse
 
-Use `OrElse` when you need to chain a series of functions together that all return `Result` instances and you only care about the first `Ok` or the last `Err`. It performs the same operation as [#or](result-less-than-t-e-greater-than.md#or "mention") for each lazily evaluated function.
+Use `OrElse` when you need to chain a series of functions together that all return `Result` instances and you only care about the first `Ok` or the last `Err`. It performs the same operation as [#or](result-of-t-and-e.md#or "mention") for each lazily evaluated function.
 
 ```csharp
 Result<string, string> SquareThenToString(int value)

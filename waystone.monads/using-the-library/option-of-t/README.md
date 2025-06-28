@@ -7,7 +7,7 @@
 Use `IsSomeAnd` when you want to check if the `Option` is a `Some` and that the value contained inside the `Some` matches a predicate.
 
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Raven");
 maybeName.IsSomeAnd(name => name.Length > 0); // true
 ```
 
@@ -16,7 +16,7 @@ maybeName.IsSomeAnd(name => name.Length > 0); // true
 Use `IsNoneOr` when you want to check if the `Option` is a `None` or the value contained inside the `Some` matches a predicate.
 
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Queen");
 maybeName.IsNoneOr(name => name.Length > 0); // true
 maybeName.IsNoneOr(name => string.IsNullOrWhiteSpace(name)); // false
 ```
@@ -49,9 +49,9 @@ Without `FlatMap`, you'd need to `Map` and then flatten manually, or deal with n
 Use `Filter` to retain only the values that pass a predicate. If the value doesn't match, the result becomes a `None`.
 
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Thordak");
 
-Option<string> nonEmpty = maybeName.Filter(name => name.Length > 0); // Some("John")
+Option<string> nonEmpty = maybeName.Filter(name => name.Length > 0); // Some("Thordak")
 Option<string> blank = maybeName.Filter(name => name.Length == 0);   //  None
 ```
 
@@ -128,12 +128,12 @@ Option<string> result = first
 `Xor` is an exclusive-or. It returns the first `Some` value encountered in the chain if exactly one of the options is `Some`.
 
 ```csharp
-Option<string> first = Option.Some("John");
+Option<string> first = Option.Some("Art");
 Option<string> second = Option.None<string>();
-Option<string> third = Option.Some("Smith");
+Option<string> third = Option.Some("Dad");
 
 Option<string> result = first
-    .Xor(second) // Some("John")
+    .Xor(second) // Some("Art")
     .Xor(third); // None
 ```
 

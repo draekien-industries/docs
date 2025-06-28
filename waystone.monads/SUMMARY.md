@@ -15,11 +15,8 @@
 
 * [Configuration](using-the-library/configuration.md)
 * [Core Functionality](using-the-library/core-functionality.md)
-* [Option\<T>](using-the-library/option-less-than-t-greater-than/README.md)
-  * [Collections](using-the-library/option-less-than-t-greater-than/collections.md)
-
-***
-
-* [Result\<T, E>](result-less-than-t-e-greater-than.md)
-* [Errors and Exceptions](errors-and-exceptions.md)
-* [Upgrading](upgrading.md)
+* [Option\<T>](using-the-library/option-of-t/README.md)
+  * [Collections](using-the-library/option-of-t/collections.md)
+* [Result\<T, E>](using-the-library/result-of-t-and-e.md)
+* [Errors and Exceptions](using-the-library/errors-and-exceptions.md)
+* [Upgrading](using-the-library/upgrading.md)

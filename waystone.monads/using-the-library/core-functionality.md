@@ -19,7 +19,7 @@ Both `Option` and `Result` types have factory methods that allow you to create a
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<string> some = Option.Some("Hello world!");
+Option<string> some = Option.Some("Hello Bees!");
 Option<string> none = Option.None<string>();
 ```
 {% endtab %}
@@ -70,14 +70,14 @@ Transformations are the bread and butter of monadic chains. They are used to tra
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Henry Crabgrass");
 Option<int> maybeLength = maybeName.Map(name => name.Length);
 ```
 {% endtab %}
 
 {% tab title="Result" %}
 ```csharp
-Result<string, string> nameResult = Result.Ok<string, string>("John");
+Result<string, string> nameResult = Result.Ok<string, string>("Consent");
 Result<int, string> lengthResult =  nameResult.Map(name => name.Length);
 ```
 {% endtab %}
@@ -91,7 +91,7 @@ Result<int, string> lengthResult =  nameResult.Map(name => name.Length);
 
 There are additional transform methods specific to the `Option<T>` and `Result<T, E>` types.&#x20;
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="option-less-than-t-greater-than/#transform">#transform</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#transform">#transform</a></td></tr></tbody></table>
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="option-of-t/#transform">#transform</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#transform">#transform</a></td></tr></tbody></table>
 
 ## State Checks
 
@@ -134,7 +134,7 @@ Use `Match` to consume the monadic wrapper when you are uncertain of the wrapper
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Travis");
 
 int length = maybeName.Match(
     name => name.Length,
@@ -149,7 +149,7 @@ int length = maybeName.Match(
 
 {% tab title="Result" %}
 ```csharp
-Result<string, string> nameResult = Result.Ok<string, string>("John");
+Result<string, string> nameResult = Result.Ok<string, string>("Sam");
 
 int length = nameResult.Match(
     name => name.Length,
@@ -174,14 +174,14 @@ Avoid `Unwrap` unless you've validated the presence of a value upstream. It's an
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Lorekeeper");
 string name = maybeName.Unwrap();
 ```
 {% endtab %}
 
 {% tab title="Result" %}
 ```csharp
-Result<string, string> nameResult = Result.Ok<string, string>("John");
+Result<string, string> nameResult = Result.Ok<string, string>("Danny");
 string name = nameResult.Unwrap();
 ```
 {% endtab %}
@@ -199,7 +199,7 @@ An alternative to [#unwrap](core-functionality.md#unwrap "mention"), use `Unwrap
 {% tab title="Option" %}
 ```csharp
 Option<string> maybeNickname = Option.None<string>();
-string nickname = maybeNickname.UnwrapOr("Mate");
+string nickname = maybeNickname.UnwrapOr("Lautna");
 //     ^? "Mate"
 ```
 {% endtab %}
@@ -230,7 +230,7 @@ Uri avatar = maybeAvatar.UnwrapOrElse(() => GenerateAvatar());
 
 {% tab title="Result" %}
 ```csharp
-Result<Config, Error> getConfigResult = GetConfig("John");
+Result<Config, Error> getConfigResult = GetConfig("Ashton");
 //                    ^? Err<Config, Error>
 
 Config config = getConfigResult.UnwrapOrElse(() => GenerateDefaultConfig());
@@ -276,14 +276,14 @@ This method is useful in scenarios where an absent value indicates a logic error
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Greymore");
 string name = maybeName.Expect("Expected a name, but got nothing.");
 ```
 {% endtab %}
 
 {% tab title="Result" %}
 ```csharp
-Result<string, string> nameResult = Result.Ok<string, string>("John");
+Result<string, string> nameResult = Result.Ok<string, string>("Pelor");
 string name = nameResult.Expect("Expected a name, but got an error");
 ```
 {% endtab %}
@@ -297,7 +297,7 @@ An `UnmetExpectationException` with your provided message will be thrown when th
 
 There are consume methods specific to a `Result<T, E>`.
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Consumes</strong></td><td>Learn about the consume methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#consume">#consume</a></td></tr></tbody></table>
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Consumes</strong></td><td>Learn about the consume methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#consume">#consume</a></td></tr></tbody></table>
 
 ## Transform and Consume
 
@@ -345,7 +345,7 @@ Uri avatar = maybeUser.MapOrElse(
 
 {% tab title="Result" %}
 ```csharp
-Result<User, Error> getUserResult = GetUser("John");
+Result<User, Error> getUserResult = GetUser("Changebringer");
 Uri avatar = getUserResult.MapOrElse(
     () => GenerateAvatar(),
     user => user.Avatar
@@ -373,14 +373,14 @@ Reach for [#map](core-functionality.md#map "mention") instead if you need to tra
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<string> maybeName = Option.Some("John");
+Option<string> maybeName = Option.Some("Geladon");
 maybeName.Inspect(name => Console.WriteLine(name.Length));
 ```
 {% endtab %}
 
 {% tab title="Result" %}
 ```csharp
-Result<string, string> nameResult = Result.Ok<string, string>("John");
+Result<string, string> nameResult = Result.Ok<string, string>("Percival");
 nameResult.Inspect(name => Console.WriteLine(name.Length));
 ```
 {% endtab %}
@@ -390,7 +390,7 @@ nameResult.Inspect(name => Console.WriteLine(name.Length));
 
 There are side-effects specific to a `Result<T, E>`.
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Side-Effects</strong></td><td>Learn about the side-effect methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#consume">#consume</a></td></tr></tbody></table>
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Side-Effects</strong></td><td>Learn about the side-effect methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#consume">#consume</a></td></tr></tbody></table>
 
 ## Nesting
 
@@ -405,7 +405,7 @@ Sometimes you will find yourself with an `Option` inside an `Option` or a `Resul
 Removes one level of nesting from an `Option<Option<T>>`
 
 ```csharp
-Option<Option<string>> some = Option.Some(Option.Some("John"));
+Option<Option<string>> some = Option.Some(Option.Some("Chetney"));
 Option<string> result = some.Flatten();
 ```
 {% endtab %}
@@ -415,7 +415,7 @@ Removes one level of nesting from an `Result<Result<T, E>, E>`&#x20;
 
 ```csharp
 Result<int, string> DoWork(string source);
-Result<string, string> start = Result.Ok<string, string>("Hello world!");
+Result<string, string> start = Result.Ok<string, string>("Storm Weaver");
 Result<Result<int, string, string>> output= start.Map(x => DoWork(x));
 Result<int, string> flattened = output.Flatten();
 ```

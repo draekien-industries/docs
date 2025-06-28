@@ -48,7 +48,7 @@ If you want to customise the error code that is generated from your enum, you ca
 ```csharp
 public class CustomEnumFormatter<T> : IErrorCodeFormatter<T> where T : Enum
 {
-    public string Format(T value) => $"err.{value.ToLower()}";
+    public string Format(T value) => $"err.{value}".ToLower();
 }
 
 var errorCode = ErrorCode.FromEnum(InputErrors.Missing, new CustomEnumFormatter<InputErrors>());
@@ -127,7 +127,7 @@ This library contains some custom exceptions that describe certain scenarios.
 
 ### UnwrapException
 
-An exception that is thrown when attempting to [#unwrap](using-the-library/core-functionality.md#unwrap "mention") an `Option<T>` or a `Result<T, E>` when they are in their `None` or `Err` states, or when attempting to [#unwraperr](result-less-than-t-e-greater-than.md#unwraperr "mention") on a `Result<T, E>` when it is in it's `Ok` state.
+An exception that is thrown when attempting to [#unwrap](core-functionality.md#unwrap "mention") an `Option<T>` or a `Result<T, E>` when they are in their `None` or `Err` states, or when attempting to [#unwraperr](result-of-t-and-e.md#unwraperr "mention") on a `Result<T, E>` when it is in it's `Ok` state.
 
 {% hint style="info" %}
 Always check the monad's state before performing an `Unwrap` or `UnwrapErr`  to avoid encountering this exception.
@@ -135,4 +135,4 @@ Always check the monad's state before performing an `Unwrap` or `UnwrapErr`  to 
 
 ### UnmetExpectationException
 
-An exception that is thrown when when invoking [#expect](using-the-library/core-functionality.md#expect "mention") on an `Option<T>` or a `Result<T, E>` when they are in their `None` or `Err` states, or when invoking [#expecterr](result-less-than-t-e-greater-than.md#expecterr "mention") on a `Result<T, E>` when it is in it's `Ok` state.
+An exception that is thrown when when invoking [#expect](core-functionality.md#expect "mention") on an `Option<T>` or a `Result<T, E>` when they are in their `None` or `Err` states, or when invoking [#expecterr](result-of-t-and-e.md#expecterr "mention") on a `Result<T, E>` when it is in it's `Ok` state.
