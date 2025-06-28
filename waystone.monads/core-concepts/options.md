@@ -2,14 +2,14 @@
 icon: option
 ---
 
-# Option
+# Options
 
 ## What is an Option?
 
 The `Option<T>` type is the functional programming answer to uncertainty. It represents a computation or a value that might exist - `Some<T>` - or might not exist - `None<T>`. Where object-oriented programming languages like C# have historically used `null` to represent absence, functional languages - and increasingly, modern C# developers adopting functional programming patterns - use `Option` to make that absence explicit and composable.
 
 {% hint style="info" %}
-`Option<T>` is sometimes called `Maybe<T>` in other languages like Haskell or F#
+`Option<T>` is sometimes called `Maybe<T>` in other languages
 {% endhint %}
 
 ## The problem with null
@@ -18,7 +18,7 @@ The `Option<T>` type is the functional programming answer to uncertainty. It rep
 `null` is a semantic black hole.
 {% endhint %}
 
-It tells you nothing about why a value is missing or whether it was supposed to be missing in the first place. It leaks into every corner of your code, forcing defensive programming and riddling APIs with ambiguity. It's not a value, it's the absence of value, but the compiler won't stop you from dereferencing it.
+It tells you nothing about why a value is missing or whether it was supposed to be missing in the first place. It leaks into every corner of your code, forcing defensive programming and riddling APIs with ambiguity. It's not a value, it's the absence of value, but the compiler won't stop you from de-referencing it.
 
 {% hint style="success" %}
 The `Option<T>` type doesn't allow for ambiguity. It doesn't just fail to hold a value - it says so up front.&#x20;
@@ -26,7 +26,7 @@ The `Option<T>` type doesn't allow for ambiguity. It doesn't just fail to hold a
 
 ## Monadic Behaviour
 
-`Option<T>` is a monad, and being a monad has practical consequences:
+`Option<T>` is a [monad](monads.md), and being a monad has practical consequences:
 
 * You can `Map` over the value if it exists, leaving `None` untouched
 * You can `FlatMap` chained computations that might each return an `Option`
@@ -41,9 +41,7 @@ Option<string> TryGetEmailDomain(User user) =>
           .FlatMap(ParseDomain);
           
 Option<string> ParseDomain(string email) =>
-    email.Contains("@")
-        ? Option.Try(() => email.Split('@')[1])
-        : Option.None<string>();      
+    Option.Try(() => email.Split('@')[1]);    
 ```
 
 If at any point the value is missing, the entire chain short-circuits and propagates `None`. You don't have to write `if` guards, `try/catch` blocks, or null-coalescing fallbacks.
@@ -104,24 +102,21 @@ Option<string> DoWork() =>
         .Flatmap(NormaliseDomain);
 ```
 
-Declarative. Safe. Readable.
+### When to use Option
 
-## Real-World Use Cases
+You should reach for `Option<T>` when:
 
-You should consider `Option<T>` when:
+* You want to represent intentionally missing data
+* You want to chain functions but bail early on absence
+* You don't care about the reason for the absence
+* You want the caller to intentionally handle the `None` case
 
-* you're fetching optional data from the database
-*
-* you're transforming loosely typed data into strongly typed domains
-* you're building functional-style pipelines where intermediate values may be absent
+Avoid `Option<T>` when:
 
-In all of these cases, using `Option<T>` prevents defensive spaghetti code and forces you to handle absence up front. No more surprises halfway through a computation.
+* The default of a value type does not represent absence, i.e. `0` for `int`&#x20;
+* You care about the reason for the absence (reach for [`Result<T, E>`](results.md) instead)
 
-{% hint style="success" %}
-If you're reaching for `null` to represent intentially missing data, you're a prime canditate for using `Option` instead
-{% endhint %}
-
-## TL;DR
+## Summary
 
 `Option<T>` is a core abstraction in functional programming for modeling optional values. It turns invisible, error-prone absence into an explicit, composable structure. It helps you reason without uncertainty, eliminates entire classes of bugs, and leads to cleaner, more predictable code.
 

@@ -46,5 +46,5 @@ You should use this library if:
 * You appreciate functional patterns but still want to write C#
 
 {% hint style="success" %}
-If you've ever used `Option` and `Result` in Rust or F#, you'll fee right at home. If you haven't, you'll pick it up quickly - and wonder how you ever lived without it.
+If you've ever used `Option` and `Result` in Rust or F#, you'll feel right at home. If you haven't, you'll pick it up quickly - and wonder how you ever lived without it.
 {% endhint %}

@@ -3,11 +3,11 @@ description: Learn about monads and why they are important to use in your code
 icon: diamond-half-stroke
 ---
 
-# Monad
+# Monads
 
 ## What is a monad?
 
-Monads sound intimidating - because people often describe them in terms of abstract math. But in practice, they're just a way to chain operations while carrying some context.
+Monads sound intimidating, but in practice, they're just a way to chain operations while carrying some context.
 
 In C#, we usually deal with values directly. Monads, on the other hand, wrap values and give you a consistent way to work with them, even when things get messy.
 
@@ -34,11 +34,19 @@ A monad must:
 
 ## Why use monads?
 
-Because C# encourages code like this:
+When writing C# code without monads, we resort to:
+
+* Returning `null` when there is a valid business rule for the absence of a value
+* Throwing `Exceptions` for every instance of an error, even if the error is a valid business rule
+* Wrapping methods inside `try/catch` blocks just to log the `Exception` and then re-throw it
+* Writing `null` guard clauses everywhere
+* Writing `if/else` blocks or `switch` blocks in order to handle branching logic
+
+Take for example the below code:
 
 ```csharp
-Request? PrepareRequest(decimal input); // can return null or throw
-Response DoWork(Request request);       // can throw
+Request? PrepareRequest(decimal input); // can return null or throw an exception
+Response DoWork(Request request);       // can still return null or throw
 
 Response SaveData(decmial? input)
 {
@@ -54,36 +62,43 @@ Response SaveData(decmial? input)
             ? DoWork(request)
             : Fallback();
     } 
-    catch (FailedToPrepareRequestException ex)
+    catch (FailedToPrepareRequestException ex) // An exception for a valid use case
     {
-        _logger.LogWarning(ex, "Failed to parse request");
+        _logger.LogWarning(ex, "Failed to prepare request");
+        return Fallback();
+    }
+    catch (Exception ex)
+    {
+        _logger.LogWarning(ex, "Failed to save data");
         throw;
     }
 }
 
-var response = SaveData(10); // can be response or throw an exception
+Response response = SaveData(10); // can be response or throw an exception
 
 string output = response?.Message ?? "Something went wrong"; // errors potentially lost
 ```
 
-And monads let you write this:
+Lets write the same code again but this time using monads:
 
+{% code fullWidth="false" %}
 ```csharp
 Option<Request> PrepareRequest(decimal input);   // never throws, may be some or none
 Result<Response, Error> DoWork(Request request); // may be ok or error
 
 Result<Response, Error> SaveData(Option<decimal> input) => 
-    input.FlatMap(PrepareRequest) // Option<Request>
-         .Map(DoWork)             // Option<Result<Response, Error>>
-         .Transpose()             // Result<Option<Response>, Error>
-         .InspectErr(error => _logger.LogWarning(error))    // Triggered on error
-         .Map(response => response.UnwrapOrElse(Fallback)); // Result<Response, Error>
+    input.FlatMap(PrepareRequest) // If input is Some, PrepareRequest
+         .Map(DoWork)             // If PrepareRequest is Some, DoWork
+         .Transpose()             // Turn the Option<Result> into a Result<Option>
+         .InspectErr(error => _logger.LogWarning(error))    // If Err, log a warning
+         .Map(response => response.UnwrapOrElse(Fallback)); // If Ok, Get the Response if the Option is Some, or the Fallback
          
 string output = SaveData(Option.Some(10.0m)).Match(
-     ok: response => response.Message,
-     err: error => error.Message  // always the first error encountered in the pipeline
+     onOk: response => response.Message,
+     onErr: error => error.Message  // always the first error encountered in the pipeline
 );
 ```
+{% endcode %}
 
 {% hint style="success" %}
 Monads enable you to build a pipeline of transformations that can short-circuit cleanly. No conditionals, no defensive null-checking, no local variables spread everywhere.
@@ -105,7 +120,7 @@ In regular C# code, errors or missing values derail the train. You get thrown in
 
 * null checks everywhere
 * try/catch blocks scattered across your code
-* unpredictable paths&#x20;
+* unpredictable paths:
   * some functions might return `null`,&#x20;
   * some throw exceptions,&#x20;
   * some return data
@@ -135,14 +150,3 @@ string displayEmail = email.Match(
     none => "[Not Provided]"
 );
 ```
-
-## TL;DR
-
-Monads give you a standard pattern for chaining operations with context - like failure or absence - without losing your mind in `if` statements or exception handling.
-
-In `Waystone.Monads`:
-
-* Use `Option<T>` when you might have no value
-* Use `Result<T, E>` when something might go wrong
-* Use `FlatMap` , `Map`, `AndThen` and more to compose operations
-* Use `Try` to safely enter the monadic world from unsafe operations

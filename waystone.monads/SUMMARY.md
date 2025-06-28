@@ -7,9 +7,9 @@
 
 ## Core Concepts
 
-* [Monad](core-concepts/monad.md)
-* [Option](core-concepts/option.md)
-* [Result](core-concepts/result.md)
+* [Monads](core-concepts/monads.md)
+* [Options](core-concepts/options.md)
+* [Results](core-concepts/results.md)
 
 ## Using the Library
 

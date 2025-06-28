@@ -15,7 +15,7 @@ layout:
 
 # Quickstart
 
-Ready to eliminate `null` checks and stop catching exceptions? Here's how to get up and running with Waystone.Monads in less than a minute.
+Ready to eliminate `null` checks and stop catching exceptions? Here's how to get up and running with Waystone.Monads.
 
 ## Installation
 
@@ -42,7 +42,7 @@ string greeting = name.Match(
 ```
 
 {% hint style="info" %}
-Use `Map`, `Inspect`, `Match` , and more to work with values safely and fluently
+Use [#map](../using-the-library/core-functionality.md#map "mention"), [#inspect](../using-the-library/core-functionality.md#inspect "mention"), [#match](../using-the-library/core-functionality.md#match "mention"), and more to work with values safely and fluently
 {% endhint %}
 
 ## Using Result\<T, E>

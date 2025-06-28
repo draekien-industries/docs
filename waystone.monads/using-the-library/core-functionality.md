@@ -54,16 +54,18 @@ Result<User, string> result = Result.Try(
 If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onErr` delegate you provide is invoked.&#x20;
 
 {% hint style="info" %}
-The `onErr` delegate gives you a way to transform the caught exception into an error payload.
+The `onErr` delegate gives you a way to transform the caught exception into an error type of your choosing.
 {% endhint %}
 {% endtab %}
 {% endtabs %}
 
 ## Transform
 
+Transformations are the bread and butter of monadic chains. They are used to transform the value inside the monadic wrapper and perform operations on them.
+
 ### Map
 
-Use `Map` to apply a transformation to the contained value, if it is present or successful.
+`Map` is the most common transform. Use `Map` to apply a transformation to the contained value if it is present or successful.
 
 {% tabs %}
 {% tab title="Option" %}
@@ -85,9 +87,15 @@ Result<int, string> lengthResult =  nameResult.Map(name => name.Length);
 `Map` returns the same monadic wrapper type - `Option<T>` stays an `Option`, and `Result<T, E>` stays a `Result`.
 {% endhint %}
 
+### More Transforms
+
+There are additional transform methods specific to the `Option<T>` and `Result<T, E>` types.&#x20;
+
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="option-less-than-t-greater-than/#transform">#transform</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#transform">#transform</a></td></tr></tbody></table>
+
 ## Consume
 
-Use the methods defined below when you need to escape from a monadic wrapper to access a concrete output.
+You will eventually need to escape from a monadic wrapper in order to access to a concrete value. This is where consume methods come in.
 
 ### Match
 
@@ -254,6 +262,8 @@ string name = nameResult.Expect("Expected a name, but got an error");
 {% hint style="warning" %}
 An `UnmetExpectationException` with your provided message will be thrown when the value is absent or failure.
 {% endhint %}
+
+## Transform and Consume
 
 ### MapOr
 

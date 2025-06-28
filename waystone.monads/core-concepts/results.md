@@ -2,14 +2,14 @@
 icon: binary
 ---
 
-# Result
+# Results
 
 ## What is a Result?
 
-The `Result<T, E>` type represents a computation that can either succeed with a value - `Ok<T, E>` - or fail with an error - `Err<T, E>`. Where [`Option<T>`](option.md) models absence, `Result<T, E>` models failure. It is how functional programming encodes errors into the type system itself, rather than throwing them into the runtime.
+The `Result<T, E>` type represents a computation that can either succeed with a value - `Ok<T, E>` - or fail with an error - `Err<T, E>`. Where [`Option<T>`](options.md) models absence, `Result<T, E>` models failure. It is how functional programming encodes errors into the type system itself, rather than throwing them into the runtime.
 
 {% hint style="info" %}
-`Result<T, E>` is equivalent to `Either<E, T>` in some functional languages, but it's flipped in C# to put the success case first for readability
+`Result<T, E>` is equivalent to `Either<E, T>` in some functional languages, but it's flipped in this library to put the success case first for readability
 {% endhint %}
 
 ## The Exception Problem
@@ -29,7 +29,7 @@ They're basically control flow with a bomb strapped to it. If a method throws, a
 
 ## Functional Error Handling
 
-With `Result<T, E>`, every operation explicitly returns either sucecss or failure. That's not just more honest - it's more composable:
+With `Result<T, E>`, every operation explicitly returns either success or failure:
 
 * You can `Map` over the success value without touching the error
 * You can `AndThen` into further computations that also return `Result`
@@ -53,7 +53,7 @@ This behaviour is often described as railway-oriented programming. Your computat
 
 ## Intentional Errors
 
-Unlike `Option<T>`, which represents uncertainty, `Result<T, E>` represents an expected failure mode. You're not just saying "this might not exist", you're saying "this might go wrong, and here's what it looks like if it does".
+Unlike [`Option<T>`](options.md), which represents uncertainty, `Result<T, E>` represents an expected failure mode. You're not just saying "this might not exist", you're saying "this might go wrong, and here's what it looks like if it does".
 
 ```csharp
 Result<User, Error> TryCreateUser(string input);
@@ -70,12 +70,16 @@ If you're writing `try/catch` just to return a fallback value or log an error, y
 Reach for `Result<T, E>` when:
 
 * A function might fail and you want to make that explicit
+* You want the caller to explicitly handle the failure case
 * You care about the reason for the failure
 * You want to chain operations but bail early on error
 * You're validating, parsing, or transforming user input
+* You want to reserve exceptions for real application errors
 
-And expecially when you want the caller to handle the failure case - not just log it and pray.
+Avoid `Result<T, E>` if:
 
-## TL;DR
+* You don't care about the reason for the failure (reach for [`Option<T>`](options.md) instead)
+
+## Summary
 
 `Result<T, E>` is a better model for failure than exceptions. It gives you structured, type-safe, and composable control flow. Instead of blowing up at runtime, your failures travel through your system like first-class citizens.
