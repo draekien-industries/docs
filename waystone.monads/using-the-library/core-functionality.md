@@ -93,6 +93,36 @@ There are additional transform methods specific to the `Option<T>` and `Result<T
 
 <table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="option-less-than-t-greater-than/#transform">#transform</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#transform">#transform</a></td></tr></tbody></table>
 
+## State Checks
+
+{% hint style="info" %}
+These are ideal for short-circuiting logic or quick guards, but avoid using them for full branching. Reach for [`Match`](core-functionality.md#match) when both branches matter.
+{% endhint %}
+
+{% tabs %}
+{% tab title="Option" %}
+Use `IsOk` and `IsErr` when you need to check the state of the `Result<T, E>` and don't need to access it's value just quite yet.
+
+```csharp
+Result<DateTime, Error> safeParseResult = SafeParse("2025-01-01");
+
+safeParseResult.IsOk; // true
+safeParseResult.IsErr; // false
+```
+{% endtab %}
+
+{% tab title="Result" %}
+Use `IsSome` and `IsNone` when you want to check the state of the monad and don't need to access it's value just quite yet.
+
+```csharp
+Option<string> maybeName = Option.Some("John");
+
+maybeName.IsSome; // true
+maybeName.IsNone; // false
+```
+{% endtab %}
+{% endtabs %}
+
 ## Consume
 
 You will eventually need to escape from a monadic wrapper in order to access to a concrete value. This is where consume methods come in.
@@ -138,7 +168,7 @@ int length = nameResult.Match(
 Use `Unwrap` to consume the monadic wrapper when you are certain the monadic wrapper holds a value, or if you want to fail loudly if it doesn't.
 
 {% hint style="info" %}
-Avoid `Unwrap` unless you've validated the presence of a value upstream. It's an intentional point of failure, like `First` on an empty sequence. In most cases, you should reach for [#match](core-functionality.md#match "mention") or [#map](core-functionality.md#map "mention").
+Avoid `Unwrap` unless you've validated the presence of a value upstream. It's an intentional point of failure, like `First` on an empty sequence. In most cases, you should reach for [#match](core-functionality.md#match "mention").
 {% endhint %}
 
 {% tabs %}
@@ -263,6 +293,12 @@ string name = nameResult.Expect("Expected a name, but got an error");
 An `UnmetExpectationException` with your provided message will be thrown when the value is absent or failure.
 {% endhint %}
 
+### More Consumes
+
+There are consume methods specific to a `Result<T, E>`.
+
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Consumes</strong></td><td>Learn about the consume methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#consume">#consume</a></td></tr></tbody></table>
+
 ## Transform and Consume
 
 ### MapOr
@@ -349,6 +385,12 @@ nameResult.Inspect(name => Console.WriteLine(name.Length));
 ```
 {% endtab %}
 {% endtabs %}
+
+### More Side-Effects
+
+There are side-effects specific to a `Result<T, E>`.
+
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Side-Effects</strong></td><td>Learn about the side-effect methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../result-less-than-t-e-greater-than.md#consume">#consume</a></td></tr></tbody></table>
 
 ## Nesting
 

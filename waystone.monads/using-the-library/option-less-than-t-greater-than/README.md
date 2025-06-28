@@ -2,21 +2,6 @@
 
 ## Control Flow
 
-### IsSome / IsNone
-
-Use `IsSome` and `IsNone` when you want to check the state of the monad and don't need to access it's value just quite yet.
-
-```csharp
-Option<string> maybeName = Option.Some("John");
-
-maybeName.IsSome; // true
-maybeName.IsNone; // false
-```
-
-{% hint style="info" %}
-These are ideal for short-circuiting logic or quick guards, but avoid using them for full branching. Reach for [`Match`](../core-functionality.md#match) when both branches matter.
-{% endhint %}
-
 ### IsSomeAnd
 
 Use `IsSomeAnd` when you want to check if the `Option` is a `Some` and that the value contained inside the `Some` matches a predicate.
@@ -37,6 +22,10 @@ maybeName.IsNoneOr(name => string.IsNullOrWhiteSpace(name)); // false
 ```
 
 ## Transform
+
+{% hint style="info" %}
+Refer to the [#transform](../core-functionality.md#transform "mention") section on the [core-functionality.md](../core-functionality.md "mention") page to learn about the other transform methods available for an `Option<T>`
+{% endhint %}
 
 ### FlatMap
 

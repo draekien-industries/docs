@@ -21,4 +21,5 @@
 ***
 
 * [Result\<T, E>](result-less-than-t-e-greater-than.md)
+* [Errors and Exceptions](errors-and-exceptions.md)
 * [Upgrading](upgrading.md)

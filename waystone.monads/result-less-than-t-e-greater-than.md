@@ -2,21 +2,6 @@
 
 ## Control Flow
 
-### IsOk / IsErr
-
-Use `IsOk` and `IsErr` when you need to check the state of the `Result<T, E>` and don't need to access it's value just quite yet.
-
-```csharp
-Result<DateTime, Error> safeParseResult = SafeParse("2025-01-01");
-
-safeParseResult.IsOk; // true
-safeParseResult.IsErr; // false
-```
-
-{% hint style="info" %}
-These are ideal for short-circuiting logic or quick guards, but avoid using them for full branching. Reach for [`Match`](using-the-library/core-functionality.md#match) when both branches matter.
-{% endhint %}
-
 ### IsOkAnd
 
 Use `IsOkAnd` when you need to check if the `Result` is an `Ok` and the value inside the `Ok` matches a predicate.
@@ -41,7 +26,7 @@ safeParseResult.IsErrAnd(error => error.Code == ErrorCodes.MalformedDateTime); /
 ## Transform
 
 {% hint style="info" %}
-Refer to the [#transform](using-the-library/core-functionality.md#transform "mention")section under [core-functionality.md](using-the-library/core-functionality.md "mention") to learn about the other transforms available for a `Result<T, E>`
+Refer to the [#transform](using-the-library/core-functionality.md#transform "mention")section on the [core-functionality.md](using-the-library/core-functionality.md "mention") page to learn about the other transforms available for a `Result<T, E>`
 {% endhint %}
 
 ### MapErr
@@ -59,7 +44,21 @@ Result<int, Error> lengthResult = GenerateName() // Result<string, string>
     
 ```
 
+{% hint style="info" %}
+Some [#logical-operators](result-less-than-t-e-greater-than.md#logical-operators "mention") can actually be used as transforms. The last 2 lines of the above example can be rewritten with [#andthen](result-less-than-t-e-greater-than.md#andthen "mention").
+
+```csharp
+Result<int, Error> lengthResult = GenerateName() // Result<string, string>
+    .MapErr(message => new Error(message))       // Result<string, Error>
+    .AndThen(name => GetLength(name))            // Result<int, Error>
+```
+{% endhint %}
+
 ## Consume
+
+{% hint style="info" %}
+Refer to the [#consume](using-the-library/core-functionality.md#consume "mention") section on the [core-functionality.md](using-the-library/core-functionality.md "mention") page to learn about the other consume methods available for a `Result<T, E>`
+{% endhint %}
 
 ### ExpectErr
 
@@ -97,7 +96,7 @@ An `UnwrapException` will be thrown if the `Result` is an `Ok`.
 ## Side-Effect
 
 {% hint style="info" %}
-Refer to the [#side-effect](using-the-library/core-functionality.md#side-effect "mention")section under [core-functionality.md](using-the-library/core-functionality.md "mention") to learn about the other side-effects available for a `Result<T, E>`
+Refer to the [#side-effect](using-the-library/core-functionality.md#side-effect "mention")section on the [core-functionality.md](using-the-library/core-functionality.md "mention") page to learn about the other side-effects available for a `Result<T, E>`
 {% endhint %}
 
 ### InspectErr
