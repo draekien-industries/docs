@@ -462,3 +462,78 @@ Option<Result<decimal, string>> maybeTax = calculationResult.Transpose();
 Calling `Transpose` in this scenario declares that the absence of a tax amount is valid in our business rules.
 {% endtab %}
 {% endtabs %}
+
+## Conversion
+
+There may come a time where you have an `Option<T>` but you need a `Result<T, E>`. An `Option<T>` can be converted into a `Result<T, E>` and vice versa.
+
+{% tabs %}
+{% tab title="Option to Result" %}
+### OkOr
+
+Converts the `Option<T>` into a `Result<T, E>`, transforming a `Some` into an `Ok` and a `None` into an `Err`.&#x20;
+
+{% hint style="info" %}
+The error value passed into this method must be eagerly evaluated. If it is the result of a function call, it is recommended to use `OkOrElse` instead.
+{% endhint %}
+
+```csharp
+Option<int> some = Option.Some(1);
+Option<int> none = Option.None<int>();
+Error error = new("ER1", "Missing number.");
+
+Result<int, Error> ok = some.OkOr(error);
+//                 ^? Ok(1)
+
+Result<int, Error> err = none.OkOr(error);
+//                 ^? Err(error)
+```
+
+### OkOrElse
+
+Converts the `Option<T>` into a `Result<T, E>`, transforming a `Some` into an `Ok` and a `None` into an `Err`.  The error value is evaluated only when the `Option<T>` is a `None`.
+
+```csharp
+Option<int> some = Option.Some(1);
+Option<int> none = Option.None<int>();
+
+Result<int, string> ok = some.OkOrElse(() => "Missing number");
+//                 ^? Ok(1)
+
+Result<int, string> err = none.OkOrElse(() => "Missing number");
+//                 ^? Err("Missing number")
+```
+{% endtab %}
+
+{% tab title="Result to Option" %}
+### GetOk
+
+Converts the `Result<T, E>` into an `Option<T>`. Returns a `Some` if the `Result` is an `Ok`, otherwise returns a `None`.
+
+```csharp
+Result<int, string> ok = Result.Ok<int, string>(1);
+Result<int, string> err = Result.Err<int, string>("Error");
+
+Option<int> some = ok.GetOk();
+//          ^? Some(1)
+
+Option<int> none = err.GetOk();
+//          ^? None()
+```
+
+### GetErr
+
+Converts the `Result<T, E>` into an `Option<T>`. Returns a `Some` if the `Result` is an `Err`, otherwise returns a `None`.
+
+```csharp
+Result<int, string> ok = Result.Ok<int, string>(1);
+Result<int, string> err = Result.Err<int, string>("Error");
+
+Option<string> none = ok.GetErr();
+//             ^? None()
+
+Option<string> some = err.GetErr();
+//             ^? Some("Error")
+```
+{% endtab %}
+{% endtabs %}

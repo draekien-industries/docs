@@ -76,6 +76,21 @@ Option<(string, string)> ac = a.Zip(c); // None
 If either `Option` being zipped is a `None`, then a `None` will be returned.
 {% endhint %}
 
+### ZipWith
+
+Use `ZipWith` to combine two options into a single option using a custom zipping function.
+
+```csharp
+Option<int> a = Option.Some(1);
+Option<int> b = Option.Some(2);
+Option<int> result = a.ZipWith(b, (x, y) => x + y);
+//          ^? Some(3)
+```
+
+{% hint style="info" %}
+If either `Option` being zipped is a `None`, then a `None` will be returned.
+{% endhint %}
+
 ### Unzip
 
 Reverses a `Zip`, splitting the tuple into two options.

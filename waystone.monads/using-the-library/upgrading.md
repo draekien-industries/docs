@@ -40,3 +40,52 @@ Removed the local handle error callback on the `Option.Try` methods in favour of
 -Option.Bind(() => CreateSome(), ex => Console.WriteLine(ex));
 +Option.Try(() => CreateSome());
 ```
+
+## v2.x - v3.x
+
+Renamed async overloads for methods to have the `Async` suffix
+
+```diff
+-await option.Map(...);
++await option.MapAsync(...);
+```
+
+Fundamentally changed how async overloads are declared. They are now extension methods instead of existing in the Option/Result instance. This enables method chaining on `Task<Result<T, E>>` and `Task<Option<T>>`.
+
+```diff
+-var a = await option.Map(...);
+-var b = await a.Map(...);
++var c = await option.MapAsync(...).MapAsync(...);
+```
+
+Moved async overloads into `Results.Extensions` and `Options.Extensions` namespaces.
+
+```diff
+using Waystone.Monads.Results;
+using Waystone.Monads.Options;
++using Waystone.Monads.Results.Extensions;
++using Waystone.Monads.Options.Extensions;
+```
+
+## v3.x - v4.x
+
+Replaced `MonadsGlobalConfig` with `MonadOptions` to enable better DX when configuring library behaviours.
+
+```diff
+-MonadsGlobalCongig.UseExceptionLogger(...);
++MonadOptions.Configure(options => {
++    options.UseExceptionLogger(...)
++           .UseErrorCodeFactory(...)
++    options.FallbackErrorCode = "error.unknown";
++    options.FallbackErrorMessage = "An unknown error has occurred.";
++});
+```
+
+The `IErrorCodeFormatter<T>` interface has been removed in favour of `ErrorCodeFactory` so that it can be applied once during your app's life-cycle, instead of during each invocation of the error code creation methods. You can override the default formatting by inheriting `ErrorCodeFactory` and invoking `MonadOptions.UseErrorCodeFactory()`.
+
+```diff
+-class MyErrorCodeFormatter<MyErrorCodeEnum> : IErrorCodeFormatter<MyErrorCodeEnum>;
+-ErrorCode.FromEnum(MyErrorCodeEnum.BadRequest, new MyErrorCodeFormatter<MyErrorCodeEnum>());
++class MyErrorCodeFactory : ErrorCodeFactory;
++MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFactory()));
+```

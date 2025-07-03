@@ -43,17 +43,9 @@ public enum RegexErrors // etc.
 var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing"
 ```
 
-If you want to customise the error code that is generated from your enum, you can provide your own instance of `IErrorCodeFormatter<TEnum>` to the `FromEnum` method.
-
-```csharp
-public class CustomEnumFormatter<T> : IErrorCodeFormatter<T> where T : Enum
-{
-    public string Format(T value) => $"err.{value}".ToLower();
-}
-
-var errorCode = ErrorCode.FromEnum(InputErrors.Missing, new CustomEnumFormatter<InputErrors>());
-//  ^? "err.missing"
-```
+{% hint style="info" %}
+If you want to customise the error code that is generated from your enum, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromEnum` method.
+{% endhint %}
 
 #### Error Code from Exception
 
@@ -74,17 +66,9 @@ catch (SqlException e)
 }
 ```
 
-If you want to customise the error code that is generated from the `Exception`, you can provide your own instance of `IErrorCodeFormatter<TException>` to the `FromException` method.
-
-```csharp
-public class CustomExceptionFormatter<T> : IErrorCodeFormatter<T> where T : Exception
-{
-    public string Format(T value) => $"{nameof(T)}".ToLower();
-}
-
-var errorCode = ErrorCode.FromException(new SqlException(), new CustomExceptionFormatter<SqlException>());
-//  ^? "sqlexception"
-```
+{% hint style="info" %}
+If you want to customise the error code that is generated from the `Exception`, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromException` method.
+{% endhint %}
 
 ### Error
 
@@ -119,7 +103,7 @@ catch (SqlException e)
 }
 ```
 
-If you want to customise the error code that is generated from the `Exception`, you can provide your own instance of `IErrorCodeFormatter<TException>` to the `FromException` method. See [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") for an example.
+If you want to customise the error code that is generated from the `Exception`, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromException` method. See [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") for an example.
 
 ## Custom Exceptions
 
