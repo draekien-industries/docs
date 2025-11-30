@@ -90,7 +90,7 @@ The `IErrorCodeFormatter<T>` interface has been removed in favour of `ErrorCodeF
 +MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFactory()));
 ```
 
-### v4.x - v5.x
+## v4.x - v5.x
 
 Simplified the API for chaining async extension methods on `Option<T>` and `Result<TOk, TErr>` , removing support for async lambdas that returned a `ValueTask<T>`. Additionally, optimized the return type of specific extensions that would return either a synchronous value or a Task to have a type of `ValueTask`.
 
