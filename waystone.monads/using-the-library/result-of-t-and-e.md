@@ -73,6 +73,8 @@ result.ExpectErr("Must be error"); // throws UnmetExpectationException with mess
 An `UnmetExpectationException` with your provided message will be thrown when the value is a success.
 {% endhint %}
 
+Use `ExpectErrAsync` to do the same on a `Task<Result<T, E>>` without awaiting it first. See [async.md](async.md "mention").
+
 ### UnwrapErr
 
 The counterpart to [#unwrap](core-functionality.md#unwrap "mention"), use `UnwrapErr` when you are certain the `Result` is an `Err` and you want to fail loudly if it is an `Ok`.
@@ -92,6 +94,8 @@ err.UnwrapErr(); // returns "Error"
 {% hint style="warning" %}
 An `UnwrapException` will be thrown if the `Result` is an `Ok`.
 {% endhint %}
+
+Use `UnwrapErrAsync` to do the same on a `Task<Result<T, E>>` without awaiting it first. See [async.md](async.md "mention").
 
 ## Side-Effect
 

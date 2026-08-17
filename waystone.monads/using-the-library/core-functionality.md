@@ -29,6 +29,28 @@ Option<string> none = Option.None<string>();
 Result<int, string> ok = Result.Ok<int, string>(1);
 Result<int, string> err = Result.Err<int, string>("Something went wrong...");
 ```
+
+Supply both type parameters when you use your own error type. If you are happy
+with the built in [`Error`](errors-and-exceptions.md#error) type, use the single
+type parameter overloads instead — they default the error type to `Error`.
+
+```csharp
+Result<int, Error> ok = Result.Ok<int>(1);
+Result<int, Error> err = Result.Err<int>(new Error("MyCode", "Something went wrong..."));
+```
+
+You can also create the error straight from an enum. This derives the error code
+the same way [`ErrorCode.FromEnum`](errors-and-exceptions.md#error-code-from-enum)
+does, and the message is required.
+
+```csharp
+enum UserErrors
+{
+    NotFound
+}
+
+Result<User, Error> err = Result.Err<User>(UserErrors.NotFound, "The user was not found");
+```
 {% endtab %}
 {% endtabs %}
 
@@ -56,8 +78,19 @@ If the `GetCurrentUser` call throws, the exception is caught and logged via your
 {% hint style="info" %}
 The `onErr` delegate gives you a way to transform the caught exception into an error type of your choosing.
 {% endhint %}
+
+If you are happy with the built in `Error` type, use the single type parameter
+overload. It converts the exception with
+[`Error.FromException`](errors-and-exceptions.md#error-from-exception), so you do
+not pass an `onErr` delegate.
+
+```csharp
+Result<User, Error> result = Result.Try<User>(() => GetCurrentUser());
+```
 {% endtab %}
 {% endtabs %}
+
+If your factory returns a `Task`, use `TryAsync` instead. See [Async](async.md).
 
 ## Transform
 

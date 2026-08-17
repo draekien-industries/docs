@@ -2,6 +2,8 @@
 
 This library contains some configurable behaviours. Configuration is available via the `Configure` method of the `MonadOptions` class. It is recommended to configure each option below _once_ in the lifecycle of your application.
 
+If you need different settings for one part of your code, use a [scope](#scoped-configuration) instead of reconfiguring globally.
+
 ## Logging
 
 There are several places in this library where exceptions are silently handled and transformed into non-throwing types. You can configure a custom logging action to inspect these exceptions as they are handled by the library.
@@ -43,3 +45,51 @@ MonadOptions.Configure(options => {
     options.FallbackErrorMessage = "Something went wrong!" // default is `An unspecified error has occurred.`
 });
 ```
+
+## Scoped Configuration
+
+Use `MonadOptions.BeginScope` when you want different options for one region of
+code — a single request, a test, or a block you are debugging. The scope applies
+until you dispose it, and your global configuration is untouched.
+
+```csharp
+using (MonadOptions.BeginScope(options => options.UseFallbackErrorCode("Debug")))
+{
+    Result<int, Error> result = Result.Try<int>(() => int.Parse(input));
+}
+
+// out here, your global configuration applies again
+```
+
+A scope accepts the same configuration methods as `Configure`, so it can override
+any option:
+
+```csharp
+using (MonadOptions.BeginScope(options => options
+    .UseErrorCodeFactory(new MyErrorCodeFactory())
+    .UseFallbackErrorMessage("Something went wrong while debugging.")))
+{
+    // ...
+}
+```
+
+### What a scope does
+
+* **Inherits what you do not set.** Options you leave alone keep the values they
+  had when the scope opened.
+* **Takes a snapshot.** Calling `Configure` while a scope is open does not change
+  that scope. The new global value applies once the scope ends.
+* **Nests.** Disposing an inner scope restores the scope around it.
+* **Isolates concurrent work.** A scope applies to the current asynchronous flow,
+  so parallel work each sees its own options. This makes scopes safe to use in
+  tests that run in parallel.
+
+{% hint style="info" %}
+A scope affects work you start inside it. It does not affect work that was already
+running when you opened the scope.
+{% endhint %}
+
+{% hint style="info" %}
+`Waystone.Monads.FluentValidation` options are covered by the same scope, so you
+only ever open one.
+{% endhint %}

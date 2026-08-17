@@ -83,6 +83,32 @@ Error error1 = new(ErrorCodes.InputMalformed, "Expected an absolute URI but rece
 Error error1 = new(ErrorCodes.InputMalformed, "Failed to parse input as a number");
 ```
 
+#### Error from Enum
+
+If your error codes come from enums, you can create the `Error` in one call. This
+uses [#error-code-from-enum](errors-and-exceptions.md#error-code-from-enum "mention")
+under the hood to generate the `ErrorCode`.
+
+```csharp
+public enum InputErrors
+{
+    Missing = 1,
+    Malformed = 2,
+    OutOfRange = 3
+}
+
+Error error = Error.FromEnum(InputErrors.Malformed, "Failed to parse input as a number");
+//    ^? ErrorCode: "InputErrors.Malformed", Message: "Failed to parse input as a number"
+```
+
+{% hint style="info" %}
+The message is required here, unlike `ErrorCode.FromEnum` which takes only the
+enum value. An `Error` always carries a human-readable message.
+{% endhint %}
+
+To create a `Result` directly from an enum, use `Result.Err<TOk>(enum, message)`.
+See [#creation](core-functionality.md#creation "mention").
+
 #### Error from Exception
 
 You may want to create errors on the fly when catching exceptions without having to first define your error code. A factory method has been provided to facilitate this approach. It uses [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") under the hood to generate the `ErrorCode`.
@@ -98,7 +124,7 @@ try
 }
 catch (SqlException e)
 {
-    var error = ErrorCode.FromException(e);
+    var error = Error.FromException(e);
     //  ^? ErrorCode: "Err.Sql", Message: e.Message
 }
 ```
