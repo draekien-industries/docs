@@ -8,9 +8,8 @@ Public documentation for the Waystone family of .NET libraries (`waystone.monads
 
 - Each top-level directory is exactly one GitBook space, always. Never nest multiple spaces under one directory, and never create a new top-level directory as a way to create a new space — the space must exist in GitBook first (see Gotchas).
 - Every space has a `README.md` (its landing/welcome page) and a `SUMMARY.md` (its page tree). Content files live in subdirectories matching the structure declared in `SUMMARY.md`.
-- Editing workflow depends on the kind of change:
-  - **Content edits** (wording, examples, fixing an existing page) — edit the markdown directly and commit/push to git. GitBook's bidirectional Git Sync mirrors it in.
-  - **Structural changes** (new page, new space, reorganizing a page tree) — use the GitBook MCP change-request flow (`create_change_request` → `invoke_operation` → `submit_or_merge_change_request`) so GitBook's page tree stays authoritative.
+- Edit in git by hand. This covers wording, examples, fixing a page, adding a page, and reorganising a page tree. Commit and push as normal, and GitBook's bidirectional Git Sync mirrors it in. When you add or move a page, update that space's `SUMMARY.md` in the same commit — see Gotchas.
+- Use the GitBook MCP change-request flow (`create_change_request` → `invoke_operation` → `submit_or_merge_change_request`) for one thing only: creating a new space. Everything else is a hand edit.
 - Use the `output-styles:plain-language` skill when writing or editing documentation content in this repo.
 - Commit messages follow `docs(<scope>): <subject>`, e.g. `docs(waystone-monads-28): fix links`. The scope is the identifier of the content unit being changed, not a free-form area name. Commits with `No subject` were authored from the GitBook UI editor, not typed by hand — that's expected, not a defect to fix.
 

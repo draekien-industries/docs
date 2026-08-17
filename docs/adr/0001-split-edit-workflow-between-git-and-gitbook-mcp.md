@@ -1,12 +1,12 @@
 ---
 id: 0001
 title: Split the edit workflow between direct git and GitBook MCP change requests
-status: accepted
+status: superseded
 date: 2026-08-17
 deciders: [william-pei]
 tags: [workflow, gitbook]
 supersedes:
-superseded-by:
+superseded-by: 0003-edit-everything-in-git-and-reserve-mcp-for-new-spaces
 ---
 
 # 0001 — Split the edit workflow between direct git and GitBook MCP change requests
