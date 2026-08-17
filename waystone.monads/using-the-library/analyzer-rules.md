@@ -140,6 +140,9 @@ Handle it, or return it to a caller who will:
 return Save().Match(value => value, error => 0);
 ```
 
+The rule follows an `await`, including one you wrote with `.ConfigureAwait(false)`,
+so it catches a discarded `Task<Result<TOk, TErr>>` as well.
+
 Rust marks `Result` as `#[must_use]` for the same reason. C# has no attribute that
 forces you to consume a return value, so this rule stands in for one.
 
@@ -165,6 +168,9 @@ write it. You see them in your IDE, and they stay out of your build.
 | `WM2011` | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
 | `WM2012` | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
 | `WM2013` | A discarded `Option`, as `WM1006` does for `Result` | — |
+
+`WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
+alone. You get one diagnostic per site, not two.
 
 `WM2003` ignores the same throws as `WM3002`, listed below.
 
