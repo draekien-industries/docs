@@ -41,6 +41,7 @@ In most cases, you will want to use the [#validate](validating-values.md#validat
 
 `ValidationErr` provides the following helper methods:
 
+* `ToError()`: converts the validation failures into an `Error`, using the code and fallback message you set in [configuration.md](configuration.md "mention")
 * `ToDictionary()`: converts the `ValidationResult` into a dictionary
 * `ToString()`: converts the `ValidationResult` into a string
 * `AsValidationResult()`: provides access to the underlying `ValidationResult`
