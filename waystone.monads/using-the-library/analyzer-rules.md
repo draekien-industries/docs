@@ -224,21 +224,21 @@ write it. You see them in your IDE, and they stay out of your build.
 
 | ID | What it reports | Quick fix |
 | --- | --- | --- |
-| `WM2001` | `Unwrap` and `UnwrapErr`, which throw when there is no value | `UnwrapOrDefault()` |
-| `WM2002` | `Expect`, which throws when its invariant does not hold | `UnwrapOrDefault()` |
-| `WM2003` | A `throw` inside a member that returns `Result`, so the failure escapes the channel your signature promises | — |
-| `WM2004` | An `IsSome` check with an `Unwrap` inside it, which asks the same question twice | — |
-| `WM2005` | `Map` followed by `Flatten`, which is `AndThen` | `AndThen` |
-| `WM2006` | A state check combined with an unwrap of the same value, which is `IsSomeAnd`, `IsNoneOr`, `IsOkAnd` or `IsErrAnd` | — |
-| `WM2007` | `UnwrapOr` given the default of the type, which is `UnwrapOrDefault` | `UnwrapOrDefault()` |
-| `WM2008` | An `Option` or `Result` compared to `null`, which reads like an absence check but is not one | The matching state check |
-| `WM2009` | `Option<Option<T>>`, which has three states where only two mean anything | — |
-| `WM2010` | `Result<T, T>`, whose two implicit conversions are ambiguous | — |
-| `WM2011` | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
-| `WM2012` | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
-| `WM2013` | A discarded `Option`, as `WM1006` does for `Result` | — |
-| `WM2014` | `FlatMap`, which is obsolete and goes away in v6 | `AndThen` |
-| `WM2015` | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
+| [`WM2001`](#wm2001) | `Unwrap` and `UnwrapErr`, which throw when there is no value | `UnwrapOrDefault()` |
+| [`WM2002`](#wm2002) | `Expect`, which throws when its invariant does not hold | `UnwrapOrDefault()` |
+| [`WM2003`](#wm2003) | A `throw` inside a member that returns `Result`, so the failure escapes the channel your signature promises | — |
+| [`WM2004`](#wm2004) | An `IsSome` check with an `Unwrap` inside it, which asks the same question twice | — |
+| [`WM2005`](#wm2005) | `Map` followed by `Flatten`, which is `AndThen` | `AndThen` |
+| [`WM2006`](#wm2006) | A state check combined with an unwrap of the same value, which is `IsSomeAnd`, `IsNoneOr`, `IsOkAnd` or `IsErrAnd` | — |
+| [`WM2007`](#wm2007) | `UnwrapOr` given the default of the type, which is `UnwrapOrDefault` | `UnwrapOrDefault()` |
+| [`WM2008`](#wm2008) | An `Option` or `Result` compared to `null`, which reads like an absence check but is not one | The matching state check |
+| [`WM2009`](#wm2009) | `Option<Option<T>>`, which has three states where only two mean anything | — |
+| [`WM2010`](#wm2010) | `Result<T, T>`, whose two implicit conversions are ambiguous | — |
+| [`WM2011`](#wm2011) | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
+| [`WM2012`](#wm2012) | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
+| [`WM2013`](#wm2013) | A discarded `Option`, as `WM1006` does for `Result` | — |
+| [`WM2014`](#wm2014) | `FlatMap`, which is obsolete and goes away in v6 | `AndThen` |
+| [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -470,8 +470,8 @@ turn them off again.
 
 | ID | What it reports |
 | --- | --- |
-| `WM3001` | A member that returns a nullable type, where `Option<T>` would make the absent case impossible to ignore |
-| `WM3002` | A `throw`, where returning `Result<TOk, Error>` would state the failure in the signature |
+| [`WM3001`](#wm3001) | A member that returns a nullable type, where `Option<T>` would make the absent case impossible to ignore |
+| [`WM3002`](#wm3002) | A `throw`, where returning `Result<TOk, Error>` would state the failure in the signature |
 
 Enable one in your `.editorconfig`:
 
