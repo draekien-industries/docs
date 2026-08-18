@@ -27,22 +27,28 @@ maybeName.IsNoneOr(name => string.IsNullOrWhiteSpace(name)); // false
 Refer to the [#transform](../core-functionality.md#transform "mention") section on the [core-functionality.md](../core-functionality.md "mention") page to learn about the other transform methods available for an `Option<T>`
 {% endhint %}
 
-### FlatMap
+### AndThen
 
-Use `FlatMap` to compose monadic pipelines where each operation might fail and return an `Option<T>` itself.  It prevents nested `Option<Option<T>>` results and keeps the pipeline flat and clean.
+Use `AndThen` to compose monadic pipelines where each operation might fail and return an `Option<T>` itself. It prevents nested `Option<Option<T>>` results and keeps the pipeline flat and clean.
 
 ```csharp
 Option<string> TryExtractDomain(string email);
 
 Option<string> maybeEmail = GetEmail(userId);
-Option<string> maybeDomain = maybeEmail.FlatMap(TryExtractDomain);
+Option<string> maybeDomain = maybeEmail.AndThen(TryExtractDomain);
 ```
 
-Without `FlatMap`, you'd need to `Map` and then flatten manually, or deal with nested options.
+Without `AndThen`, you'd need to `Map` and then flatten manually, or deal with nested options.
 
 {% hint style="info" %}
-`FlatMap` short-circuits: if one of the options in the chain is `None`, the subsequent functions are skipped.
+`AndThen` short-circuits: if one of the options in the chain is `None`, the subsequent functions are skipped.
 {% endhint %}
+
+{% hint style="warning" %}
+This method was called `FlatMap` before 5.4.0. `FlatMap` still works and still forwards here, but it is `[Obsolete]` and goes away in v6.0.0. `WM2014` reports each call site and its quick fix does the rename. See [deprecations.md](../deprecations.md "mention").
+{% endhint %}
+
+`Result<TOk, TErr>` has spelled this `AndThen` all along, so the two monads now agree.
 
 ### Filter
 
@@ -106,6 +112,39 @@ Option<(string, string)> none = Option.None<(string, string)>();
 ## Logical Operators
 
 Sometimes you want to combine two `Option` values using logical operators without leaving the monadic model.
+
+### And
+
+Use `And` when you want the second `Option` only if the first one holds a value. It ignores what the first one holds and returns the second, so it answers "did both arrive?" rather than combining them.
+
+```csharp
+Option<string> maybeName = Option.Some("Grog");
+Option<int> maybeLevel = Option.Some(19);
+
+Option<int> both = maybeName.And(maybeLevel);   // Some(19)
+Option<int> neither = Option.None<string>().And(maybeLevel);   // None
+```
+
+{% hint style="info" %}
+`And` takes an `Option` you already have. Reach for [#andthen](./#andthen "mention") when producing the second one costs something, or when it depends on the first one's value.
+{% endhint %}
+
+### Reduce
+
+Use `Reduce` to merge two `Option`s of the same type into one. When both hold a value your function combines them. When only one does, you get that one back untouched, and when neither does you get `None`.
+
+```csharp
+Option<int> first = Option.Some(3);
+Option<int> second = Option.Some(4);
+
+first.Reduce(second, (a, b) => a + b);                 // Some(7)
+first.Reduce(Option.None<int>(), (a, b) => a + b);     // Some(3)
+Option.None<int>().Reduce(second, (a, b) => a + b);    // Some(4)
+```
+
+{% hint style="info" %}
+Your reduce function runs only when both options are `Some`, so it never has to handle an absent side.
+{% endhint %}
 
 ### Or
 

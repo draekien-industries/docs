@@ -237,3 +237,67 @@ Debug.Assert(x.OrElse(SquareThenToString) == Result.Err<string, string>("NaN"));
 
 ```
 
+## Collections
+
+Working with a `List<Result<TOk, TErr>>` — the results of validating a batch, or of calling something once per item — comes up often enough to have its own methods.
+
+### Flatten
+
+Use `Flatten` to keep the successes and drop the failures. You get an `IEnumerable<TOk>` in the original order.
+
+```csharp
+List<Result<int, string>> results = [
+    Result.Ok<int, string>(1),
+    Result.Err<int, string>("bad"),
+    Result.Ok<int, string>(3)
+];
+
+IEnumerable<int> values = results.Flatten();
+//               ^? [1, 3]
+```
+
+### FlattenErr
+
+Use `FlattenErr` for the other half. It keeps the failures and drops the successes.
+
+```csharp
+IEnumerable<string> errors = results.FlattenErr();
+//                  ^? ["bad"]
+```
+
+{% hint style="info" %}
+`Flatten` and `FlattenErr` are both lazy and each walks the source once. Call both on the same sequence and you enumerate it twice, which matters when the source is a database query or anything else you would rather not run again. Reach for `Partition` there.
+{% endhint %}
+
+### Partition
+
+Use `Partition` when you want both halves and you want the source read once. It returns a tuple of two lists.
+
+```csharp
+(IReadOnlyList<int> oks, IReadOnlyList<string> errs) = results.Partition();
+//                  ^? [1, 3]              ^? ["bad"]
+```
+
+Unlike `Flatten` and `FlattenErr`, `Partition` is eager. It enumerates the source immediately and hands back two materialised lists.
+
+```csharp
+var (succeeded, failed) = items.Select(Validate).Partition();
+
+if (failed.Count > 0)
+{
+    return Result.Err<Report, IReadOnlyList<string>>(failed);
+}
+```
+
+### AsEnumerable
+
+Use `AsEnumerable` on a single `Result` to treat it as a sequence of nothing or one, which is what lets the methods above compose out of LINQ.
+
+```csharp
+Result<int, string> result = Result.Ok<int, string>(1);
+
+IEnumerable<int> sequence = result.AsEnumerable();
+//               ^? [1], and [] for an Err
+```
+
+`Option<T>` has the same method, and `Flatten` on a sequence of either is built out of it.
