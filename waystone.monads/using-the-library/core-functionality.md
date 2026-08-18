@@ -240,7 +240,8 @@ string nickname = maybeNickname.UnwrapOr("Lautna");
 {% tab title="Result" %}
 ```csharp
 Result<string, Error> nameResult = 
-    Result.Err<string, Error>(new Error(ErrorCodes.MissingName));
+    Result.Err<string, Error>(
+        new Error(ErrorCodes.MissingName, "no name was supplied"));
 
 string name = nameResult.UnwrapOr("Unknown");
 //     ^? "Unknown"
