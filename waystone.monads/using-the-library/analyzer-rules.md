@@ -257,6 +257,211 @@ We split `WM2001` and `WM2002` on purpose. `Expect` states an invariant and name
 in the message, which is fair where the invariant is real. So you can keep `WM2002`
 on and turn `WM2001` off, or the reverse.
 
+### WM2001
+
+**`Unwrap` throws when there is nothing to unwrap.** It converts an absence you had
+already captured in the type back into an unhandled exception.
+
+```diff
+-int count = option.Unwrap();
++int count = option.UnwrapOr(0);
+```
+
+`UnwrapOrElse` defers the fallback until it is needed, and `Match` handles both
+branches explicitly. On a value type the quick fix reports `WM2015`, for the reason
+given above.
+
+**Quick fix:** `UnwrapOrDefault()`.
+
+### WM2002
+
+**`Expect` throws too, and names the invariant on the way out.** That is defensible
+where the invariant is genuine, which is why this is a separate rule from `WM2001` —
+you can keep one on and turn the other off.
+
+```diff
+-int count = result.Expect("the length was validated upstream");
++int count = result.UnwrapOr(0);
+```
+
+**Quick fix:** `UnwrapOrDefault()`.
+
+### WM2003
+
+**A `throw` inside a member returning `Result` goes around its own signature.** The
+signature promises failures arrive as values, so a caller who handled `Err` still has
+to wrap the call in `try` to be safe.
+
+```diff
+-if (!found) throw new InvalidOperationException("no such user");
++if (!found) return new Error("NoSuchUser", "no such user");
+```
+
+Ignores the same throws `WM3002` does, listed under Migration aids.
+
+### WM2004
+
+**An `IsSome` check with an `Unwrap` inside it asks the same question twice.** Nothing
+enforces that the two answers agree; the reader is left to notice.
+
+```diff
+-if (option.IsSome) Console.WriteLine(option.Unwrap());
++option.Inspect(Console.WriteLine);
+```
+
+Use `Match` where both branches do work, `Inspect` where only the present one does.
+
+### WM2005
+
+**`Map` followed by `Flatten` is `AndThen`.** Mapping with a function that itself
+returns an `Option` builds an `Option<Option<T>>`, and the flatten then takes apart
+what the map just built.
+
+```diff
+-option.Map(FindParent).Flatten()
++option.AndThen(FindParent)
+```
+
+**Quick fix:** `AndThen`.
+
+### WM2006
+
+**A state check combined with an unwrap of the same value already has a name.**
+`IsSomeAnd`, `IsNoneOr`, `IsOkAnd` and `IsErrAnd` take the predicate and supply the
+value to it.
+
+```diff
+-if (option.IsSome && option.Unwrap() > 10)
++if (option.IsSomeAnd(x => x > 10))
+```
+
+Distinct from `WM2004`: that one is a guard around a block, this one is a single
+boolean expression.
+
+### WM2007
+
+**`UnwrapOr` given the default of the type is `UnwrapOrDefault`.** The same result
+without naming the type's default yourself.
+
+```diff
+-int count = option.UnwrapOr(0);
++int count = option.UnwrapOrDefault();
+```
+
+On a value type, applying this reports `WM2015` on the result. That is deliberate and
+explained above.
+
+**Quick fix:** `UnwrapOrDefault()`.
+
+### WM2008
+
+**Comparing an `Option` or `Result` to `null` reads as an absence check and is not
+one.** Neither type is ever null in correct use, so the comparison is always false and
+the case you meant to test goes untested.
+
+```diff
+-if (option == null)
++if (option.IsNone)
+```
+
+Covers `is null` and `is not null` patterns as well as `==` and `!=`. `WM2008` owns
+every null comparison, which is why `WM1002` leaves them alone — one diagnostic per
+site, not two.
+
+**Quick fix:** the matching state check.
+
+### WM2009
+
+**`Option<Option<T>>` has three states and two meanings.** An absent outer and an
+absent inner are different values that almost no caller acts on differently.
+
+```diff
+-Option<Option<User>> user = FindUser(id).Map(LoadProfile);
++Option<Profile> user = FindUser(id).AndThen(LoadProfile);
+```
+
+It usually means a `Map` wanted to be an `AndThen`, which is `WM2005`.
+
+### WM2010
+
+**`Result<T, T>` cannot use its own implicit conversions.** `Result` declares one
+conversion from `TOk` and another from `TErr`. When those are the same type the
+compiler cannot choose between them, so every implicit conversion becomes a compile
+error — and `Ok` and `Err` become indistinguishable to a reader.
+
+```diff
+-Result<string, string> Parse(string input);
++Result<string, Error> Parse(string input);
+```
+
+### WM2011
+
+**`Some`, `None`, `Ok` and `Err` are the cases, not the type.** A field declared
+`Some<int>` can never be `None`, which is the entire point of `Option`.
+
+```diff
+-Some<int> total;
++Option<int> total;
+```
+
+**Quick fix:** the base type.
+
+### WM2012
+
+**A nullable member beside `Option` members gives one type two ways to say
+"absent".** Callers then have to remember which convention applies to which member.
+
+```diff
+-string? DisplayName { get; }
++Option<string> DisplayName { get; }
+```
+
+Fires only on a type that already uses `Option` or `Result` somewhere. `WM3001` is the
+version for a codebase that has not adopted the library at all.
+
+### WM2013
+
+**A discarded `Option` is a question nobody read the answer to.** Less harmful than
+discarding a `Result`, which `WM1006` reports as a bug, but usually still a mistake.
+
+```diff
+-option.Filter(IsActive);
++Option<User> active = option.Filter(IsActive);
+```
+
+### WM2014
+
+**`FlatMap` is obsolete and goes away in v6.** Rust names this operation `and_then`,
+and `Result` already spelled it `AndThen`, so `Option` was inconsistent with both.
+`FlatMap` stays as a forwarding member until the next major version.
+
+```diff
+-option.FlatMap(FindParent)
++option.AndThen(FindParent)
+```
+
+`CS0618` already warns at every call site, so the rule exists for the solution-wide
+one-click fix rather than to tell you something new. That is why it is a suggestion
+and not a warning.
+
+**Quick fix:** `AndThen`.
+
+### WM2015
+
+**On a value type, `UnwrapOrDefault` hands back `0` for the absent case.** `T?` on a
+type parameter constrained only to `notnull` is an annotation, not a `Nullable<T>`, so
+nothing distinguishes "there was no value" from a real zero.
+
+```diff
+-int? count = option.UnwrapOrDefault();
++int? count = option.UnwrapOrNull();
+```
+
+Perfectly legitimate where you do want the default, which is why this informs rather
+than warns. `MapOrDefault` and `MapOrNull` work the same way.
+
+**Quick fix:** `UnwrapOrNull()` or `MapOrNull()`.
+
 ## Migration aids
 
 These two rules ship **off**. They report on code that has not adopted the library
@@ -280,6 +485,34 @@ dotnet_diagnostic.WM3002.severity = suggestion
 its subtypes, `NotImplementedException`, `NotSupportedException`,
 `ObjectDisposedException`, a bare `throw;` rethrow, and any throw inside a lambda
 you pass to `Option.Try` or `Result.Try`.
+
+### WM3001
+
+**A nullable return leaves the absent case easy to ignore.** `Option<T>` makes the
+caller acknowledge it. Off by default, because in a codebase that has not adopted the
+library this fires on very nearly every member.
+
+```diff
+-User? FindUser(int id);
++Option<User> FindUser(int id);
+```
+
+`WM2012` is the narrower, on-by-default version, for a type that already uses `Option`
+elsewhere.
+
+### WM3002
+
+**A `throw` states a failure nowhere in the signature.** Returning
+`Result<TOk, Error>` puts it there, where a caller cannot miss it. Off by default,
+because it fires on every throw in a codebase that has not adopted `Result`.
+
+```diff
+-if (!found) throw new InvalidOperationException("no such user");
++if (!found) return new Error("NoSuchUser", "no such user");
+```
+
+It skips the throws listed above, which a `Result` would not improve. `WM2003` is the
+on-by-default version, for a member that already returns `Result`.
 
 ## Changing a rule
 
