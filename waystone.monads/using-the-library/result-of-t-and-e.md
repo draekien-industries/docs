@@ -18,7 +18,8 @@ Use `IsErrAnd` when you need to check if the `Result` is an `Err` and the value 
 
 ```csharp
 Result<DateTime, Error> safeParseResult = SafeParse("2025");
-//                      ^? Err<DateTime, Error>(new Error(ErrorCodes.MalformedDateTime))
+//                      ^? Err<DateTime, Error>(
+//                             new Error(ErrorCodes.MalformedDateTime, "not a date"))
 
 safeParseResult.IsErrAnd(error => error.Code == ErrorCodes.MalformedDateTime); // true
 ```
@@ -37,10 +38,10 @@ The counterpart to [#map](core-functionality.md#map "mention"), use `MapErr` whe
 Result<string, string> GenerateName();
 Result<int, Error> GetLength(string value);
 
-Result<int, Error> lengthResult = GenerateName() // Result<string, string>
-    .MapErr(message => new Error(message))       // Result<string, Error>
-    .Map(name => GetLength(name))                // Result<Result<int, Error>, Error>
-    .Flatten();                                  // Result<int, Error>
+Result<int, Error> lengthResult = GenerateName()          // Result<string, string>
+    .MapErr(message => new Error("name.failed", message)) // Result<string, Error>
+    .Map(name => GetLength(name))                         // Result<Result<int, Error>, Error>
+    .Flatten();                                           // Result<int, Error>
     
 ```
 
@@ -48,9 +49,9 @@ Result<int, Error> lengthResult = GenerateName() // Result<string, string>
 Some [#logical-operators](result-of-t-and-e.md#logical-operators "mention") can actually be used as transforms. The last 2 lines of the above example can be rewritten with [#andthen](result-of-t-and-e.md#andthen "mention").
 
 ```csharp
-Result<int, Error> lengthResult = GenerateName() // Result<string, string>
-    .MapErr(message => new Error(message))       // Result<string, Error>
-    .AndThen(name => GetLength(name))            // Result<int, Error>
+Result<int, Error> lengthResult = GenerateName()          // Result<string, string>
+    .MapErr(message => new Error("name.failed", message)) // Result<string, Error>
+    .AndThen(name => GetLength(name))                     // Result<int, Error>
 ```
 {% endhint %}
 
