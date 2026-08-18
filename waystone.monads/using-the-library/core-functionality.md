@@ -298,6 +298,36 @@ int? number = numberResult.UnwrapOrDefault();
 You can use `UnwrapOrDefault` to return to the world of nullable reference types. Note that reference types will have a default value of `null`, and value types like `int` will use their default value - e.g. `0`
 {% endhint %}
 
+{% hint style="warning" %}
+On a value type that last part is the catch. The signature reads `T?`, but `T` is constrained to `notnull`, so the `?` is an annotation rather than a `Nullable<T>`. `UnwrapOrDefault` on an `Option<int>` hands you `0`, and nothing tells you whether that `0` came from a `Some` or from the absent case. Reach for `UnwrapOrNull` there instead. `WM2015` points this out for you.
+{% endhint %}
+
+### UnwrapOrNull
+
+Use `UnwrapOrNull` when the value is a value type and you need the absent case to stay visible. It returns `T?` — a real `Nullable<T>` — so `null` means absent and every other value came from a `Some` or an `Ok`.
+
+{% tabs %}
+{% tab title="Option" %}
+```csharp
+Option<int> maybeCount = Option.None<int>();
+int? count = maybeCount.UnwrapOrNull();
+//   ^? null, where UnwrapOrDefault would have given you 0
+```
+{% endtab %}
+
+{% tab title="Result" %}
+```csharp
+Result<int, string> countResult = Result.Err<int, string>("Error");
+int? count = countResult.UnwrapOrNull();
+//   ^? null
+```
+{% endtab %}
+{% endtabs %}
+
+{% hint style="info" %}
+`UnwrapOrNull` is constrained to `T : struct`, so it does not appear on an `Option<string>`. A reference type needs no equivalent: `UnwrapOrDefault` already hands you `null` for the absent case.
+{% endhint %}
+
 ### Expect
 
 A sibling to [#unwrap](core-functionality.md#unwrap "mention"), but allows you to provide a meaningful error message when an exception is thrown. Use `Expect` to consume the monadic wrapper when you expect it to be in a `Some` or `Ok` state, and you want to fail loudly if it isn't.
@@ -389,6 +419,46 @@ Uri avatar = getUserResult.MapOrElse(
 
 {% hint style="info" %}
 Unlike [#map](core-functionality.md#map "mention"), which allows you to continue the monadic chain, `MapOrElse` will consume the monadic wrapper and return you the underlying value.
+{% endhint %}
+
+### MapOrDefault
+
+Use `MapOrDefault` when you want to transform the contained value and `default(TOut)` is a fine answer for the absent case. It saves you writing the fallback that [#mapor](core-functionality.md#mapor "mention") asks for.
+
+{% tabs %}
+{% tab title="Option" %}
+```csharp
+Option<string> maybeName = Option.None<string>();
+int length = maybeName.MapOrDefault(name => name.Length);
+//  ^? 0
+```
+{% endtab %}
+
+{% tab title="Result" %}
+```csharp
+Result<string, string> nameResult = Result.Err<string, string>("Error");
+int length = nameResult.MapOrDefault(name => name.Length);
+//  ^? 0
+```
+{% endtab %}
+{% endtabs %}
+
+{% hint style="warning" %}
+The signature reads `TOut?`, but `TOut` is constrained to `notnull`, so on a value type that `?` is an annotation and not a `Nullable<TOut>`. Map to an `int` and the absent case gives you `0`, not `null`. That is what `MapOrNull` is for.
+{% endhint %}
+
+### MapOrNull
+
+Use `MapOrNull` when the transformation produces a value type and you need the absent case to stay visible, for the same reason [#unwrapornull](core-functionality.md#unwrapornull "mention") exists.
+
+```csharp
+Option<string> maybeName = Option.None<string>();
+int? length = maybeName.MapOrNull(name => name.Length);
+//   ^? null, where MapOrDefault would have given you 0
+```
+
+{% hint style="info" %}
+`MapOrNull` constrains its result to `TOut : struct`. Map to a reference type and `MapOrDefault` already gives you `null`.
 {% endhint %}
 
 ## Side-Effect

@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 21 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The 26 diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -9,7 +9,7 @@ description: >-
 ## What this page is for
 
 `Waystone.Monads` ships a Roslyn analyzer inside the package. Install or upgrade to
-5.3.0 and you get these rules. You add no reference and configure nothing.
+5.4.0 and you get these rules. You add no reference and configure nothing.
 
 Every rule has an ID like `WM1002`. The first digit tells you how much it matters:
 
@@ -70,8 +70,10 @@ catches a null you wrote as `null!`:
 +Accept(Option.None<int>());
 ```
 
-Annotate the parameter or the return type `Option<int>?` and the rule stays quiet.
-The annotation says you meant to allow null there.
+Annotating the parameter or the return type `Option<int>?` stops this rule, because
+the annotation says you meant to allow null. It starts `WM1008` instead, which asks
+you to drop the annotation. An `Option` already has an empty case, so a nullable one
+gives you two ways to say the same thing.
 
 **Quick fix for `Option<T>`:** use `Option.None<T>()`. `Result<TOk, TErr>` gets no
 quick fix, because nothing in your code says whether you meant `Ok` or `Err`.
@@ -148,6 +150,73 @@ forces you to consume a return value, so this rule stands in for one.
 
 **No quick fix.** Only you can decide what the failure should do.
 
+### WM1007
+
+**A type derives from `Option` or `Result`.** Both types have exactly two cases, and
+every member that switches on them handles two. A third case is invisible to `Match`,
+so it silently takes whichever branch its base case falls into.
+
+```diff
+-internal sealed record Cached<T>(T Value) : Some<T>(Value);
++internal sealed record Cached<T>(Option<T> Value);
+```
+
+Compose the monad instead of inheriting from it. Hold one as a member, as above.
+
+Both hierarchies close in v6, so a derived type stops compiling then. That is why
+this rule is a warning even though it has no quick fix: you need the notice before
+the upgrade, and no fixer can rewrite your type and every one of its callers.
+
+**No quick fix.** The correction changes your type and cascades to its callers.
+
+### WM1008
+
+**An `Option` or `Result` is declared nullable.** Both are records, so the compiler
+accepts `Option<int>?`. That gives you three states where two mean anything: a value,
+an empty option, and null. `None` is already the empty case you are reaching for.
+
+```diff
+-Option<int>? option = Find(id);
++Option<int> option = Find(id);
+```
+
+The rule reads the annotation itself rather than the compiler's nullable state, so it
+fires whether or not you build with nullable reference types on.
+
+**Quick fix:** drop the `?`.
+
+### WM1009
+
+**An `Option` over a type whose zero is meaningful.** `Option.Some(x)` throws when
+`x` equals `default(T)`. So an `Option<bool>` cannot hold `false`, and an
+`Option<Colour>` cannot hold whichever member you numbered `0`. Part of the type's
+own domain is unreachable.
+
+```csharp
+Option<bool> option = Option.Some(false);   // throws
+```
+
+For `bool`, use a three-state enum and let its zero member carry what you wanted
+`None` to say:
+
+```diff
+-Option<bool> approved = ...;
++enum Approval { Pending = 0, Approved = 1, Rejected = 2 }
+```
+
+For an enum, renumber it so no meaningful member is `0`:
+
+```diff
+-enum Colour { Red = 0, Green = 1 }
++enum Colour { Red = 1, Green = 2 }
+```
+
+The rule covers `bool` and enums that have a zero member. It says nothing about
+`Option<int>`, where zero is usually a real value you would rather model another way,
+and nothing about an enum whose members all start at `1`.
+
+**No quick fix.** Renumbering an enum or replacing a `bool` changes your call sites.
+
 ## Idioms
 
 These rules are suggestions. Your code works. The rule points at a clearer way to
@@ -159,7 +228,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | `WM2002` | `Expect`, which throws when its invariant does not hold | `UnwrapOrDefault()` |
 | `WM2003` | A `throw` inside a member that returns `Result`, so the failure escapes the channel your signature promises | — |
 | `WM2004` | An `IsSome` check with an `Unwrap` inside it, which asks the same question twice | — |
-| `WM2005` | `Map` followed by `Flatten`, which is `FlatMap` | `FlatMap` |
+| `WM2005` | `Map` followed by `Flatten`, which is `AndThen` | `AndThen` |
 | `WM2006` | A state check combined with an unwrap of the same value, which is `IsSomeAnd`, `IsNoneOr`, `IsOkAnd` or `IsErrAnd` | — |
 | `WM2007` | `UnwrapOr` given the default of the type, which is `UnwrapOrDefault` | `UnwrapOrDefault()` |
 | `WM2008` | An `Option` or `Result` compared to `null`, which reads like an absence check but is not one | The matching state check |
@@ -168,9 +237,19 @@ write it. You see them in your IDE, and they stay out of your build.
 | `WM2011` | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
 | `WM2012` | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
 | `WM2013` | A discarded `Option`, as `WM1006` does for `Result` | — |
+| `WM2014` | `FlatMap`, which is obsolete and goes away in v6 | `AndThen` |
+| `WM2015` | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
+
+`WM2007` and `WM2015` point opposite ways on purpose, and both are suggestions so you
+can decide. `WM2007` says `UnwrapOr(0)` is `UnwrapOrDefault()`, which is shorter and
+says what it means. `WM2015` then says that on a value type `UnwrapOrDefault()` hands
+back `0`, which you cannot tell apart from a real zero, and offers `UnwrapOrNull()`.
+Take the second one where the difference matters to you. Applying the `WM2007` quick
+fix on a value type reports `WM2015` on the result, for the same reason. The same pair
+applies to the quick fixes `WM2001` and `WM2002` offer.
 
 `WM2003` ignores the same throws as `WM3002`, listed below.
 

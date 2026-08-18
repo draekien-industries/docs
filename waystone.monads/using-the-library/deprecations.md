@@ -19,6 +19,35 @@ Packages in the Waystone family share one version number, so a v6.0.0 of
 `Waystone.Monads` means a v6.0.0 of every package.
 {% endhint %}
 
+## Option.FlatMap
+
+**Deprecated in:** 5.4.0 · **Removed in:** 6.0.0 · **Replacement:** `AndThen`
+
+| Deprecated | Replacement |
+| --- | --- |
+| `Option<T>.FlatMap<TOut>(Func<T, Option<TOut>>)` | `Option<T>.AndThen<TOut>(Func<T, Option<TOut>>)` |
+| `FlatMapAsync` on `Option<T>`, `Task<Option<T>>` and `ValueTask<Option<T>>` | `AndThenAsync` |
+
+### How to migrate
+
+Rename the call. The parameters, the behaviour and the return type do not change.
+
+```diff
+-Option<int> option = Find(id).FlatMap(Parse);
++Option<int> option = Find(id).AndThen(Parse);
+```
+
+`WM2014` reports every call site for you, and its quick fix does the rename.
+
+### Why this changed
+
+`Result<TOk, TErr>` already spelled this operation `AndThen`, so one library had two
+names for one idea. Rust, which both types follow, calls it `and_then`. `AndThen` is
+the name that agrees with the rest of the library.
+
+`FlatMap` stays as a member that forwards to `AndThen`, so nothing changes at run
+time until v6.0.0 removes it.
+
 ## Try overloads that accept an async factory
 
 **Deprecated in:** 5.2.0 · **Removed in:** 6.0.0 · **Replacement:** `TryAsync`

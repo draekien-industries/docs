@@ -32,6 +32,38 @@ List<Option<string>> mapped = collection.Map(x => $"{x}!");
 //                   ^? [Option.Some("Hello!"), Option.Some("World!"), Option.None<string>()]
 ```
 
+## Flatten
+
+Use `Flatten` to drop the `None`s and keep the values. You get an `IEnumerable<T>` of everything that was present, in order.
+
+```csharp
+List<Option<string>> collection = [
+    Option.Some("Hello"),
+    Option.None<string>(),
+    Option.Some("World")
+];
+
+IEnumerable<string> values = collection.Flatten();
+//                  ^? ["Hello", "World"]
+```
+
+{% hint style="info" %}
+`Flatten` is lazy and walks the source once, so it composes with the rest of LINQ as you would expect. Nothing runs until you enumerate the result.
+{% endhint %}
+
+This is the sequence version. The `Flatten` that collapses a single nested `Option<Option<T>>` is a different method, covered under [#flatten](../core-functionality.md#flatten "mention"). No receiver is both, so the two never compete.
+
+## AsEnumerable
+
+Use `AsEnumerable` on a single `Option` to treat it as a sequence of nothing or one. `Flatten` above is built out of it, and it is what lets an `Option` join a LINQ query.
+
+```csharp
+Option<string> maybeName = Option.Some("Pike");
+
+IEnumerable<string> sequence = maybeName.AsEnumerable();
+//                  ^? ["Pike"], and [] for a None
+```
+
 ## FirstOrNone
 
 Returns the first element of the collection that matches the predicate, or a `None` if there are no matches.
