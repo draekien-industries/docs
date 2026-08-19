@@ -56,6 +56,8 @@ Result<User, Error> err = Result.Err<User>(UserErrors.NotFound, "The user was no
 
 Use `Try` to safely capture potentially exception-throwing logic inside a monadic wrapper. This is useful if you want to begin a monadic chain from a method you do not have control over.
 
+`Try` asks one question: did the factory hand back a value you can work with? If it did not — because it threw, or because it returned something the monad cannot hold — you get the empty or failed case.
+
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
@@ -63,6 +65,12 @@ Option<User> maybeUser = Option.Try(() => GetCurrentUser());
 ```
 
 If the `GetCurrentUser` call throws, the exception is caught and logged via your [configured exception logger](configuration.md), and you get back a `None<User>` instance.
+
+You also get a `None<User>` if the factory returns a value a `Some` cannot hold — the default of the type. `Option.Try(() => 0)` gives you `None`. Nothing is logged in that case, because nothing failed. The same rule decides this as `Option<T>`'s implicit conversion from `T`, so the two always agree — see [`WM1004`](analyzer-rules.md#wm1004).
+
+{% hint style="info" %}
+The `None` for a default value changes in v6, where `Option.Try(() => 0)` gives you a `Some` holding `0`. See [v5.x to v6.x](upgrading/v5-to-v6.md).
+{% endhint %}
 {% endtab %}
 
 {% tab title="Result" %}
@@ -74,6 +82,8 @@ Result<User, string> result = Result.Try(
 ```
 
 If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onErr` delegate you provide is invoked.&#x20;
+
+`Try` also calls `onErr` when the factory returns null, because an `Ok` holding null is not a workable value. It passes you an `ArgumentNullException` naming the `factory` argument. Nothing is logged, because nothing threw.
 
 {% hint style="info" %}
 The `onErr` delegate gives you a way to transform the caught exception into an error type of your choosing.
