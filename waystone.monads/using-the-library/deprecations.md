@@ -101,4 +101,4 @@ There is nothing to migrate.
 {% endhint %}
 
 See [Async](async.md) for the full async surface, and
-[Upgrading](upgrading.md) for the upgrades that have already shipped.
+[Upgrading](upgrading/) for the upgrades that have already shipped.

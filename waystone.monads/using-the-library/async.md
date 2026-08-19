@@ -69,6 +69,10 @@ Option<User> maybeUser = await Option.TryAsync(() => FetchUserAsync(id));
 
 If `FetchUserAsync` throws, the exception is caught and logged via your
 [configured exception logger](configuration.md), and you get back a `None<User>`.
+
+You also get a `None<User>` if the task completes with a value a `Some` cannot
+hold — the default of the type. Nothing is logged in that case, because nothing
+failed.
 {% endtab %}
 
 {% tab title="Result" %}
@@ -85,6 +89,9 @@ Result<User, Error> builtIn = await Result.TryAsync<User>(() => FetchUserAsync(i
 
 The single type parameter overload converts the exception with
 `Error.FromException`, so you do not pass an `onErr` delegate.
+
+`TryAsync` also calls `onErr` when the task completes with null, passing you an
+`ArgumentNullException` that names the `asyncFactory` argument.
 {% endtab %}
 {% endtabs %}
 

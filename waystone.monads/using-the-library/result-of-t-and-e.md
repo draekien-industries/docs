@@ -1,5 +1,25 @@
 # Result\<T, E>
 
+## What a Result can hold
+
+Neither side of a `Result` can hold null. `Result.Ok<string, Error>(null!)` and
+`Result<string, int> x = null!;` both throw `ArgumentNullException`, because
+`TOk` and `TErr` are constrained `notnull` and the constructors now enforce it.
+
+A default value is fine. `Result.Ok<int, string>(0)` is an `Ok` holding `0`, and
+`Result.Ok<Guid, string>(Guid.Empty)` is an `Ok` holding `Guid.Empty`. This is
+where `Result` differs from `Option` in 5.x, where a `Some` rejects the default of
+its type as well — see [v5.x to v6.x](upgrading/v5-to-v6.md), which brings the two
+into line.
+
+{% hint style="info" %}
+The one exception is [`Result.Try`](core-functionality.md), which returns an `Err`
+for a null instead of throwing. That is the point of it.
+{% endhint %}
+
+The null guard is new in 5.5.0. Before it, an `Ok` could hold null and the null
+surfaced later, as a `NullReferenceException` somewhere in your own code.
+
 ## Control Flow
 
 ### IsOkAnd

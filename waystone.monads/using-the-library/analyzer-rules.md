@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 26 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The 27 diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -9,7 +9,7 @@ description: >-
 ## What this page is for
 
 `Waystone.Monads` ships a Roslyn analyzer inside the package. Install or upgrade to
-5.4.0 and you get these rules. You add no reference and configure nothing.
+5.5.0 and you get these rules. You add no reference and configure nothing.
 
 Every rule has an ID like `WM1002`. The first digit tells you how much it matters:
 
@@ -35,19 +35,21 @@ These rules are warnings. Each one marks code that compiles and then misbehaves.
 
 ### WM1001
 
-**`Some` cannot hold a default value.** `Option.Some(x)` throws
-`InvalidOperationException` when `x` equals `default(T)`. So `Option.Some(0)`,
-`Option.Some(false)` and `Option.Some(Guid.Empty)` always throw.
+**`Some` cannot hold null.** `Option.Some(x)` throws `InvalidOperationException`
+when `x` is null, so `Option.Some(default(string)!)` always throws.
 
 ```diff
--Option<int> option = Option.Some(0);
-+Option<int> option = Option.None<int>();
+-Option<string> option = Option.Some(default(string)!);
++Option<string> option = Option.None<string>();
 ```
 
-The rule fires only on constants and on the well-known names for a default:
-`Guid.Empty`, `DateTime.MinValue`, `DateTimeOffset.MinValue`, `TimeSpan.Zero`,
-`IntPtr.Zero` and `UIntPtr.Zero`. It skips `Option.Some(count)`, because it cannot
-tell whether `count` is zero without running your program.
+The rule fires only when it can prove the value is null without running your
+program — a `null` literal, or `default(T)` where `T` is a reference type. Use
+`Option.FromNullable` when the value merely might be null; `WM1005` covers that
+case.
+
+Before 5.5.0 this rule also covered `Option.Some(0)` and friends. That half moved
+to [`WM1010`](#wm1010), because the two cases stop behaving the same way in v6.
 
 **Quick fix:** use `Option.None<T>()`.
 
@@ -107,6 +109,17 @@ meant:
 -Option<int> option = 0;
 +Option<int> option = Option.None<int>();
 ```
+
+The rule only ever reports the default of a value type. A null converting to an
+`Option` is [`WM1002`](#wm1002)'s job.
+
+{% hint style="warning" %}
+**This line changes meaning in v6.** The conversion will map only null to `None`,
+so `Option<int> option = 0;` will give you a `Some` holding `0`. Your code still
+compiles and returns something different. See
+[v5.x to v6.x](upgrading/v5-to-v6.md). The rule is retired in v6, because it
+describes behaviour that no longer happens.
+{% endhint %}
 
 **Quick fix:** say `Option.None<T>()` outright.
 
@@ -216,6 +229,35 @@ The rule covers `bool` and enums that have a zero member. It says nothing about
 and nothing about an enum whose members all start at `1`.
 
 **No quick fix.** Renumbering an enum or replacing a `bool` changes your call sites.
+
+### WM1010
+
+**A value-type default passed to `Some`.** `Option.Some(0)`, `Option.Some(false)`
+and `Option.Some(Guid.Empty)` throw `InvalidOperationException` today, because a
+`Some` cannot hold the default of its type.
+
+```diff
+-Option<int> option = Option.Some(0);
++Option<int> option = Option.None<int>();
+```
+
+The rule fires only on constants and on the well-known names for a default:
+`Guid.Empty`, `DateTime.MinValue`, `DateTimeOffset.MinValue`, `TimeSpan.Zero`,
+`IntPtr.Zero` and `UIntPtr.Zero`. It skips `Option.Some(count)`, because it cannot
+tell whether `count` is zero without running your program.
+
+{% hint style="warning" %}
+**This is a heads-up for v6.** In v6 the same call returns a `Some` holding `0`
+instead of throwing. That is the change we want you to find now, while it is still
+a warning and not a silent difference in behaviour. Read
+[v5.x to v6.x](upgrading/v5-to-v6.md) before you upgrade.
+{% endhint %}
+
+New in 5.5.0. These spans reported under [`WM1001`](#wm1001) before, at the same
+severity, so you see no new warnings — just a different ID on some of them. The
+rule is retired in v6.
+
+**Quick fix:** use `Option.None<T>()`.
 
 ## Idioms
 
