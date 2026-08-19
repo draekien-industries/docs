@@ -51,6 +51,25 @@ enum UserErrors
 
 Result<User, Error> err = Result.Err<User>(UserErrors.NotFound, "The user was not found");
 ```
+
+{% hint style="warning" %}
+**Neither an `Ok` nor an `Err` can hold null.** Pass one and you get an
+`ArgumentNullException`. That covers the factory methods above and the implicit
+conversions below, because everything funnels through the same guard.
+
+```csharp
+Result.Ok<string, Error>(null!);    // throws
+Result<string, int> result = null!; // throws
+```
+
+New in 5.5.0. Before that, `Result.Ok<string, Error>(null!)` gave you an `Ok`
+holding null, and the null surfaced later as a `NullReferenceException` in your
+own code. `TOk` and `TErr` are constrained `notnull`, so the compiler already
+warned you; now the runtime agrees.
+
+A default value is fine and always has been. `Result.Ok<int, string>(0)` is an
+`Ok` holding `0`. Only null is rejected.
+{% endhint %}
 {% endtab %}
 {% endtabs %}
 
@@ -83,7 +102,9 @@ Result<User, string> result = Result.Try(
 
 If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onErr` delegate you provide is invoked.&#x20;
 
-`Try` also calls `onErr` when the factory returns null, because an `Ok` holding null is not a workable value. It passes you an `ArgumentNullException` naming the `factory` argument. Nothing is logged, because nothing threw.
+`Try` also calls `onErr` when the factory returns null, because an `Ok` cannot hold null. It passes you an `ArgumentNullException` naming the `factory` argument. Nothing is logged, because nothing threw.
+
+This is the one place a null does not throw. `Try` exists so you can hand over a delegate and learn whether a workable value came back, without wrapping the call in a `try` yourself — so it turns the null into an `Err` for you.
 
 {% hint style="info" %}
 The `onErr` delegate gives you a way to transform the caught exception into an error type of your choosing.
