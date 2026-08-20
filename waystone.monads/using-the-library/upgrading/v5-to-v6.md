@@ -430,7 +430,7 @@ migrate.
 Covered methods:
 
 - `Option`: `Map`, `MapOr`, `MapOrElse`, `Filter`, `AndThen`
-- `Result`: `Map`, `MapOr`, `MapOrElse`, `MapErr`
+- `Result`: `Map`, `MapOr`, `MapOrElse`, `MapErr`, `AndThen`
 - `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync`
 
 The closure costs exactly 88 bytes at every call site — 24 for the display class,

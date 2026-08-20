@@ -199,7 +199,7 @@ it runs — 24 for the display class the closure needs, 64 for the delegate.
 | Type | Methods |
 | --- | --- |
 | `Option<T>` | `Map`, `MapOr`, `MapOrElse`, `Filter`, `AndThen` |
-| `Result<T, E>` | `Map`, `MapOr`, `MapOrElse`, `MapErr` |
+| `Result<T, E>` | `Map`, `MapOr`, `MapOrElse`, `MapErr`, `AndThen` |
 | Factories | `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync` |
 
 ### Write the lambda `static`
