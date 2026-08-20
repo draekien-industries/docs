@@ -6,6 +6,68 @@ description: >-
 
 # v5.x to v6.x
 
+## Upgrade with an agent
+
+Copy this into Claude Code or a similar tool, pointed at your solution. It covers
+every mechanical part of the upgrade.
+
+````text
+Upgrade this solution from Waystone.Monads v5 to v6. Work through these steps in
+order and report what you changed at each one.
+
+1. Find every call to `Option.Try(`, `Option.TryAsync(`, `Result.Try(` and
+   `Result.TryAsync(`. For each one, decide whether the factory is asynchronous.
+   If it is, and the call uses `Try` rather than `TryAsync`, change it to
+   `TryAsync` and add an `await` at the point the caller already awaits. Do not
+   rely on the compiler to find these — most of them still compile after the
+   upgrade and silently stop catching exceptions.
+
+2. Find every `Try` and `TryAsync` call whose factory can be cancelled — it takes
+   a CancellationToken, or calls something that does. In v6 an
+   OperationCanceledException propagates instead of becoming a None or an Err.
+   Add a `catch (OperationCanceledException)` where the caller needs to handle
+   cancellation, or tell me if you think we should opt back into the old
+   behaviour with `MonadOptions.UseCancellationAsFailure()`.
+
+3. Rename every `FlatMap` to `AndThen` and every `FlatMapAsync` to
+   `AndThenAsync`. Parameters and behaviour are unchanged.
+
+4. Find every call that hands an async delegate to a synchronous Waystone
+   method — `option.Map(x => FetchAsync(x))` and the like — and switch it to the
+   Async sibling with an `await`. You can spot these by the return type: an
+   `Option<Task<T>>` or a `Result<Task<T>, E>` is always wrong. A `Task<T>`
+   returned by `Match` or `MapOr` is fine, because the caller can await it.
+
+5. Build. For every CS0029 or CS1503 involving `Task` and `ValueTask` on a
+   Waystone async extension, add `.AsTask()` to the call. If the site simply
+   awaits the result, remove the annotation instead of adding `.AsTask()`.
+
+6. Find every `Task.WhenAll` over Waystone async extensions and add `.AsTask()`
+   to each argument.
+
+7. Delete every `catch (InvalidOperationException)` that wraps an `Option.Some`
+   call. It is dead code in v6. If the code needs to handle a null, catch
+   `ArgumentNullException` instead.
+
+8. Find any type that derives from `Option<T>` or `Result<TOk, TErr>`. These no
+   longer compile and cannot be fixed by changing the derived type. Report them
+   to me with a suggestion for composing the monad instead.
+
+9. Remove any `.editorconfig` entries for WM1004, WM1007, WM1009, WM1010 and
+   WM2014. Those rules no longer exist.
+
+10. Build again and report anything left over. Do not suppress a WM1011 warning
+    — bring it to me instead.
+````
+
+{% hint style="warning" %}
+**One step it cannot do for you.** `Option.Some(0)` returns a `Some` in v6 where
+it used to throw, and `Option<int> x = 0;` gives you `Some(0)` where it used to
+give you `None`. Deciding whether an `IsNone` branch was standing in for "zero"
+needs someone who knows what the code means. See
+[Silent change 3](#silent-change-3-some-accepts-value-type-defaults).
+{% endhint %}
+
 ## Read this first
 
 v6 has three changes that do **not** break your build:
@@ -19,9 +81,8 @@ v6 has three changes that do **not** break your build:
 
 Everything else in v6 breaks loudly. The compiler will find it for you.
 
-Work through the three sections below in order, then the
-[migration prompt](#a-prompt-you-can-hand-to-an-agent) at the end of the page
-covers the mechanical parts.
+Work through the three sections below in order. The
+[agent prompt](#upgrade-with-an-agent) above covers everything mechanical.
 
 ## Silent change 1: Try with an async factory
 
@@ -72,11 +133,13 @@ Call `TryAsync` and `await` where you were already awaiting:
 ### The analyzer finds these for you
 
 [`WM1011`](../analyzer-rules.md#wm1011) is a **warning**, not a suggestion,
-because it fires on code that runs. It reports any `Option.Try` or `Result.Try`
-whose value type is a `Task<T>` or `ValueTask<T>`.
+because it fires on code that runs. It reports any call that traps a task inside
+an `Option` or a `Result` — `Try` with an async factory, but also
+`option.Map(x => FetchAsync(x))` and anything else with an `Async` sibling it
+should have used.
 
-It ships with no quick fix, deliberately. Renaming to `TryAsync` leaves you with
-an unawaited `Task<Option<T>>`, and no fix can decide where your `await` belongs.
+It ships with no quick fix, deliberately. Renaming to the `Async` sibling leaves
+you with an unawaited task, and no fix can decide where your `await` belongs.
 
 {% hint style="info" %}
 `WM1011` also catches this mistake in code that predates v6, where someone passed
@@ -398,7 +461,7 @@ the entry.
 
 | Rule | Severity | What it reports |
 | --- | --- | --- |
-| [`WM1011`](../analyzer-rules.md#wm1011) | Warning | An async factory passed to `Try` |
+| [`WM1011`](../analyzer-rules.md#wm1011) | Warning | An async delegate passed to a synchronous method |
 | [`WM2016`](../analyzer-rules.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
 | [`WM2017`](../analyzer-rules.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
 
@@ -407,56 +470,6 @@ the entry.
 `WM1001` and `WM1005` now describe `Some` as rejecting null rather than rejecting
 the default of the type, and `WM1001` names `ArgumentNullException`. `WM2015` now
 names the value it hands back. No behaviour changed in any of the three.
-
-## A prompt you can hand to an agent
-
-Copy this into Claude Code or a similar tool, pointed at your solution. It covers
-the mechanical parts. It cannot do the `IsNone` review in
-[silent change 3](#silent-change-3-some-accepts-value-type-defaults) — that needs
-you.
-
-````text
-Upgrade this solution from Waystone.Monads v5 to v6. Work through these steps in
-order and report what you changed at each one.
-
-1. Find every call to `Option.Try(`, `Option.TryAsync(`, `Result.Try(` and
-   `Result.TryAsync(`. For each one, decide whether the factory is asynchronous.
-   If it is, and the call uses `Try` rather than `TryAsync`, change it to
-   `TryAsync` and add an `await` at the point the caller already awaits. Do not
-   rely on the compiler to find these — most of them still compile after the
-   upgrade and silently stop catching exceptions.
-
-2. Find every `Try` and `TryAsync` call whose factory can be cancelled — it takes
-   a CancellationToken, or calls something that does. In v6 an
-   OperationCanceledException propagates instead of becoming a None or an Err.
-   Add a `catch (OperationCanceledException)` where the caller needs to handle
-   cancellation, or tell me if you think we should opt back into the old
-   behaviour with `MonadOptions.UseCancellationAsFailure()`.
-
-3. Rename every `FlatMap` to `AndThen` and every `FlatMapAsync` to
-   `AndThenAsync`. Parameters and behaviour are unchanged.
-
-4. Build. For every CS0029 or CS1503 involving `Task` and `ValueTask` on a
-   Waystone async extension, add `.AsTask()` to the call. If the site simply
-   awaits the result, remove the annotation instead of adding `.AsTask()`.
-
-5. Find every `Task.WhenAll` over Waystone async extensions and add `.AsTask()`
-   to each argument.
-
-6. Delete every `catch (InvalidOperationException)` that wraps an `Option.Some`
-   call. It is dead code in v6. If the code needs to handle a null, catch
-   `ArgumentNullException` instead.
-
-7. Find any type that derives from `Option<T>` or `Result<TOk, TErr>`. These no
-   longer compile and cannot be fixed by changing the derived type. Report them
-   to me with a suggestion for composing the monad instead.
-
-8. Remove any `.editorconfig` entries for WM1004, WM1007, WM1009, WM1010 and
-   WM2014. Those rules no longer exist.
-
-9. Build again and report anything left over. Do not suppress a WM1011 warning —
-   bring it to me instead.
-````
 
 ## Everything on one page
 

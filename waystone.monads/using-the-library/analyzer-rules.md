@@ -150,26 +150,54 @@ fires whether or not you build with nullable reference types on.
 
 ### WM1011
 
-**You passed an async factory to `Try`.** `Option.Try` and `Result.Try` take a
-synchronous factory. Hand one an `async` lambda or a method that returns a task
-and `T` binds to `Task<T>`, because `notnull` does not exclude a task.
+**Your delegate returns a task and the method does not await it.** A synchronous
+method calls your delegate and stores whatever comes back. Give it one that
+returns a task and the monad holds the task, not the result.
 
 ```diff
 -var result = Option.Try(() => FetchCountAsync());
 +var result = await Option.TryAsync(() => FetchCountAsync());
+
+-Option<Task<int>> doubled = option.Map(x => DoubleAsync(x));
++Option<int> doubled = await option.MapAsync(x => DoubleAsync(x));
 ```
 
-The call compiles and returns `Option<Task<int>>`. `Try` never awaits the factory,
-so **your exception handling is gone** — a throw escapes to your caller instead of
-becoming a `None` or an `Err`, and your configured exception logger never sees it.
+Both calls compile. Neither awaits anything, so the work has not finished when
+the monad is handed back, and anything it throws goes unobserved. For `Try` the
+damage is worse: **your exception handling is gone entirely** — a throw escapes
+to your caller instead of becoming a `None` or an `Err`, and your configured
+exception logger never sees it.
+
+Use the `Async` sibling of whatever you called. It awaits the delegate and holds
+the result.
+
+#### What it does and does not report
+
+The rule asks **where the task ends up**, not whether a delegate produced one.
+
+| Call | Produces | Reported |
+| --- | --- | --- |
+| `Option.Try(() => FetchAsync())` | `Option<Task<int>>` | Yes |
+| `option.Map(x => FetchAsync(x))` | `Option<Task<int>>` | Yes |
+| `result.MapErr(e => FormatAsync(e))` | `Result<int, Task<string>>` | Yes |
+| `option.Match(x => FetchAsync(x), () => ZeroAsync())` | `Task<int>` | No |
+| `option.MapOr(zeroTask, x => FetchAsync(x))` | `Task<int>` | No |
+| `Option.Some(FetchAsync())` | `Option<Task<int>>` | No |
+
+`Match` and `MapOr` hand the task straight back, so you can await it and nothing
+is lost. `Option.Some(FetchAsync())` takes a value rather than a delegate, so you
+built that task on purpose.
+
+Only a task trapped **inside** an `Option` or a `Result` is a defect — you cannot
+await it without unwrapping first, and most callers never do.
 
 This is a warning rather than a suggestion because it fires on code that runs and
 does the wrong thing. It is also the only protection you have against the v6
-removal of the async `Try` overloads, which rebinds these call sites silently. See
+removal of the async `Try` overloads, which rebinds those call sites silently. See
 [Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
 
-**No quick fix, deliberately.** Renaming to `TryAsync` leaves you with an
-unawaited `Task<Option<T>>`, and no fixer can decide where your `await` belongs.
+**No quick fix, deliberately.** Renaming to the `Async` sibling leaves you with an
+unawaited task, and no fixer can decide where your `await` belongs.
 
 ## Idioms
 
