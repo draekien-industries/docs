@@ -109,6 +109,10 @@ Option<(string, string)> none = Option.None<(string, string)>();
 (Option<string>, Option<string>) unzippedNone = none.Unzip(); // (None, None)
 ```
 
+A component that equals the default of its type is an ordinary value here, so
+`Option.Some((0, "x")).Unzip()` gives you `(Some(0), Some("x"))`. This threw
+before 6.0.0.
+
 ## Logical Operators
 
 Sometimes you want to combine two `Option` values using logical operators without leaving the monadic model.

@@ -14,6 +14,36 @@ MonadOptions.Configure(options => options.UseExceptionLogger((ex) => {
 }));
 ```
 
+## Cancellation
+
+`Option.Try`, `Option.TryAsync`, `Result.Try` and `Result.TryAsync` catch the
+exceptions your factory throws and turn them into a `None` or an `Err`. From
+6.0.0 they make one exception to that: an `OperationCanceledException` propagates
+to your caller instead.
+
+Cancelling is you telling the work to stop. It is not the work failing, and
+turning it into a `None` leaves the caller unable to tell "cancelled" from
+"genuinely absent".
+
+`TaskCanceledException` inherits from `OperationCanceledException`, so it
+propagates too.
+
+If you need the pre-6.0.0 behaviour, opt back in:
+
+```csharp
+MonadOptions.Configure(options => options.UseCancellationAsFailure());
+```
+
+A cancellation is then caught, passed to your exception logger, and becomes a
+`None` or an `Err` as it did before.
+
+{% hint style="info" %}
+We recommend leaving this off. It exists so that upgrading to 6.0.0 does not force
+you to rewrite every call site at once. Scope it with
+[`MonadOptions.BeginScope`](#scoped-configuration) if only part of your code needs
+it.
+{% endhint %}
+
 ## Error Code Generation
 
 There are a few factory methods included in the library for generating `ErrorCode` instances from `Enum` and from `Exception` instances. To customise how these error codes are generated, create a class inheriting from `ErrorCodeFactory` and override the methods you wish to customise. Then create an instance and pass it into the `MonadOptions` instance via the `UseErrorCodeFactory`.

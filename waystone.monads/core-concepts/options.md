@@ -29,7 +29,7 @@ The `Option<T>` type doesn't allow for ambiguity. It doesn't just fail to hold a
 `Option<T>` is a [monad](monads.md), and being a monad has practical consequences:
 
 * You can `Map` over the value if it exists, leaving `None` untouched
-* You can `FlatMap` chained computations that might each return an `Option`
+* You can `AndThen` chained computations that might each return an `Option`
 * You can pattern match or inspect the state with confidence - no more `if (x is not null)` littered everywhere
 
 Here's what a basic pipeline might look like when using `Option<T>`
@@ -38,7 +38,7 @@ Here's what a basic pipeline might look like when using `Option<T>`
 Option<string> TryGetEmailDomain(User user) =>
     Option.Some(user)
           .Map(user => user.Email)
-          .FlatMap(ParseDomain);
+          .AndThen(ParseDomain);
           
 Option<string> ParseDomain(string email) =>
     Option.Try(() => email.Split('@')[1]);    
@@ -97,9 +97,9 @@ record User(Option<string> Email);
 
 Option<string> DoWork() => 
     TryGetUser("Scanlan")
-        .FlatMap(u => u.Email)
-        .FlatMap(ParseDomain)
-        .Flatmap(NormaliseDomain);
+        .AndThen(u => u.Email)
+        .AndThen(ParseDomain)
+        .AndThen(NormaliseDomain);
 ```
 
 ### When to use Option
