@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 27 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The 25 diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -9,7 +9,7 @@ description: >-
 ## What this page is for
 
 `Waystone.Monads` ships a Roslyn analyzer inside the package. Install or upgrade to
-5.5.0 and you get these rules. You add no reference and configure nothing.
+6.0.0 and you get these rules. You add no reference and configure nothing.
 
 Every rule has an ID like `WM1002`. The first digit tells you how much it matters:
 
@@ -35,7 +35,7 @@ These rules are warnings. Each one marks code that compiles and then misbehaves.
 
 ### WM1001
 
-**`Some` cannot hold null.** `Option.Some(x)` throws `InvalidOperationException`
+**`Some` cannot hold null.** `Option.Some(x)` throws `ArgumentNullException`
 when `x` is null, so `Option.Some(default(string)!)` always throws.
 
 ```diff
@@ -48,8 +48,8 @@ program — a `null` literal, or `default(T)` where `T` is a reference type. Use
 `Option.FromNullable` when the value merely might be null; `WM1005` covers that
 case.
 
-Before 5.5.0 this rule also covered `Option.Some(0)` and friends. That half moved
-to [`WM1010`](#wm1010), because the two cases stop behaving the same way in v6.
+A `Some` may hold `0`, `false` and any other value-type default from 6.0.0
+onwards. Null is the only value it rejects.
 
 **Quick fix:** use `Option.None<T>()`.
 
@@ -92,42 +92,11 @@ no empty option. It gives you `null`, for the reason `WM1002` explains.
 
 **Quick fix for `Option<T>`:** use `Option.None<T>()`.
 
-### WM1004
-
-**A default value converts to `None`.** `Option<T>` converts implicitly from `T`,
-and that conversion returns `None` when the value equals `default(T)`. So this line
-does not give you a `Some` holding zero. It gives you `None`, and it says nothing:
-
-```csharp
-Option<int> option = 0;   // this is None, not Some(0)
-```
-
-Nothing throws. Without this rule, nothing warns you either. Write the case you
-meant:
-
-```diff
--Option<int> option = 0;
-+Option<int> option = Option.None<int>();
-```
-
-The rule only ever reports the default of a value type. A null converting to an
-`Option` is [`WM1002`](#wm1002)'s job.
-
-{% hint style="warning" %}
-**This line changes meaning in v6.** The conversion will map only null to `None`,
-so `Option<int> option = 0;` will give you a `Some` holding `0`. Your code still
-compiles and returns something different. See
-[v5.x to v6.x](upgrading/v5-to-v6.md). The rule is retired in v6, because it
-describes behaviour that no longer happens.
-{% endhint %}
-
-**Quick fix:** say `Option.None<T>()` outright.
-
 ### WM1005
 
-**You passed a possibly null value to `Some`.** `Some` rejects any value equal to
-`default(T)`, and the default of a reference type is null. Pass a value the compiler
-treats as maybe-null and the call throws whenever that value is null.
+**You passed a possibly null value to `Some`.** `Some` rejects null. Pass a value
+the compiler treats as maybe-null and the call throws whenever that value is
+null.
 
 ```diff
 -Option<string> option = Option.Some(value);
@@ -163,25 +132,6 @@ forces you to consume a return value, so this rule stands in for one.
 
 **No quick fix.** Only you can decide what the failure should do.
 
-### WM1007
-
-**A type derives from `Option` or `Result`.** Both types have exactly two cases, and
-every member that switches on them handles two. A third case is invisible to `Match`,
-so it silently takes whichever branch its base case falls into.
-
-```diff
--internal sealed record Cached<T>(T Value) : Some<T>(Value);
-+internal sealed record Cached<T>(Option<T> Value);
-```
-
-Compose the monad instead of inheriting from it. Hold one as a member, as above.
-
-Both hierarchies close in v6, so a derived type stops compiling then. That is why
-this rule is a warning even though it has no quick fix: you need the notice before
-the upgrade, and no fixer can rewrite your type and every one of its callers.
-
-**No quick fix.** The correction changes your type and cascades to its callers.
-
 ### WM1008
 
 **An `Option` or `Result` is declared nullable.** Both are records, so the compiler
@@ -198,66 +148,56 @@ fires whether or not you build with nullable reference types on.
 
 **Quick fix:** drop the `?`.
 
-### WM1009
+### WM1011
 
-**An `Option` over a type whose zero is meaningful.** `Option.Some(x)` throws when
-`x` equals `default(T)`. So an `Option<bool>` cannot hold `false`, and an
-`Option<Colour>` cannot hold whichever member you numbered `0`. Part of the type's
-own domain is unreachable.
-
-```csharp
-Option<bool> option = Option.Some(false);   // throws
-```
-
-For `bool`, use a three-state enum and let its zero member carry what you wanted
-`None` to say:
+**Your delegate returns a task and the method does not await it.** A synchronous
+method calls your delegate and stores whatever comes back. Give it one that
+returns a task and the monad holds the task, not the result.
 
 ```diff
--Option<bool> approved = ...;
-+enum Approval { Pending = 0, Approved = 1, Rejected = 2 }
+-var result = Option.Try(() => FetchCountAsync());
++var result = await Option.TryAsync(() => FetchCountAsync());
+
+-Option<Task<int>> doubled = option.Map(x => DoubleAsync(x));
++Option<int> doubled = await option.MapAsync(x => DoubleAsync(x));
 ```
 
-For an enum, renumber it so no meaningful member is `0`:
+Both calls compile. Neither awaits anything, so the work has not finished when
+the monad is handed back, and anything it throws goes unobserved. For `Try` the
+damage is worse: **your exception handling is gone entirely** — a throw escapes
+to your caller instead of becoming a `None` or an `Err`, and your configured
+exception logger never sees it.
 
-```diff
--enum Colour { Red = 0, Green = 1 }
-+enum Colour { Red = 1, Green = 2 }
-```
+Use the `Async` sibling of whatever you called. It awaits the delegate and holds
+the result.
 
-The rule covers `bool` and enums that have a zero member. It says nothing about
-`Option<int>`, where zero is usually a real value you would rather model another way,
-and nothing about an enum whose members all start at `1`.
+#### What it does and does not report
 
-**No quick fix.** Renumbering an enum or replacing a `bool` changes your call sites.
+The rule asks **where the task ends up**, not whether a delegate produced one.
 
-### WM1010
+| Call | Produces | Reported |
+| --- | --- | --- |
+| `Option.Try(() => FetchAsync())` | `Option<Task<int>>` | Yes |
+| `option.Map(x => FetchAsync(x))` | `Option<Task<int>>` | Yes |
+| `result.MapErr(e => FormatAsync(e))` | `Result<int, Task<string>>` | Yes |
+| `option.Match(x => FetchAsync(x), () => ZeroAsync())` | `Task<int>` | No |
+| `option.MapOr(zeroTask, x => FetchAsync(x))` | `Task<int>` | No |
+| `Option.Some(FetchAsync())` | `Option<Task<int>>` | No |
 
-**A value-type default passed to `Some`.** `Option.Some(0)`, `Option.Some(false)`
-and `Option.Some(Guid.Empty)` throw `InvalidOperationException` today, because a
-`Some` cannot hold the default of its type.
+`Match` and `MapOr` hand the task straight back, so you can await it and nothing
+is lost. `Option.Some(FetchAsync())` takes a value rather than a delegate, so you
+built that task on purpose.
 
-```diff
--Option<int> option = Option.Some(0);
-+Option<int> option = Option.None<int>();
-```
+Only a task trapped **inside** an `Option` or a `Result` is a defect — you cannot
+await it without unwrapping first, and most callers never do.
 
-The rule fires only on constants and on the well-known names for a default:
-`Guid.Empty`, `DateTime.MinValue`, `DateTimeOffset.MinValue`, `TimeSpan.Zero`,
-`IntPtr.Zero` and `UIntPtr.Zero`. It skips `Option.Some(count)`, because it cannot
-tell whether `count` is zero without running your program.
+This is a warning rather than a suggestion because it fires on code that runs and
+does the wrong thing. It is also the only protection you have against the v6
+removal of the async `Try` overloads, which rebinds those call sites silently. See
+[Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
 
-{% hint style="warning" %}
-**This is a heads-up for v6.** In v6 the same call returns a `Some` holding `0`
-instead of throwing. That is the change we want you to find now, while it is still
-a warning and not a silent difference in behaviour. Read
-[v5.x to v6.x](upgrading/v5-to-v6.md) before you upgrade.
-{% endhint %}
-
-New in 5.5.0. These spans reported under [`WM1001`](#wm1001) before, at the same
-severity, so you see no new warnings — just a different ID on some of them. The
-rule is retired in v6.
-
-**Quick fix:** use `Option.None<T>()`.
+**No quick fix, deliberately.** Renaming to the `Async` sibling leaves you with an
+unawaited task, and no fixer can decide where your `await` belongs.
 
 ## Idioms
 
@@ -279,8 +219,9 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2011`](#wm2011) | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
 | [`WM2012`](#wm2012) | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
 | [`WM2013`](#wm2013) | A discarded `Option`, as `WM1006` does for `Result` | — |
-| [`WM2014`](#wm2014) | `FlatMap`, which is obsolete and goes away in v6 | `AndThen` |
 | [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
+| [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
+| [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | — |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -471,28 +412,13 @@ discarding a `Result`, which `WM1006` reports as a bug, but usually still a mist
 +Option<User> active = option.Filter(IsActive);
 ```
 
-### WM2014
-
-**`FlatMap` is obsolete and goes away in v6.** Rust names this operation `and_then`,
-and `Result` already spelled it `AndThen`, so `Option` was inconsistent with both.
-`FlatMap` stays as a forwarding member until the next major version.
-
-```diff
--option.FlatMap(FindParent)
-+option.AndThen(FindParent)
-```
-
-`CS0618` already warns at every call site, so the rule exists for the solution-wide
-one-click fix rather than to tell you something new. That is why it is a suggestion
-and not a warning.
-
-**Quick fix:** `AndThen`.
-
 ### WM2015
 
 **On a value type, `UnwrapOrDefault` hands back `0` for the absent case.** `T?` on a
 type parameter constrained only to `notnull` is an annotation, not a `Nullable<T>`, so
-nothing distinguishes "there was no value" from a real zero.
+nothing distinguishes "there was no value" from a real zero. The message names
+the value you get back, so it reads "hands back 0, the default of 'int'", and it
+renders an enum's zero member by name.
 
 ```diff
 -int? count = option.UnwrapOrDefault();
@@ -503,6 +429,77 @@ Perfectly legitimate where you do want the default, which is why this informs ra
 than warns. `MapOrDefault` and `MapOrNull` work the same way.
 
 **Quick fix:** `UnwrapOrNull()` or `MapOrNull()`.
+
+### WM2016
+
+**An eager argument runs even when it is thrown away.** `And`, `Or`, `UnwrapOr`,
+`MapOr` and `OkOr` evaluate their argument before they check whether the receiver
+needs it. An expensive call or one with a side effect runs unconditionally.
+
+```diff
+-option.UnwrapOr(LoadFallbackFromDisk())
++option.UnwrapOrElse(() => LoadFallbackFromDisk())
+```
+
+The lazy siblings — `AndThen`, `OrElse`, `UnwrapOrElse`, `MapOrElse` and
+`OkOrElse` — take a delegate and only call it when the other branch is taken.
+
+The rule reports what it cannot prove is **free**, not what it can prove is
+expensive, because only the first is decidable. It stays silent on a constant, a
+bare local, parameter, field or property read, and `default`. It fires on a call,
+a `new` and an `await`.
+
+{% hint style="info" %}
+**A known false positive.** The rule cannot tell a cheap call from an expensive
+one, so it fires on `option.UnwrapOr(GetZero())` as readily as on a database
+round-trip. When it does, you pay a delegate allocation to avoid nothing. That is
+why it is a suggestion. Ignore it where the call is trivial.
+{% endhint %}
+
+A bare property read is skipped whatever the receiver, including one whose getter
+computes. We cannot tell an auto-property from a computed one when it comes from
+another assembly, and a rule that behaved differently depending on which assembly
+declared a property would be worse than one that skips them all.
+
+**Quick fix:** wrap the argument in a lambda and call the `Else` sibling.
+
+### WM2017
+
+**Your delegate captures, and there is an overload that would not.** A lambda that
+reads a local or a parameter from the enclosing method allocates a display class
+every time the call site runs.
+
+```diff
+-option.Map(value => value + offset)
++option.Map(offset, static (value, state) => value + state)
+```
+
+The state overload takes your data as its first argument and hands it to the
+delegate, so the delegate closes over nothing and the compiler caches it. The
+closure costs 88 bytes at every call — 24 for the display class, 64 for the
+delegate.
+
+The rule covers every method that has a state overload: `Map`, `MapOr`,
+`MapOrElse`, `Filter` and `AndThen` on `Option`, `Map`, `MapOr`, `MapOrElse`,
+`MapErr` and `AndThen` on `Result`, and `Option.Try`, `Option.TryAsync`,
+`Result.Try` and `Result.TryAsync`.
+
+It reads that list off the receiver's own type rather than matching names, so a
+delegate-taking method with no state overload — `Inspect`, `Match`, `OrElse` —
+never gets pointed at one that does not exist.
+
+It stays quiet when:
+
+- **The lambda captures only `this`** — a bare field read, or a call to another
+  method on the same type. That allocates a delegate rather than a display class,
+  a much smaller cost, and reporting it would fire on most ordinary code.
+- **The lambda captures nothing.** The compiler already caches it in a static
+  field, so the state overload would buy you nothing.
+- **You are already on the state overload.**
+
+**No quick fix.** The obvious rewrite reuses the captured name as the new
+parameter, which shadows the enclosing local. That is fine from C# 8 but is
+`CS0136` on C# 7.3, and this analyzer reaches consumers on every language version.
 
 ## Migration aids
 

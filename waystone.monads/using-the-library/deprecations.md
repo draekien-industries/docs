@@ -1,34 +1,36 @@
 ---
 description: >-
-  API that still works today but will be removed in the next major release, and
-  what to use instead.
+  API that has been removed, the version that removed it, and what to use
+  instead.
 ---
 
 # Deprecations
 
 ## What this page is for
 
-Everything listed here still compiles and still behaves exactly as it did before.
-Each entry is marked `[Obsolete]`, so your build reports a `CS0618` warning when
-you call it.
+We deprecate before we delete. Anything on its way out is marked `[Obsolete]`
+first, so your build reports a `CS0618` warning naming the replacement and the
+version that removes it. We only delete in a major release.
 
-Migrate before you upgrade to **v6.0.0**, where these members are deleted.
+Right now **nothing is pending removal.** Everything below has already gone.
 
 {% hint style="info" %}
 Packages in the Waystone family share one version number, so a v6.0.0 of
 `Waystone.Monads` means a v6.0.0 of every package.
 {% endhint %}
 
-## Option.FlatMap
+## Removed in 6.0.0
+
+### Option.FlatMap
 
 **Deprecated in:** 5.4.0 · **Removed in:** 6.0.0 · **Replacement:** `AndThen`
 
-| Deprecated | Replacement |
+| Removed | Replacement |
 | --- | --- |
 | `Option<T>.FlatMap<TOut>(Func<T, Option<TOut>>)` | `Option<T>.AndThen<TOut>(Func<T, Option<TOut>>)` |
 | `FlatMapAsync` on `Option<T>`, `Task<Option<T>>` and `ValueTask<Option<T>>` | `AndThenAsync` |
 
-### How to migrate
+#### How to migrate
 
 Rename the call. The parameters, the behaviour and the return type do not change.
 
@@ -37,29 +39,37 @@ Rename the call. The parameters, the behaviour and the return type do not change
 +Option<int> option = Find(id).AndThen(Parse);
 ```
 
-`WM2014` reports every call site for you, and its quick fix does the rename.
+Upgrade to 5.5.0 first if you have not already. `WM2014` reports every call site
+and its quick fix does the rename. That rule is removed in 6.0.0 along with the
+method, so it cannot help you after the upgrade.
 
-### Why this changed
+#### Why this changed
 
-`Result<TOk, TErr>` already spelled this operation `AndThen`, so one library had two
-names for one idea. Rust, which both types follow, calls it `and_then`. `AndThen` is
-the name that agrees with the rest of the library.
+`Result<TOk, TErr>` already spelled this operation `AndThen`, so one library had
+two names for one idea. Rust, which both types follow, calls it `and_then`.
+`AndThen` is the name that agrees with the rest of the library.
 
-`FlatMap` stays as a member that forwards to `AndThen`, so nothing changes at run
-time until v6.0.0 removes it.
-
-## Try overloads that accept an async factory
+### Try overloads that accept an async factory
 
 **Deprecated in:** 5.2.0 · **Removed in:** 6.0.0 · **Replacement:** `TryAsync`
 
-| Deprecated | Replacement |
+| Removed | Replacement |
 | --- | --- |
 | `Option.Try<T>(Func<Task<T>>, …)` | `Option.TryAsync<T>(Func<Task<T>>, …)` |
 | `Result.Try<TOk, TErr>(Func<Task<TOk>>, Func<Exception, TErr>, …)` | `Result.TryAsync<TOk, TErr>(Func<Task<TOk>>, Func<Exception, TErr>, …)` |
 
-### How to migrate
+{% hint style="danger" %}
+**Removing these does not break your build, and that is the problem.** Your call
+site rebinds to the synchronous overload, keeps compiling, and stops catching
+exceptions. Read
+[Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory)
+before you upgrade, and turn on
+[`WM1011`](analyzer-rules.md#wm1011) — it finds every affected call.
+{% endhint %}
 
-Rename the call. The parameters, the behaviour and the return type do not change.
+#### How to migrate
+
+Rename the call and keep the `await` where it already was.
 
 ```diff
 -Option<int> option = await Option.Try(() => FetchAsync());
@@ -69,11 +79,11 @@ Rename the call. The parameters, the behaviour and the return type do not change
 +Result<int, string> result = await Result.TryAsync(() => FetchAsync(), ex => ex.Message);
 ```
 
-### Why this changed
+#### Why this changed
 
 A lambda whose body is a `throw` expression converts to both `Func<T>` and
 `Func<Task<T>>`. When both overloads are called `Try`, the compiler cannot choose
-between them, and you have to declare the delegate type to break the tie:
+between them, and you had to declare the delegate type to break the tie:
 
 ```csharp
 // ambiguous, will not compile
@@ -86,9 +96,9 @@ Result<int, Error> result = Result.Try<int>(new Func<int>(() => throw new Invali
 Giving the async overloads their own name removes the ambiguity, so the call site
 above compiles as written.
 
-### What is not affected
+#### What is not affected
 
-The synchronous overloads keep the `Try` name and are not deprecated:
+The synchronous overloads keep the `Try` name:
 
 - `Option.Try<T>(Func<T>, …)`
 - `Result.Try<TOk, TErr>(Func<TOk>, Func<Exception, TErr>, …)`
@@ -97,8 +107,15 @@ The synchronous overloads keep the `Try` name and are not deprecated:
 {% hint style="info" %}
 `Result.TryAsync<TOk>(Func<Task<TOk>>, …)` — the overload that defaults the error
 type to `Error` — was introduced as `TryAsync` and never had a `Try` spelling.
-There is nothing to migrate.
+There was nothing to migrate.
 {% endhint %}
+
+## Not a deprecation, but it removed API
+
+v6 also closed the `Option<T>` and `Result<TOk, TErr>` hierarchies, which removes
+the ability to derive from them. That was never marked `[Obsolete]`, because there
+is no way to obsolete "inheriting from this type". See
+[v5.x to v6.x](upgrading/v5-to-v6.md#loud-change-you-can-no-longer-derive-from-option-or-result).
 
 See [Async](async.md) for the full async surface, and
 [Upgrading](upgrading/) for the upgrades that have already shipped.

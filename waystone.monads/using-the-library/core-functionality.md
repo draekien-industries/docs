@@ -85,10 +85,20 @@ Option<User> maybeUser = Option.Try(() => GetCurrentUser());
 
 If the `GetCurrentUser` call throws, the exception is caught and logged via your [configured exception logger](configuration.md), and you get back a `None<User>` instance.
 
-You also get a `None<User>` if the factory returns a value a `Some` cannot hold — the default of the type. `Option.Try(() => 0)` gives you `None`. Nothing is logged in that case, because nothing failed. The same rule decides this as `Option<T>`'s implicit conversion from `T`, so the two always agree — see [`WM1004`](analyzer-rules.md#wm1004).
+You also get a `None<User>` if the factory returns null, because a `Some` cannot hold one. Nothing is logged in that case, because nothing threw. A default value is fine: `Option.Try(() => 0)` gives you `Some(0)`.
 
-{% hint style="info" %}
-The `None` for a default value changes in v6, where `Option.Try(() => 0)` gives you a `Some` holding `0`. See [v5.x to v6.x](upgrading/v5-to-v6.md).
+{% hint style="warning" %}
+**A cancellation is not caught.** `Try` and `TryAsync` let an
+`OperationCanceledException` propagate, so a cancelled operation throws rather
+than becoming a `None`. Cancelling is you asking the work to stop, not the work
+failing. Call `MonadOptions.UseCancellationAsFailure()` if you want the pre-6.0.0
+behaviour back — see [Configuration](configuration.md#cancellation).
+{% endhint %}
+
+{% hint style="danger" %}
+**Do not pass an async factory to `Try`.** It compiles and gives you an
+`Option<Task<T>>` with no exception handling at all. Use `TryAsync`.
+[`WM1011`](analyzer-rules.md#wm1011) reports every occurrence.
 {% endhint %}
 {% endtab %}
 
@@ -123,6 +133,19 @@ Result<User, Error> result = Result.Try<User>(() => GetCurrentUser());
 
 If your factory returns a `Task`, use `TryAsync` instead. See [Async](async.md).
 
+### Passing state to the factory
+
+`Try` and `TryAsync` each take an optional first argument that they hand to your
+factory. Use it to keep the factory from capturing:
+
+```csharp
+Option<int> parsed = Option.Try(text, static value => int.Parse(value));
+
+Result<int, Error> result = Result.Try(text, static value => int.Parse(value));
+```
+
+See [State overloads](#state-overloads) below for why this matters.
+
 ## Transform
 
 Transformations are the bread and butter of monadic chains. They are used to transform the value inside the monadic wrapper and perform operations on them.
@@ -156,6 +179,68 @@ Result<int, string> lengthResult =  nameResult.Map(name => name.Length);
 There are additional transform methods specific to the `Option<T>` and `Result<T, E>` types.&#x20;
 
 <table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="option-of-t/#transform">#transform</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#transform">#transform</a></td></tr></tbody></table>
+
+## State overloads
+
+Every method that takes a delegate has a sibling that takes **your data first**
+and hands it to the delegate. Use it when the delegate would otherwise capture a
+local or a parameter.
+
+```diff
+-option.Map(value => value + offset);
++option.Map(offset, static (value, state) => value + state);
+```
+
+Both lines do the same thing. The second one allocates 88 fewer bytes every time
+it runs — 24 for the display class the closure needs, 64 for the delegate.
+
+### Where you can use it
+
+| Type | Methods |
+| --- | --- |
+| `Option<T>` | `Map`, `MapOr`, `MapOrElse`, `Filter`, `AndThen` |
+| `Result<T, E>` | `Map`, `MapOr`, `MapOrElse`, `MapErr`, `AndThen` |
+| Factories | `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync` |
+
+### Write the lambda `static`
+
+This is the part that is easy to get wrong. A lambda that happens not to capture
+measures the same as a `static` one — the compiler caches both. But nothing stops
+a later edit from reaching for an outer variable again, and the allocation comes
+straight back with no warning.
+
+Marking the lambda `static` makes the compiler enforce it:
+
+```csharp
+// the compiler rejects any capture in here
+option.Map(offset, static (value, state) => value + state);
+```
+
+Use `static` in every state overload you write.
+
+### MapOrElse threads state through both delegates
+
+`MapOrElse` takes two delegates and hands the same state to each one. Passing it
+to the map alone would leave `createDefault` capturing, and the allocation would
+still be there.
+
+```csharp
+option.MapOrElse(
+    fallback,
+    static state => state,
+    static (value, state) => value + state);
+```
+
+### How the overloads stay apart
+
+Each state overload adds its parameter at the front and takes exactly one more
+argument than its closure sibling. That is what keeps the compiler from having to
+choose between them. Do not "tidy" a future overload by reusing an existing slot.
+
+{% hint style="info" %}
+[`WM2017`](analyzer-rules.md#wm2017) reports a delegate that captures where one of
+these overloads exists, so you do not have to find them by hand.
+{% endhint %}
 
 ## State Checks
 

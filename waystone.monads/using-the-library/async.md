@@ -40,22 +40,38 @@ The async extensions live in the `Waystone.Monads.Options.Extensions` and
 are working with.
 {% endhint %}
 
-## Task and ValueTask
+## Every async extension returns ValueTask
 
-Some async methods return `ValueTask` instead of `Task`. This is deliberate. When
-a method can finish without doing asynchronous work, `ValueTask` avoids allocating
-a task for the synchronous path.
+From 6.0.0 the rule is uniform: **every** async extension on `Option` and
+`Result` returns `ValueTask` or `ValueTask<T>`. In 5.x some returned `Task` and
+some returned `ValueTask`, and you had to check.
 
 ```csharp
 ValueTask<string> output = result.MatchAsync(async x => await DoWorkAsync(x), e => e.ToString());
 ```
 
 You await a `ValueTask` the same way you await a `Task`, so this rarely changes
-your code. It matters if you store the result before awaiting it — await a
-`ValueTask` once, and only once.
+your code. Two things to know:
+
+- **Await it once, and only once.** This matters if you store the result before
+  awaiting it.
+- **Call `.AsTask()` when you need a `Task`** — most often for `Task.WhenAll`.
+
+```csharp
+await Task.WhenAll(
+    a.MapAsync(FetchAsync).AsTask(),
+    b.MapAsync(FetchAsync).AsTask());
+```
 
 Both `Task` and `ValueTask` work as receivers, so a chain that mixes them still
 composes.
+
+{% hint style="info" %}
+`ValueTask` is cheaper when the work finishes synchronously and slightly more
+expensive when it does not. A three-link chain saves 144 bytes on a synchronous
+`Option` receiver and costs 84 bytes when the head is genuinely pending. See
+[v5.x to v6.x](upgrading/v5-to-v6.md#the-measured-trade-off) for the numbers.
+{% endhint %}
 
 ## Creating a monad from async work
 
@@ -70,9 +86,8 @@ Option<User> maybeUser = await Option.TryAsync(() => FetchUserAsync(id));
 If `FetchUserAsync` throws, the exception is caught and logged via your
 [configured exception logger](configuration.md), and you get back a `None<User>`.
 
-You also get a `None<User>` if the task completes with a value a `Some` cannot
-hold — the default of the type. Nothing is logged in that case, because nothing
-failed.
+You also get a `None<User>` if the task completes with null, because a `Some`
+cannot hold one. Nothing is logged in that case, because nothing threw.
 {% endtab %}
 
 {% tab title="Result" %}
@@ -95,9 +110,17 @@ The single type parameter overload converts the exception with
 {% endtab %}
 {% endtabs %}
 
+{% hint style="danger" %}
+**Never pass an async factory to `Try`.** The overloads that accepted one were
+removed in 6.0.0, and the call still compiles — it binds to the synchronous
+overload, gives you an `Option<Task<T>>`, and catches nothing.
+[`WM1011`](analyzer-rules.md#wm1011) reports every occurrence. See
+[Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
+{% endhint %}
+
 {% hint style="warning" %}
-The `Try` overloads that accept an async factory are deprecated and will be
-removed in v6.0.0. Use `TryAsync` instead. See [Deprecations](deprecations.md).
+`TryAsync` lets an `OperationCanceledException` through rather than turning it
+into a `None` or an `Err`. See [Configuration](configuration.md#cancellation).
 {% endhint %}
 
 ## Ending a chain
@@ -145,7 +168,7 @@ an async delegate, a task receiver, or both.
 
 | Category | Methods |
 | --- | --- |
-| Transform | `MapAsync`, `MapOrAsync`, `MapOrElseAsync`, `FlatMapAsync` |
+| Transform | `MapAsync`, `MapOrAsync`, `MapOrElseAsync`, `AndThenAsync` |
 | State checks | `IsSomeAndAsync`, `IsNoneOrAsync` |
 | Consume | `MatchAsync`, `UnwrapAsync`, `UnwrapOrAsync`, `UnwrapOrElseAsync`, `UnwrapOrDefaultAsync`, `ExpectAsync` |
 | Side effect | `InspectAsync` |

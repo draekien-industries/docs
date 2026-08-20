@@ -87,7 +87,7 @@ Option<Request> PrepareRequest(decimal input);   // never throws, may be some or
 Result<Response, Error> DoWork(Request request); // may be ok or error
 
 Result<Response, Error> SaveData(Option<decimal> input) => 
-    input.FlatMap(PrepareRequest) // If input is Some, PrepareRequest
+    input.AndThen(PrepareRequest) // If input is Some, PrepareRequest
          .Map(DoWork)             // If PrepareRequest is Some, DoWork
          .Transpose()             // Turn the Option<Result> into a Result<Option>
          .InspectErr(error => _logger.LogWarning(error))    // If Err, log a warning

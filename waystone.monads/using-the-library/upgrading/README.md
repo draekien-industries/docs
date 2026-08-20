@@ -13,11 +13,11 @@ page in order — the changes stack.
 | [v2.x to v3.x](v2-to-v3.md) | Async overloads gain an `Async` suffix and move to extension namespaces |
 | [v3.x to v4.x](v3-to-v4.md) | `MonadsGlobalConfig` becomes `MonadOptions` |
 | [v4.x to v5.x](v4-to-v5.md) | Some async extensions return `ValueTask` instead of `Task` |
-| [v5.x to v6.x](v5-to-v6.md) | `Option.Some` accepts `0`, `false` and other value-type defaults |
+| [v5.x to v6.x](v5-to-v6.md) | Three changes that keep compiling and change what your code does |
 
 The v5.x to v6.x page is the one to read closely. Every other upgrade on this list
-breaks the build when you get it wrong. That one does not — your code keeps
-compiling and quietly means something different.
+breaks the build when you get it wrong. That one has three changes that do not —
+your code keeps compiling and quietly means something different.
 
 See [Deprecations](../deprecations.md) for API that is on its way out but still
 works today.
