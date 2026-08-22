@@ -71,7 +71,7 @@ member:
 ```csharp
 OrderErrorCode errorCode = Classify(order);
 
-string asString = errorCode.ToErrorCodeString();
+string asName = errorCode.ToErrorCodeName();
 ErrorCode asErrorCode = errorCode.ToErrorCode();
 Error asError = errorCode.ToError("no order with that id");
 ```
@@ -85,7 +85,7 @@ Casting an arbitrary integer to an enum is legal C#, so `(OrderErrorCode)99` is 
 you can be handed. The three extensions apply the same scheme to it:
 
 ```csharp
-((OrderErrorCode)99).ToErrorCodeString(); // "OrderErrorCode.99"
+((OrderErrorCode)99).ToErrorCodeName(); // "OrderErrorCode.99"
 ```
 
 ## Choosing the code format
@@ -296,7 +296,7 @@ emits nested classes called `Names`, `Codes` and `Errors`. A member
 with one of those names would produce a member sharing its enclosing type's name,
 which is `CS0542`. Rename the member.
 
-Every other name is fine, including `ToError`, `ToErrorCode` and `ToErrorCodeString` —
+Every other name is fine, including `ToError`, `ToErrorCode` and `ToErrorCodeName` —
 the extensions live on the outer class and your members live in the nested ones, so
 they never meet.
 
