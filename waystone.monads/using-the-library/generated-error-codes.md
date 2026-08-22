@@ -82,30 +82,92 @@ you can be handed. The three extensions apply the same scheme to it:
 ((OrderErrorCode)99).ToErrorCodeString(); // "OrderErrorCode.99"
 ```
 
-## The generated code and your factory
+## Choosing the code format
 
-The generated strings follow the same `{EnumName}.{MemberName}` scheme as
-[#error-code-from-enum](errors-and-exceptions.md#error-code-from-enum "mention"), so a
-constant and a call to `ErrorCode.FromEnum` give you the same string — as long as you
-are on the default factory.
+`OrderErrorCode.NotFound` is the default, not the only option. Set `Format` on the
+attribute and the generated codes follow it:
+
+```csharp
+[ErrorCodeProvider(Format = "order.{member:kebab}")]
+public enum OrderErrorCode
+{
+    NotFound,
+    AlreadyShipped,
+}
+```
+
+```csharp
+OrderErrorProvider.ErrorCodeStrings.NotFound       // "order.not-found"
+OrderErrorProvider.ErrorCodeStrings.AlreadyShipped // "order.already-shipped"
+```
+
+Everything the format does happens at build time, so what you get out is still a
+`const string`.
+
+### The format language
+
+Two placeholders, and everything else is literal text:
+
+| Placeholder | Substitutes |
+| --- | --- |
+| `{enum}` | The enum's name, `OrderErrorCode` |
+| `{member}` | The member's name, `NotFound` |
+
+Either one takes an optional casing after a colon — `{member:kebab}`:
+
+| Casing | `NotFound` | `HTTPNotFound` | `Error404` |
+| --- | --- | --- | --- |
+| *(none)* | `NotFound` | `HTTPNotFound` | `Error404` |
+| `kebab` | `not-found` | `http-not-found` | `error-404` |
+| `snake` | `not_found` | `http_not_found` | `error_404` |
+| `lower` | `notfound` | `httpnotfound` | `error404` |
+| `upper` | `NOTFOUND` | `HTTPNOTFOUND` | `ERROR404` |
+
+`kebab` and `snake` split the identifier into words; `lower` and `upper` only change
+case. A word boundary falls where a lowercase or a digit meets an uppercase, before the
+last uppercase of a run that runs into a lowercase, and between letters and digits. An
+underscore already in the name counts as a boundary rather than doubling up, so
+`Already_Shipped` gives `already-shipped`.
+
+Write a literal brace by doubling it: `{{` and `}}`.
+
+The default is `{enum}.{member}`, which is what an enum that sets nothing gets.
+
+### One format for the whole assembly
+
+Put the attribute on the assembly and every attributed enum in the project uses it:
+
+```csharp
+[assembly: ErrorCodeFormat("{enum:kebab}/{member:kebab}")]
+```
+
+An enum's own `Format` wins over the assembly's, so the assembly attribute sets the
+house style and an individual enum departs from it where it needs to.
+
+## The format is your contract, not your factory
+
+The generated strings come from the format and nothing else. In particular:
 
 {% hint style="warning" %}
 **A generated member never consults your `ErrorCodeFactory`.** If you install your own
 through `MonadOptions.UseErrorCodeFactory`, `ErrorCode.FromEnum` starts returning your
-codes and the generated members keep returning theirs. The generator runs at build
-time and cannot run a factory you install at run time, so it always bakes in the
-default scheme.
+codes and the generated members keep returning theirs. The generator runs at build time
+and cannot run a factory you install at run time.
 
 That holds for every generated member, including the fallback for an undeclared value.
-Pick one and stay on it per enum: an `[ErrorCodeProvider]` enum's codes come from the
-generator, and your factory keeps handling everything else.
+If you are using a custom factory today to shape the codes an enum produces, say the
+same thing with `Format` instead — you get the same strings as constants, and one
+answer rather than two.
 {% endhint %}
+
+Shaping enum codes is the part of `ErrorCodeFactory` the format replaces, and that part
+is expected to be obsoleted in the next major version. `FromException` is not affected.
 
 ## Renaming is a breaking change
 
-The code is built from two names: the enum's and the member's. Rename either and every
-consumer reading the code sees a different string, with nothing in the compiler to tell
-you.
+The code is built from two names: the enum's and the member's. Rename either — or edit
+the format — and every consumer reading the code sees a different string, with nothing
+in the compiler to tell you.
 
 ```csharp
 [ErrorCodeProvider]
@@ -121,8 +183,8 @@ Treat an attributed enum as a published contract, the way you would treat a URL.
 
 ## Diagnostics
 
-Four diagnostics come from the generator rather than from the analyzer, so they use a
-`WMG` prefix. All four are errors: each marks a case where the generator would
+Six diagnostics come from the generator rather than from the analyzer, so they use a
+`WMG` prefix. All six are errors: each marks a case where the generator would
 otherwise produce code that does not compile, or a code you did not mean to publish.
 
 | ID | What it reports |
@@ -131,6 +193,8 @@ otherwise produce code that does not compile, or a code you did not mean to publ
 | `WMG0002` | Two members of the enum sharing a value |
 | `WMG0003` | A member named `ErrorCodeStrings`, `ErrorCodes` or `Errors` |
 | `WMG0004` | `ErrorCode` or `Error` not resolvable in the compilation |
+| `WMG0005` | A `Format` the generator cannot parse |
+| `WMG0006` | A `Format` that leaves out `{member}` |
 
 ### WMG0001
 
@@ -162,12 +226,27 @@ they never meet.
 generator is running on a project that does not reference `Waystone.Monads`, which
 normally means a hand-wired analyzer reference. Reference the package.
 
+### WMG0005
+
+**The format does not parse.** An unclosed placeholder, a stray `}`, a name that is not
+`{enum}` or `{member}`, or a casing that is not `kebab`, `snake`, `lower` or `upper`.
+The message names the position and what it expected. This reports on the attribute that
+set the format, whether that is the enum's or the assembly's.
+
+### WMG0006
+
+**A format without `{member}` gives every member the same code.** `"{enum:kebab}"`
+generates one string for the whole enum, so the codes stop identifying anything.
+Include `{member}`.
+
 ## Reusing a code across two enums
 
 Two attributed enums with the same name in different namespaces generate the same code
 for every member name they share. `Ordering.OrderErrorCode.NotFound` and
 `Shipping.OrderErrorCode.NotFound` both generate `"OrderErrorCode.NotFound"`, and nothing
-reading the code can tell the two errors apart.
+reading the code can tell the two errors apart. So can two differently named enums that
+share a format: `"order.{member:kebab}"` on both `OrderErrorCode` and `ShipmentError`
+makes `NotFound` collide.
 
 `WM2018` reports that. It is a suggestion, not a warning — see
 [#wm2018](analyzer-rules.md#wm2018 "mention").

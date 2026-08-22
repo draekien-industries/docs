@@ -44,13 +44,14 @@ var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing
 ```
 
 {% hint style="info" %}
-If you want to customise the error code that is generated from your enum, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromEnum` method.
+If you want to customise the error code that is generated from your enum, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromEnum` method. From 6.2.0 there is a better way to do this — see the next hint. Overriding `FromEnum` is expected to be obsoleted in the next major version.
 {% endhint %}
 
 {% hint style="success" %}
 From 6.2.0 you can mark the enum with `[ErrorCodeProvider]` and get these codes as
-`const string` values at build time, instead of working them out at run time. See
-[generated-error-codes.md](generated-error-codes.md "mention").
+`const string` values at build time, instead of working them out at run time. The
+attribute also takes a `Format`, which is how you shape the codes without a factory.
+See [generated-error-codes.md](generated-error-codes.md "mention").
 {% endhint %}
 
 #### Error Code from Exception

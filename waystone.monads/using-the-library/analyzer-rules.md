@@ -510,8 +510,9 @@ parameter, which shadows the enclosing local. That is fine from C# 8 but is
 ### WM2018
 
 **Two enums generate the same error code.** An `[ErrorCodeProvider]` enum builds each
-code from its own name and the member's name, so two enums sharing a name in different
-namespaces generate the same code for every member name they share.
+code from a format, and by default that format is the enum's name and the member's name,
+so two enums sharing a name in different namespaces generate the same code for every
+member name they share.
 
 ```csharp
 namespace Ordering;
@@ -533,8 +534,12 @@ members and the shared code in the message. It reports once per colliding member
 once per pair of enums, so an enum with three shared members gives you three
 diagnostics.
 
-**No quick fix.** The fix is a rename, and which of the two enums should keep the code
-is not something the analyzer can work out.
+The rule keys on the generated code, not on the enum's name, so a `Format` moves what
+it sees. Two differently named enums that share `"order.{member:kebab}"` collide and are
+reported; two enums sharing a name with different formats do not collide and are not.
+
+**No quick fix.** The fix is a rename or a different format, and which of the two enums
+should keep the code is not something the analyzer can work out.
 
 See [generated-error-codes.md](generated-error-codes.md "mention") for what the
 attribute generates.
