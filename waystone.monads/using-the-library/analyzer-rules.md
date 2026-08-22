@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 25 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The 28 diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -21,6 +21,11 @@ Every rule has an ID like `WM1002`. The first digit tells you how much it matter
 
 Warnings show up in your build. Suggestions show up in your IDE only, so they never
 break a build that passes today. The `WM3xxx` rules stay off until you enable them.
+
+Four more diagnostics use a `WMG` prefix. Those come from the source generator rather
+than the analyzer, they are all errors, and they only fire on an enum you marked with
+`[ErrorCodeCatalog]`. They are on
+[generated-error-codes.md](generated-error-codes.md "mention") instead of this page.
 
 {% hint style="warning" %}
 Do you build with `TreatWarningsAsErrors`? Then a `WM1xxx` rule that fires breaks
@@ -222,6 +227,9 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 | [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
 | [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | — |
+| [`WM2018`](#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | — |
+| [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
+| [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | — |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -500,6 +508,93 @@ It stays quiet when:
 **No quick fix.** The obvious rewrite reuses the captured name as the new
 parameter, which shadows the enclosing local. That is fine from C# 8 but is
 `CS0136` on C# 7.3, and this analyzer reaches consumers on every language version.
+
+### WM2018
+
+**Two enums generate the same error code.** An `[ErrorCodeCatalog]` enum builds each
+code from a format, and by default that format is the enum's name and the member's name,
+so two enums sharing a name in different namespaces generate the same code for every
+member name they share.
+
+```csharp
+namespace Ordering;
+
+[ErrorCodeCatalog]
+public enum OrderErrorCode { NotFound }   // "OrderErrorCode.NotFound"
+
+namespace Shipping;
+
+[ErrorCodeCatalog]
+public enum OrderErrorCode { NotFound }   // "OrderErrorCode.NotFound" -- the same code
+```
+
+Whoever reads the code cannot tell which error happened. Namespaces separate the two
+enums in your source and do not separate the codes.
+
+The rule reports on the second declaration in alphabetical order, and names both
+members and the shared code in the message. It reports once per colliding member, not
+once per pair of enums, so an enum with three shared members gives you three
+diagnostics.
+
+The rule keys on the generated code, not on the enum's name, so a `Format` moves what
+it sees. Two differently named enums that share `"order.{member:kebab}"` collide and are
+reported; two enums sharing a name with different formats do not collide and are not.
+
+**No quick fix.** The fix is a rename or a different format, and which of the two enums
+should keep the code is not something the analyzer can work out.
+
+See [generated-error-codes.md](generated-error-codes.md "mention") for what the
+attribute generates.
+
+### WM2019
+
+**A generated error code is missing from the registry.** A project that commits an
+`ErrorCodes.txt` has opted into reviewing its error codes as a list, so a code that is
+not on the list is a wire contract nobody read a diff for.
+
+```csharp
+[ErrorCodeCatalog(Format = "order.{member:kebab}")]
+public enum OrderErrorCode
+{
+    NotFound,        // "order.not-found" -- listed
+    AlreadyShipped,  // "order.already-shipped" -- not listed, reported here
+}
+```
+
+Reported on the member, because that is the thing you can act on.
+
+**Quick fix: Update `ErrorCodes.txt`.** It rewrites the whole file from the compilation
+— every missing code added, every stale entry removed, sorted, your leading comment
+block kept. One invocation is enough however many diagnostics there are.
+
+A project with no `ErrorCodes.txt` never sees this rule. See
+[#reviewing-your-codes-as-a-list](generated-error-codes.md#reviewing-your-codes-as-a-list "mention").
+
+### WM2020
+
+**The registry lists a code nothing generates.** The other direction: an entry left
+behind by a rename or a deletion, claiming a code the project no longer produces.
+
+```
+order.already-shipped
+order.cancelled          <- nothing generates this any more
+order.not-found
+```
+
+Reported against `ErrorCodes.txt` itself, at the line, because nothing in your source
+corresponds to it.
+
+**No quick fix.** Roslyn does not offer fixes for a diagnostic reported at the end of a
+compilation, which this has to be — whether an entry is stale cannot be known until every
+enum in the project has been seen. In practice the `WM2019` fix removes stale entries
+too, so the two travel together; delete the named line by hand if it is your only
+divergence.
+
+{% hint style="warning" %}
+This rule's severity cannot be set from a path-matched `.editorconfig` section, not even
+`[*]`. It needs a global analyzer config — see
+[#making-a-divergence-fail-the-build](generated-error-codes.md#making-a-divergence-fail-the-build "mention").
+{% endhint %}
 
 ## Migration aids
 

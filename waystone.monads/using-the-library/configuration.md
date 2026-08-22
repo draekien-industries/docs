@@ -51,11 +51,6 @@ There are a few factory methods included in the library for generating `ErrorCod
 ```csharp
 public class MyErrorCodeFactory : ErrorCodeFactory
 {
-    public override ErrorCode FromEnum(Enum @enum)
-    {
-        // your implementation
-    }
-    
     public override ErrorCode FromException(Exception exception)
     {
         // your implementation
@@ -64,6 +59,15 @@ public class MyErrorCodeFactory : ErrorCodeFactory
 
 MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFactory()));
 ```
+
+{% hint style="warning" %}
+**`FromEnum` is no longer one of the methods to override.** It is obsolete from 6.2.0
+and removed in 7.0.0, because a factory runs too late for the compiler, the analyzers
+or the error code registry to see what it returns. Shape enum codes with
+`[ErrorCodeCatalog(Format = "…")]` instead — see
+[generated-error-codes.md](generated-error-codes.md "mention") — and keep the factory
+for `FromException`, which is unaffected.
+{% endhint %}
 
 ## Error Code and Message Fallbacks
 
