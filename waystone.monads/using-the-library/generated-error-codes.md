@@ -76,25 +76,29 @@ The nesting is what keeps your member names usable as-is. A member called
 ## A value that is not a declared member
 
 Casting an arbitrary integer to an enum is legal C#, so `(OrderErrorCode)99` is a value
-you can be handed. The three extensions fall back to `ErrorCode.FromEnum` for it,
-which is exactly what you get today without the generator:
+you can be handed. The three extensions apply the same scheme to it:
 
 ```csharp
 ((OrderErrorCode)99).ToErrorCodeString(); // "OrderErrorCode.99"
 ```
 
-## The generated code matches the default factory
+## The generated code and your factory
 
 The generated strings follow the same `{EnumName}.{MemberName}` scheme as
 [#error-code-from-enum](errors-and-exceptions.md#error-code-from-enum "mention"), so a
-constant and a call to `ErrorCode.FromEnum` give you the same string.
+constant and a call to `ErrorCode.FromEnum` give you the same string — as long as you
+are on the default factory.
 
 {% hint style="warning" %}
-If you install your own `ErrorCodeFactory` through `MonadOptions.UseErrorCodeFactory`,
-the two stop agreeing. The generator runs at build time and cannot see a factory you
-install at run time, so it always generates the default scheme. Use the generated
-members everywhere and this does not come up — your factory simply stops being
-consulted on that path. Mixing the two is what diverges.
+**A generated member never consults your `ErrorCodeFactory`.** If you install your own
+through `MonadOptions.UseErrorCodeFactory`, `ErrorCode.FromEnum` starts returning your
+codes and the generated members keep returning theirs. The generator runs at build
+time and cannot run a factory you install at run time, so it always bakes in the
+default scheme.
+
+That holds for every generated member, including the fallback for an undeclared value.
+Pick one and stay on it per enum: an `[ErrorCodeProvider]` enum's codes come from the
+generator, and your factory keeps handling everything else.
 {% endhint %}
 
 ## Renaming is a breaking change
@@ -167,11 +171,3 @@ reading the code can tell the two errors apart.
 
 `WM2018` reports that. It is a suggestion, not a warning — see
 [#wm2018](analyzer-rules.md#wm2018 "mention").
-
-## What is not generated
-
-- **No way to freeze a code against a rename.** A per-member override is under
-  consideration; today the names are the contract.
-- **No registry of every code in your solution.** You get one class per enum.
-- **Nothing for exceptions.** `ErrorCode.FromException` stays a run-time call. An
-  exception type has no member list to generate from.
