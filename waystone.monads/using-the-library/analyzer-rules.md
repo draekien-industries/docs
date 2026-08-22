@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 25 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The 26 diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -21,6 +21,11 @@ Every rule has an ID like `WM1002`. The first digit tells you how much it matter
 
 Warnings show up in your build. Suggestions show up in your IDE only, so they never
 break a build that passes today. The `WM3xxx` rules stay off until you enable them.
+
+Four more diagnostics use a `WMG` prefix. Those come from the source generator rather
+than the analyzer, they are all errors, and they only fire on an enum you marked with
+`[ErrorCodeProvider]`. They are on
+[generated-error-codes.md](generated-error-codes.md "mention") instead of this page.
 
 {% hint style="warning" %}
 Do you build with `TreatWarningsAsErrors`? Then a `WM1xxx` rule that fires breaks
@@ -222,6 +227,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 | [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
 | [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | — |
+| [`WM2018`](#wm2018) | Two `[ErrorCodeProvider]` enums that generate the same error code | — |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -500,6 +506,38 @@ It stays quiet when:
 **No quick fix.** The obvious rewrite reuses the captured name as the new
 parameter, which shadows the enclosing local. That is fine from C# 8 but is
 `CS0136` on C# 7.3, and this analyzer reaches consumers on every language version.
+
+### WM2018
+
+**Two enums generate the same error code.** An `[ErrorCodeProvider]` enum builds each
+code from its own name and the member's name, so two enums sharing a name in different
+namespaces generate the same code for every member name they share.
+
+```csharp
+namespace Ordering;
+
+[ErrorCodeProvider]
+public enum OrderErrorCode { NotFound }   // "OrderErrorCode.NotFound"
+
+namespace Shipping;
+
+[ErrorCodeProvider]
+public enum OrderErrorCode { NotFound }   // "OrderErrorCode.NotFound" -- the same code
+```
+
+Whoever reads the code cannot tell which error happened. Namespaces separate the two
+enums in your source and do not separate the codes.
+
+The rule reports on the second declaration in alphabetical order, and names both
+members and the shared code in the message. It reports once per colliding member, not
+once per pair of enums, so an enum with three shared members gives you three
+diagnostics.
+
+**No quick fix.** The fix is a rename, and which of the two enums should keep the code
+is not something the analyzer can work out.
+
+See [generated-error-codes.md](generated-error-codes.md "mention") for what the
+attribute generates.
 
 ## Migration aids
 

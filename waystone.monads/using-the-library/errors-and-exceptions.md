@@ -47,6 +47,12 @@ var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing
 If you want to customise the error code that is generated from your enum, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromEnum` method.
 {% endhint %}
 
+{% hint style="success" %}
+From 6.2.0 you can mark the enum with `[ErrorCodeProvider]` and get these codes as
+`const string` values at build time, instead of working them out at run time. See
+[generated-error-codes.md](generated-error-codes.md "mention").
+{% endhint %}
+
 #### Error Code from Exception
 
 You may want to use the exception type itself as the source of your error codes when they are caught during runtime. A factory method has been provided to facilitate this approach.
