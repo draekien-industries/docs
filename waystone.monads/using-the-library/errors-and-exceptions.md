@@ -46,8 +46,8 @@ var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing
 {% hint style="danger" %}
 **`ErrorCode.FromEnum` is obsolete from 6.2.0 and is removed in 7.0.0.** So is
 overriding `ErrorCodeFactory.FromEnum` to shape what it returns. Mark the enum with
-`[ErrorCodeProvider]` instead and use the members that generates —
-`OrderErrorProvider.ErrorCodes.NotFound` where you can name the member, or the
+`[ErrorCodeCatalog]` instead and use the members that generates —
+`OrderErrorCatalog.Codes.NotFound` where you can name the member, or the
 generated `ToErrorCode()` extension where you cannot. See
 [deprecations.md](deprecations.md "mention") for the migration and
 [generated-error-codes.md](generated-error-codes.md "mention") for the `Format` that

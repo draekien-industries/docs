@@ -64,7 +64,7 @@ MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFac
 **`FromEnum` is no longer one of the methods to override.** It is obsolete from 6.2.0
 and removed in 7.0.0, because a factory runs too late for the compiler, the analyzers
 or the error code registry to see what it returns. Shape enum codes with
-`[ErrorCodeProvider(Format = "…")]` instead — see
+`[ErrorCodeCatalog(Format = "…")]` instead — see
 [generated-error-codes.md](generated-error-codes.md "mention") — and keep the factory
 for `FromException`, which is unaffected.
 {% endhint %}

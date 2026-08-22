@@ -1,6 +1,6 @@
 ---
 description: >-
-  Mark an enum with [ErrorCodeProvider] and get its error codes as compile-time
+  Mark an enum with [ErrorCodeCatalog] and get its error codes as compile-time
   constants, generated at build time.
 ---
 
@@ -13,7 +13,7 @@ at run time, by reflecting over the enum. That means the string your callers see
 not written anywhere you can point at. You cannot use it in a `switch`, you cannot put
 it in an attribute, and you cannot find every place that reads it.
 
-Mark the enum with `[ErrorCodeProvider]` and `Waystone.Monads` generates those strings
+Mark the enum with `[ErrorCodeCatalog]` and `Waystone.Monads` generates those strings
 as constants when you build. This ships inside the package from 6.2.0. You add no
 reference and configure nothing.
 
@@ -30,7 +30,7 @@ using Waystone.Monads.Results.Errors;
 
 namespace Ordering;
 
-[ErrorCodeProvider]
+[ErrorCodeCatalog]
 public enum OrderErrorCode
 {
     NotFound,
@@ -38,13 +38,13 @@ public enum OrderErrorCode
 }
 ```
 
-That gives you a new class next to the enum, `OrderErrorProvider`, in the same
+That gives you a new class next to the enum, `OrderErrorCodeCatalog`, in the same
 namespace and with the same accessibility as the enum.
 
-The name is the enum's with `ErrorProvider` on the end, and a trailing `Error` or
-`ErrorCode` on the enum's own name taken off first so you do not read it twice.
-`OrderErrorCode` and `OrderError` both give you `OrderErrorProvider`;
-`PaymentFailure` gives you `PaymentFailureErrorProvider`.
+The name is the enum's own name with `Catalog` on the end, and nothing is taken off it.
+`OrderFailure` gives you `OrderFailureCatalog`; `OrderErrorCode` gives you
+`OrderErrorCodeCatalog`. If that reads twice, rename the enum — two enums whose names
+differ always get two catalogs whose names differ.
 
 ## What you get
 
@@ -52,16 +52,16 @@ Three nested classes, one per shape:
 
 ```csharp
 // The code as a compile-time constant.
-OrderErrorProvider.ErrorCodeStrings.NotFound   // "OrderErrorCode.NotFound"
+OrderErrorCodeCatalog.Names.NotFound   // "OrderErrorCode.NotFound"
 
 // The code as an ErrorCode.
-OrderErrorProvider.ErrorCodes.NotFound         // ErrorCode { Value = "OrderErrorCode.NotFound" }
+OrderErrorCodeCatalog.Codes.NotFound   // ErrorCode { Value = "OrderErrorCode.NotFound" }
 
 // An Error carrying that code.
-OrderErrorProvider.Errors.NotFound("no order with that id")
+OrderErrorCodeCatalog.Errors.NotFound("no order with that id")
 ```
 
-`ErrorCodeStrings` gives you a `const string`, so you can use it anywhere C# wants a
+`Names` gives you a `const string`, so you can use it anywhere C# wants a
 constant — a `case` label, an attribute argument, a switch on a code that arrived over
 the wire.
 
@@ -77,7 +77,7 @@ Error asError = errorCode.ToError("no order with that id");
 ```
 
 The nesting is what keeps your member names usable as-is. A member called
-`NotFoundCode` becomes `ErrorCodeStrings.NotFoundCode`, and nothing collides.
+`NotFoundCode` becomes `Names.NotFoundCode`, and nothing collides.
 
 ## A value that is not a declared member
 
@@ -94,7 +94,7 @@ you can be handed. The three extensions apply the same scheme to it:
 attribute and the generated codes follow it:
 
 ```csharp
-[ErrorCodeProvider(Format = "order.{member:kebab}")]
+[ErrorCodeCatalog(Format = "order.{member:kebab}")]
 public enum OrderErrorCode
 {
     NotFound,
@@ -103,8 +103,8 @@ public enum OrderErrorCode
 ```
 
 ```csharp
-OrderErrorProvider.ErrorCodeStrings.NotFound       // "order.not-found"
-OrderErrorProvider.ErrorCodeStrings.AlreadyShipped // "order.already-shipped"
+OrderErrorCodeCatalog.Names.NotFound       // "order.not-found"
+OrderErrorCodeCatalog.Names.AlreadyShipped // "order.already-shipped"
 ```
 
 Everything the format does happens at build time, so what you get out is still a
@@ -201,7 +201,7 @@ Two rules then keep it honest:
 | ID | What it reports |
 | --- | --- |
 | `WM2019` | An enum member generates a code the file does not list |
-| `WM2020` | The file lists a code no provider generates |
+| `WM2020` | The file lists a code no catalog generates |
 
 `WM2019` has a code fix, **Update ErrorCodes.txt**, which rewrites the whole file from
 the compilation: it adds every missing code and removes every stale entry in one pass,
@@ -250,7 +250,7 @@ the format — and every consumer reading the code sees a different string, with
 in the compiler to tell you.
 
 ```csharp
-[ErrorCodeProvider]
+[ErrorCodeCatalog]
 public enum OrderErrorCode   // rename this -> every code changes
 {
     NotFound,                // rename this -> "OrderErrorCode.NotFound" changes
@@ -269,9 +269,9 @@ otherwise produce code that does not compile, or a code you did not mean to publ
 
 | ID | What it reports |
 | --- | --- |
-| `WMG0001` | `[ErrorCodeProvider]` on a `[Flags]` enum |
+| `WMG0001` | `[ErrorCodeCatalog]` on a `[Flags]` enum |
 | `WMG0002` | Two members of the enum sharing a value |
-| `WMG0003` | A member named `ErrorCodeStrings`, `ErrorCodes` or `Errors` |
+| `WMG0003` | A member named `Names`, `Codes` or `Errors` |
 | `WMG0004` | `ErrorCode` or `Error` not resolvable in the compilation |
 | `WMG0005` | A `Format` the generator cannot parse |
 | `WMG0006` | A `Format` that leaves out `{member}` |
@@ -292,7 +292,7 @@ own. Give them different values, or delete the alias.
 ### WMG0003
 
 **A member named after a generated class would produce invalid C#.** The generator
-emits nested classes called `ErrorCodeStrings`, `ErrorCodes` and `Errors`. A member
+emits nested classes called `Names`, `Codes` and `Errors`. A member
 with one of those names would produce a member sharing its enclosing type's name,
 which is `CS0542`. Rename the member.
 

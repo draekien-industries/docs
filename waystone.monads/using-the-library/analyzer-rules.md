@@ -24,7 +24,7 @@ break a build that passes today. The `WM3xxx` rules stay off until you enable th
 
 Four more diagnostics use a `WMG` prefix. Those come from the source generator rather
 than the analyzer, they are all errors, and they only fire on an enum you marked with
-`[ErrorCodeProvider]`. They are on
+`[ErrorCodeCatalog]`. They are on
 [generated-error-codes.md](generated-error-codes.md "mention") instead of this page.
 
 {% hint style="warning" %}
@@ -227,9 +227,9 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 | [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
 | [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | — |
-| [`WM2018`](#wm2018) | Two `[ErrorCodeProvider]` enums that generate the same error code | — |
+| [`WM2018`](#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | — |
 | [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
-| [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no provider generates | — |
+| [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | — |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -511,7 +511,7 @@ parameter, which shadows the enclosing local. That is fine from C# 8 but is
 
 ### WM2018
 
-**Two enums generate the same error code.** An `[ErrorCodeProvider]` enum builds each
+**Two enums generate the same error code.** An `[ErrorCodeCatalog]` enum builds each
 code from a format, and by default that format is the enum's name and the member's name,
 so two enums sharing a name in different namespaces generate the same code for every
 member name they share.
@@ -519,12 +519,12 @@ member name they share.
 ```csharp
 namespace Ordering;
 
-[ErrorCodeProvider]
+[ErrorCodeCatalog]
 public enum OrderErrorCode { NotFound }   // "OrderErrorCode.NotFound"
 
 namespace Shipping;
 
-[ErrorCodeProvider]
+[ErrorCodeCatalog]
 public enum OrderErrorCode { NotFound }   // "OrderErrorCode.NotFound" -- the same code
 ```
 
@@ -553,7 +553,7 @@ attribute generates.
 not on the list is a wire contract nobody read a diff for.
 
 ```csharp
-[ErrorCodeProvider(Format = "order.{member:kebab}")]
+[ErrorCodeCatalog(Format = "order.{member:kebab}")]
 public enum OrderErrorCode
 {
     NotFound,        // "order.not-found" -- listed
