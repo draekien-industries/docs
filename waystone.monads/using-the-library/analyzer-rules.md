@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 26 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The 28 diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -228,6 +228,8 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
 | [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | — |
 | [`WM2018`](#wm2018) | Two `[ErrorCodeProvider]` enums that generate the same error code | — |
+| [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
+| [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no provider generates | — |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -543,6 +545,56 @@ should keep the code is not something the analyzer can work out.
 
 See [generated-error-codes.md](generated-error-codes.md "mention") for what the
 attribute generates.
+
+### WM2019
+
+**A generated error code is missing from the registry.** A project that commits an
+`ErrorCodes.txt` has opted into reviewing its error codes as a list, so a code that is
+not on the list is a wire contract nobody read a diff for.
+
+```csharp
+[ErrorCodeProvider(Format = "order.{member:kebab}")]
+public enum OrderErrorCode
+{
+    NotFound,        // "order.not-found" -- listed
+    AlreadyShipped,  // "order.already-shipped" -- not listed, reported here
+}
+```
+
+Reported on the member, because that is the thing you can act on.
+
+**Quick fix: Update `ErrorCodes.txt`.** It rewrites the whole file from the compilation
+— every missing code added, every stale entry removed, sorted, your leading comment
+block kept. One invocation is enough however many diagnostics there are.
+
+A project with no `ErrorCodes.txt` never sees this rule. See
+[#reviewing-your-codes-as-a-list](generated-error-codes.md#reviewing-your-codes-as-a-list "mention").
+
+### WM2020
+
+**The registry lists a code nothing generates.** The other direction: an entry left
+behind by a rename or a deletion, claiming a code the project no longer produces.
+
+```
+order.already-shipped
+order.cancelled          <- nothing generates this any more
+order.not-found
+```
+
+Reported against `ErrorCodes.txt` itself, at the line, because nothing in your source
+corresponds to it.
+
+**No quick fix.** Roslyn does not offer fixes for a diagnostic reported at the end of a
+compilation, which this has to be — whether an entry is stale cannot be known until every
+enum in the project has been seen. In practice the `WM2019` fix removes stale entries
+too, so the two travel together; delete the named line by hand if it is your only
+divergence.
+
+{% hint style="warning" %}
+This rule's severity cannot be set from a path-matched `.editorconfig` section, not even
+`[*]`. It needs a global analyzer config — see
+[#making-a-divergence-fail-the-build](generated-error-codes.md#making-a-divergence-fail-the-build "mention").
+{% endhint %}
 
 ## Migration aids
 
