@@ -43,15 +43,15 @@ public enum RegexErrors // etc.
 var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing"
 ```
 
-{% hint style="info" %}
-If you want to customise the error code that is generated from your enum, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromEnum` method. From 6.2.0 there is a better way to do this — see the next hint. Overriding `FromEnum` is expected to be obsoleted in the next major version.
-{% endhint %}
-
-{% hint style="success" %}
-From 6.2.0 you can mark the enum with `[ErrorCodeProvider]` and get these codes as
-`const string` values at build time, instead of working them out at run time. The
-attribute also takes a `Format`, which is how you shape the codes without a factory.
-See [generated-error-codes.md](generated-error-codes.md "mention").
+{% hint style="danger" %}
+**`ErrorCode.FromEnum` is obsolete from 6.2.0 and is removed in 7.0.0.** So is
+overriding `ErrorCodeFactory.FromEnum` to shape what it returns. Mark the enum with
+`[ErrorCodeProvider]` instead and use the members that generates —
+`OrderErrorProvider.ErrorCodes.NotFound` where you can name the member, or the
+generated `ToErrorCode()` extension where you cannot. See
+[deprecations.md](deprecations.md "mention") for the migration and
+[generated-error-codes.md](generated-error-codes.md "mention") for the `Format` that
+replaces a factory override. `FromException` is unaffected.
 {% endhint %}
 
 #### Error Code from Exception

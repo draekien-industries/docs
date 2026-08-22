@@ -17,6 +17,12 @@ Mark the enum with `[ErrorCodeProvider]` and `Waystone.Monads` generates those s
 as constants when you build. This ships inside the package from 6.2.0. You add no
 reference and configure nothing.
 
+{% hint style="warning" %}
+`ErrorCode.FromEnum` is obsolete from 6.2.0 and removed in 7.0.0, so this page
+describes the only supported way to get an error code from an enum. See
+[deprecations.md](deprecations.md "mention") for the migration.
+{% endhint %}
+
 ## Marking an enum
 
 ```csharp
@@ -161,7 +167,9 @@ answer rather than two.
 {% endhint %}
 
 Shaping enum codes is the part of `ErrorCodeFactory` the format replaces, and that part
-is expected to be obsoleted in the next major version. `FromException` is not affected.
+is obsolete from 6.2.0: `ErrorCodeFactory.FromEnum` and `ErrorCode.FromEnum` both
+report `CS0618` and are removed in 7.0.0. See
+[deprecations.md](deprecations.md "mention"). `FromException` is not affected.
 
 ## Reviewing your codes as a list
 
