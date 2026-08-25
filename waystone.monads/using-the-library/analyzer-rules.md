@@ -84,10 +84,11 @@ catches a null you wrote as `null!`:
 +Accept(Option.None<int>());
 ```
 
-Annotating the parameter or the return type `Option<int>?` stops this rule, because
-the annotation says you meant to allow null. It starts `WM1008` instead, which asks
-you to drop the annotation. An `Option` already has an empty case, so a nullable one
-gives you two ways to say the same thing.
+Annotating the target `Option<int>?` stops this rule, because the annotation says you
+meant to allow null. It starts `WM1008` instead, which asks you to drop the
+annotation. An `Option` already has an empty case, so a nullable one gives you two
+ways to say the same thing. This holds wherever you write the annotation — a
+parameter, a return type, or a tuple or array element.
 
 **Quick fix for `Option<T>`:** use `Option.None<T>()`. `Result<TOk, TErr>` gets no
 quick fix, because nothing in your code says whether you meant `Ok` or `Err`.
@@ -157,6 +158,17 @@ an empty option, and null. `None` is already the empty case you are reaching for
 
 The rule reads the annotation itself rather than the compiler's nullable state, so it
 fires whether or not you build with nullable reference types on.
+
+It also finds the annotation when the type is nested inside another one. A tuple
+element, an array element and a type argument all count, and the element can sit in
+any position of the tuple:
+
+```diff
+-(Option<int>? a, int b) Make() => (null, 1);
++(Option<int> a, int b) Make() => (Option.None<int>(), 1);
+```
+
+`Result` behaves the same way. There the rule points you to `Err` rather than `None`.
 
 **Quick fix:** drop the `?`.
 
