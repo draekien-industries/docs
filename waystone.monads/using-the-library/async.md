@@ -164,11 +164,17 @@ Every method below behaves exactly like the synchronous version documented in
 and [Result\<T, E>](result-of-t-and-e.md). The only difference is that it accepts
 an async delegate, a task receiver, or both.
 
+{% hint style="info" %}
+Some of these take state, so the delegate does not have to capture. Not all of
+them do yet — see
+[On the async surface](core-functionality.md#on-the-async-surface).
+{% endhint %}
+
 ### Option\<T>
 
 | Category | Methods |
 | --- | --- |
-| Transform | `MapAsync`, `MapOrAsync`, `MapOrElseAsync`, `AndThenAsync` |
+| Transform | `MapAsync`, `MapOrAsync`, `MapOrDefaultAsync`, `MapOrElseAsync`, `AndThenAsync` |
 | State checks | `IsSomeAndAsync`, `IsNoneOrAsync` |
 | Consume | `MatchAsync`, `UnwrapAsync`, `UnwrapOrAsync`, `UnwrapOrElseAsync`, `UnwrapOrDefaultAsync`, `ExpectAsync` |
 | Side effect | `InspectAsync` |
@@ -180,7 +186,7 @@ an async delegate, a task receiver, or both.
 
 | Category | Methods |
 | --- | --- |
-| Transform | `MapAsync`, `MapErrAsync`, `MapOrAsync`, `MapOrElseAsync` |
+| Transform | `MapAsync`, `MapErrAsync`, `MapOrAsync`, `MapOrDefaultAsync`, `MapOrElseAsync` |
 | State checks | `IsOkAndAsync`, `IsErrAndAsync` |
 | Consume | `MatchAsync`, `UnwrapAsync`, `UnwrapErrAsync`, `UnwrapOrAsync`, `UnwrapOrElseAsync`, `UnwrapOrDefaultAsync`, `ExpectAsync`, `ExpectErrAsync` |
 | Side effect | `InspectAsync`, `InspectErrAsync` |

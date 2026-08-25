@@ -427,11 +427,15 @@ hands it to the delegate, so the delegate captures nothing:
 This is purely additive. No existing signature changed and there is nothing to
 migrate.
 
-Covered methods:
+Covered methods, as at 6.0:
 
 - `Option`: `Map`, `MapOr`, `MapOrElse`, `Filter`, `AndThen`
 - `Result`: `Map`, `MapOr`, `MapOrElse`, `MapErr`, `AndThen`
 - `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync`
+
+Later 6.x releases added more. See
+[Where you can use it](../core-functionality.md#where-you-can-use-it) for the
+current set.
 
 The closure costs exactly 88 bytes at every call site — 24 for the display class,
 64 for the delegate — and the state overload removes all of it.

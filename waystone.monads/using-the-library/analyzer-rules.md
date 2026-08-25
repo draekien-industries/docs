@@ -487,14 +487,17 @@ delegate, so the delegate closes over nothing and the compiler caches it. The
 closure costs 88 bytes at every call — 24 for the display class, 64 for the
 delegate.
 
-The rule covers every method that has a state overload: `Map`, `MapOr`,
-`MapOrElse`, `Filter` and `AndThen` on `Option`, `Map`, `MapOr`, `MapOrElse`,
-`MapErr` and `AndThen` on `Result`, and `Option.Try`, `Option.TryAsync`,
-`Result.Try` and `Result.TryAsync`.
+The rule covers every method that has a state overload, which is nearly every
+delegate-taking method on both types. See
+[Where you can use it](core-functionality.md#where-you-can-use-it) for the list.
 
-It reads that list off the receiver's own type rather than matching names, so a
-delegate-taking method with no state overload — `Inspect`, `Match`, `OrElse` —
-never gets pointed at one that does not exist.
+`Match` is the most expensive of them to call with a closure. Its two branches
+share one display class but need a delegate each, so the call costs 152 bytes
+rather than 88.
+
+It reads the list off the receiver's own type rather than matching names, so a
+delegate-taking method with no state overload — `ZipWith` and `Reduce` — never
+gets pointed at one that does not exist.
 
 It stays quiet when:
 
