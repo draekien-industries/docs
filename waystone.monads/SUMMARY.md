@@ -4,6 +4,7 @@
 
 * [Welcome](README.md)
 * [Quickstart](getting-started/quickstart.md)
+* [Agent skills](getting-started/agent-skills.md)
 
 ## Core Concepts
 
