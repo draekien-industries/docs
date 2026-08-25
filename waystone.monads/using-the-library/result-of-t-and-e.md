@@ -336,6 +336,61 @@ if (failed.Count > 0)
 }
 ```
 
+### Collect
+
+Use `Collect` when the batch has to succeed as a whole. You get an `Ok` holding every value, or an `Err` carrying the first failure.
+
+```csharp
+List<Result<int, string>> results = [
+    Result.Ok<int, string>(1),
+    Result.Ok<int, string>(3)
+];
+
+Result<IReadOnlyList<int>, string> all = results.Collect();
+//                                 ^? Ok([1, 3])
+```
+
+One failure fails the whole call:
+
+```csharp
+List<Result<int, string>> withAFailure = [
+    Result.Ok<int, string>(1),
+    Result.Err<int, string>("bad"),
+    Result.Err<int, string>("worse")
+];
+
+Result<IReadOnlyList<int>, string> all = withAFailure.Collect();
+//                                 ^? Err("bad")
+```
+
+`Collect` stops at the first `Err`. It never looks at the rest of the source, so `"worse"` above is never seen and anything that would have produced the later elements does not run.
+
+Choose between `Collect` and `Partition` by what you owe the caller:
+
+| You need | Use |
+| --- | --- |
+| All the values, or one failure | `Collect` |
+| Every failure, to report them together | `Partition` |
+| The successes, ignoring failures | `Flatten` |
+
+{% hint style="info" %}
+`Collect` is eager, and it builds a list as it goes. Do not call it on an unbounded sequence.
+{% endhint %}
+
+An empty sequence gives you `Ok` of an empty list. There is nothing in it to fail.
+
+The values that came before the failure are discarded. If you need them, use `Partition`.
+
+### CollectAsync
+
+Use `CollectAsync` for the same job over an `IAsyncEnumerable<Result<TOk, TErr>>`.
+
+```csharp
+Result<IReadOnlyList<int>, string> all = await stream.CollectAsync(cancellationToken);
+```
+
+It stops pulling from the stream at the first `Err`, so the work behind the later elements never happens. That is the reason to use it instead of reading the whole stream into a list and calling `Collect`.
+
 ### AsEnumerable
 
 Use `AsEnumerable` on a single `Result` to treat it as a sequence of nothing or one, which is what lets the methods above compose out of LINQ.

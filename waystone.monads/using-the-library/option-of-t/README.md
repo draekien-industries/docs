@@ -280,6 +280,55 @@ IEnumerable<string> values = collection.Flatten();
 
 This is the sequence version. The `Flatten` that collapses a single nested `Option<Option<T>>` is a different method, covered under [#flatten](../core-functionality.md#flatten "mention"). No receiver is both, so the two never compete.
 
+### Collect
+
+Use `Collect` when every value has to be present. You get a `Some` holding all of them, or a single `None` if any element is missing.
+
+```csharp
+List<Option<string>> collection = [
+    Option.Some("Hello"),
+    Option.Some("World")
+];
+
+Option<IReadOnlyList<string>> all = collection.Collect();
+//                            ^? Some(["Hello", "World"])
+```
+
+One `None` anywhere fails the whole call:
+
+```csharp
+List<Option<string>> withAGap = [
+    Option.Some("Hello"),
+    Option.None<string>(),
+    Option.Some("World")
+];
+
+Option<IReadOnlyList<string>> all = withAGap.Collect();
+//                            ^? None
+```
+
+This is the opposite of `Flatten`. `Flatten` drops what is missing and carries on; `Collect` treats one missing value as a failure of the whole batch.
+
+`Collect` stops at the first `None`. It never looks at the rest of the source, so anything that would have produced the later elements does not run.
+
+{% hint style="info" %}
+`Collect` is eager, and it builds a list as it goes. Do not call it on an unbounded sequence.
+{% endhint %}
+
+An empty sequence gives you `Some` of an empty list, not `None`. There is nothing missing in it.
+
+The result tells you only that something was absent. It does not tell you which element. Use `Partition` on a sequence of `Result` when you need to know what failed.
+
+### CollectAsync
+
+Use `CollectAsync` for the same job over an `IAsyncEnumerable<Option<T>>`.
+
+```csharp
+Option<IReadOnlyList<string>> all = await stream.CollectAsync(cancellationToken);
+```
+
+It stops pulling from the stream at the first `None`, so the work behind the later elements never happens. That is the reason to use it instead of reading the whole stream into a list and calling `Collect`.
+
 ### AsEnumerable
 
 Use `AsEnumerable` on a single `Option` to treat it as a sequence of nothing or one. `Flatten` above is built out of it, and it is what lets an `Option` join a LINQ query.

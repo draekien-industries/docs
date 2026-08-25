@@ -21,6 +21,7 @@
 * [Errors and Exceptions](using-the-library/errors-and-exceptions.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)
+* [Coming from Rust](using-the-library/coming-from-rust.md)
 * [Upgrading](using-the-library/upgrading/README.md)
   * [v1.x to v2.x](using-the-library/upgrading/v1-to-v2.md)
   * [v2.x to v3.x](using-the-library/upgrading/v2-to-v3.md)
