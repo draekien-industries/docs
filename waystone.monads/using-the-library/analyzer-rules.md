@@ -237,6 +237,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2018`](#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | — |
 | [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
 | [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | — |
+| [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | — |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -605,6 +606,51 @@ This rule's severity cannot be set from a path-matched `.editorconfig` section, 
 `[*]`. It needs a global analyzer config — see
 [#making-a-divergence-fail-the-build](generated-error-codes.md#making-a-divergence-fail-the-build "mention").
 {% endhint %}
+
+### WM2021
+
+**A property pattern is a state check the other rules cannot see.**
+`option is { IsSome: true }` asks exactly what `option.IsSome` asks. It reads as
+though pattern matching is doing something for you here, and it is not — the
+monad exposes no value to destructure, so the pattern only reaches the same
+boolean by a longer route.
+
+```diff
+-if (option is { IsSome: true }) { return option.Unwrap(); }
++return option.UnwrapOr(0);
+```
+
+The rule fires wherever a property subpattern reads `IsSome`, `IsNone`, `IsOk`
+or `IsErr` on an `Option` or a `Result`: an `is` expression, a negated one, a
+`switch` arm, a `when` clause, and a subpattern nested inside another type's
+pattern.
+
+```diff
+-return option switch { { IsSome: true } => 1, _ => 0 };
++return option.MapOr(0, _ => 1);
+```
+
+The value you test for makes no difference. `{ IsSome: false }` asks the same
+question as `{ IsSome: true }` and hides it the same way.
+
+{% hint style="info" %}
+**Why this is its own rule.** `WM2004` and `WM2006` both match a property *read*.
+A subpattern is not one, so writing the check as a pattern used to silence them
+without changing what the code does. That is what this rule reports — not the
+pattern's style, but the fact that it opts your call site out of the rules that
+would otherwise read it.
+{% endhint %}
+
+Fixing this rule leaves you with `option.IsSome`, which `WM2004` may then report
+if an unwrap follows it. That chain is deliberate. Each rule states one true
+thing, and the second only becomes visible once the first is resolved — the same
+way `WM2007` and `WM2015` pair up.
+
+**No quick fix.** The rewrite depends on where the pattern sits. An `is`
+expression becomes a property read, a negated one becomes a negated read, and a
+`switch` arm needs restructuring into a `Match`. A fix that handled only the
+first would leave the two shapes most worth correcting untouched, while implying
+the rule had been dealt with.
 
 ## Migration aids
 
