@@ -8,11 +8,24 @@ If you need different settings for one part of your code, use a [scope](#scoped-
 
 There are several places in this library where exceptions are silently handled and transformed into non-throwing types. You can configure a custom logging action to inspect these exceptions as they are handled by the library.
 
+Your action receives the exception and a `CallerInfo` describing the call site that
+caught it — the member name, the source text of the delegate you passed, and the line
+number.
+
 ```csharp
-MonadOptions.Configure(options => options.UseExceptionLogger((ex) => {
-    Console.WriteLine(ex); // replace with your logger's log method
+MonadOptions.Configure(options => options.UseExceptionLogger((ex, caller) => {
+    // replace with your logger's log method
+    Console.WriteLine($"{ex} at {caller.MemberName}:{caller.LineNumber}");
 }));
 ```
+
+{% hint style="info" %}
+**The library also writes to the console whenever a debugger is attached**, whether or
+not you configure a logger. It prints the exception, the call site and the argument
+expression, then calls your logger as well. This is a debugging aid, so it costs
+nothing in a normal run — but do not read a console message as proof that your logger
+ran.
+{% endhint %}
 
 ## Cancellation
 
@@ -74,11 +87,22 @@ for `FromException`, which is unaffected.
 There may be exception circumstances which cause the `string` used to create the `ErrorCode` or the message of the `Error` classes to be null or white-space. In these situations, a set of fallbacks are used. These fallbacks can be configured.
 
 ```csharp
-MonadOptions.Configure(options => {
-    options.FallbackErrorCode = "unknown"; // default is `Unspecified`
-    options.FallbackErrorMessage = "Something went wrong!" // default is `An unspecified error has occurred.`
-});
+MonadOptions.Configure(options => options
+    .UseFallbackErrorCode("unknown")            // default: Unspecified
+    .UseFallbackErrorMessage("Something went wrong!")); // default: An unexpected error occurred.
 ```
+
+**The substitution is silent.** `new ErrorCode(code)` and `new Error(code, message)`
+trim what you pass, and swap in the fallback when the result is empty. Neither throws,
+and nothing is logged. So an `Error` whose message reads `An unexpected error
+occurred.` is telling you a call site passed a blank message, not that the library hit
+an unexpected error. Pass a real message at every call site — a fallback says nothing
+about what actually failed.
+
+Both configuration methods reject a blank argument themselves. `UseFallbackErrorCode`
+and `UseFallbackErrorMessage` throw an `ArgumentException` when you pass null, empty or
+whitespace, because a fallback that is itself unusable would leave nothing to fall back
+to.
 
 ## Scoped Configuration
 
@@ -121,6 +145,14 @@ using (MonadOptions.BeginScope(options => options
 {% hint style="info" %}
 A scope affects work you start inside it. It does not affect work that was already
 running when you opened the scope.
+{% endhint %}
+
+{% hint style="warning" %}
+**Dispose scopes in the reverse of the order you opened them.** A `using` block does
+this for you. If you hold scopes in variables and dispose an outer one while an inner
+one is still open, the outer scope restores what came before *it* and the inner scope
+is discarded — silently, with no exception. Disposing the same scope twice is harmless:
+each call restores the same saved options.
 {% endhint %}
 
 {% hint style="info" %}

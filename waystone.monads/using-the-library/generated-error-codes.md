@@ -79,6 +79,11 @@ Error asError = errorCode.ToError("no order with that id");
 The nesting is what keeps your member names usable as-is. A member called
 `NotFoundCode` becomes `Names.NotFoundCode`, and nothing collides.
 
+`Errors.NotFound(message)` and `ToError(message)` build the `Error` for you, so they
+inherit how `Error` treats a message: it is trimmed, and a blank one is replaced by
+your [configured fallback](configuration.md#error-code-and-message-fallbacks) rather
+than rejected. Neither throws on a blank message, so pass a real one.
+
 ## A value that is not a declared member
 
 Casting an arbitrary integer to an enum is legal C#, so `(OrderErrorCode)99` is a value
