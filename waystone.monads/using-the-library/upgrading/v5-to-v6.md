@@ -297,6 +297,11 @@ returned `ValueTask`; now the rule is uniform.
 You get `CS0029` or `CS1503` at every affected call site. Nothing changes
 silently.
 
+`Option.TryAsync` and `Result.TryAsync` are the exception. They are static
+factories rather than extensions, so they returned `Task` in v5 and still return
+`Task` now. Leave those call sites alone — adding `.AsTask()` there will not
+compile.
+
 ### The repair
 
 Add `.AsTask()` where you need a `Task`:

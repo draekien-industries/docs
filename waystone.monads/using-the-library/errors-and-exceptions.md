@@ -5,9 +5,26 @@
 Waystone.Monads provides a set of built in error types for convenience in the case you do not wish to write your own.
 
 ```csharp
-record ErrorCode(string Value);
-record Error(ErrorCode ErrorCode, string Message);
+public record ErrorCode
+{
+    public ErrorCode(string value);
+
+    public string Value { get; }
+}
+
+public record Error
+{
+    public Error(ErrorCode code, string message);
+
+    public ErrorCode Code { get; }
+    public string Message { get; }
+}
 ```
+
+Two things to note. `Error` names its code property `Code`, not `ErrorCode` — read
+it as `error.Code.Value`. And both types declare their constructor explicitly
+rather than positionally, so you cannot deconstruct them and you cannot use `with`
+to change a property. Build a new instance instead.
 
 ### ErrorCode
 
@@ -58,6 +75,20 @@ replaces a factory override. `FromException` is unaffected.
 
 You may want to use the exception type itself as the source of your error codes when they are caught during runtime. A factory method has been provided to facilitate this approach.
 
+The code is the exception's type name with a trailing `Exception` removed. There is
+no prefix. The suffix match ignores case, and the exception's message is never
+read, so nothing from its text reaches the code.
+
+| Exception type | Resulting code |
+| --- | --- |
+| `SqlException` | `Sql` |
+| `InvalidOperationException` | `InvalidOperation` |
+| `TimeoutException` | `Timeout` |
+| `Exception` | `Exception` |
+
+`Exception` itself is the one special case: it keeps its whole name rather than
+reducing to an empty code.
+
 {% hint style="warning" %}
 This approach may introduce inconsistencies in your error codes. It also does not work well if you are raising errors that are not caused by exceptions elsewhere in your application.
 {% endhint %}
@@ -69,7 +100,7 @@ try
 }
 catch (SqlException e)
 {
-    var errorCode = ErrorCode.FromException(e); // "Err.Sql"
+    var errorCode = ErrorCode.FromException(e); // "Sql"
 }
 ```
 
@@ -105,7 +136,7 @@ public enum InputErrors
 }
 
 Error error = Error.FromEnum(InputErrors.Malformed, "Failed to parse input as a number");
-//    ^? ErrorCode: "InputErrors.Malformed", Message: "Failed to parse input as a number"
+//    ^? Code: "InputErrors.Malformed", Message: "Failed to parse input as a number"
 ```
 
 {% hint style="info" %}
@@ -132,7 +163,7 @@ try
 catch (SqlException e)
 {
     var error = Error.FromException(e);
-    //  ^? ErrorCode: "Err.Sql", Message: e.Message
+    //  ^? Code: "Sql", Message: e.Message
 }
 ```
 

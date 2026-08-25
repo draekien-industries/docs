@@ -46,6 +46,11 @@ From 6.0.0 the rule is uniform: **every** async extension on `Option` and
 `Result` returns `ValueTask` or `ValueTask<T>`. In 5.x some returned `Task` and
 some returned `ValueTask`, and you had to check.
 
+The rule covers extension methods. `Option.TryAsync` and `Result.TryAsync` are
+static factories rather than extensions, so they still return `Task<Option<T>>`
+and `Task<Result<TOk, TErr>>`. Never call `.AsTask()` on a `TryAsync` — it already
+hands you a `Task`.
+
 ```csharp
 ValueTask<string> output = result.MatchAsync(async x => await DoWorkAsync(x), e => e.ToString());
 ```

@@ -25,6 +25,42 @@ Install via the dotnet CLI:
 dotnet add package Waystone.Monads
 ```
 
+## Adding the usings
+
+**`using Waystone.Monads;` on its own gets you nothing.** The root namespace holds
+no types, so that line compiles and then every type name fails with `CS0234`. Pick
+the namespaces you need instead:
+
+| Namespace | What it holds |
+| --- | --- |
+| `Waystone.Monads.Options` | `Option<T>` and the static `Option` factories |
+| `Waystone.Monads.Options.Extensions` | The `Async` extensions for `Option<T>` |
+| `Waystone.Monads.Results` | `Result<TOk, TErr>` and the static `Result` factories |
+| `Waystone.Monads.Results.Extensions` | The `Async` extensions for `Result<TOk, TErr>` |
+| `Waystone.Monads.Results.Errors` | `Error`, `ErrorCode` and `[ErrorCodeCatalog]` |
+| `Waystone.Monads.Exceptions` | `UnwrapException` and `UnmetExpectationException` |
+| `Waystone.Monads.Configs` | `MonadOptions` and `ErrorCodeFactory` |
+
+On C# 10 or later, put the ones you use everywhere in a single `GlobalUsings.cs`
+and stop repeating them per file:
+
+```csharp
+global using Waystone.Monads.Options;
+global using Waystone.Monads.Options.Extensions;
+global using Waystone.Monads.Results;
+global using Waystone.Monads.Results.Extensions;
+global using Waystone.Monads.Results.Errors;
+```
+
+{% hint style="warning" %}
+**Generated catalog members need a using for your own namespace.** When you mark an
+enum with `[ErrorCodeCatalog]`, the generated `{EnumName}Catalog` class and the
+`ToError`, `ToErrorCode` and `ToErrorCodeName` extensions are emitted into the enum's
+own namespace, not into a Waystone one. Fully qualifying the enum at the call site
+is not enough — the extensions still need `using` for the namespace the enum lives
+in. See [generated-error-codes.md](../using-the-library/generated-error-codes.md "mention").
+{% endhint %}
+
 ## Using Option\<T>
 
 The `Option<T>` type represents a value that may or may not be present. It eliminates the ambiguity and risks of `null` , and provides a way to mark a value as intentionally absent.

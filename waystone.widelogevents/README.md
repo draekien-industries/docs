@@ -37,3 +37,10 @@ You can push properties to the current scope at any time
 WideLogEventContext.PushProperty("CustomerId", 12345);
 WideLogEventContext.PushProperty("OrderDetails", new { Total = 100.00, ItemCount = 3 });
 ```
+
+## Links
+
+* [Source on GitHub](https://github.com/draekien-industries/waystone-dotnet) — these packages live under `src/Serilog.Enrichers.Waystone.WideLogEvents`
+* [Serilog.Enrichers.Waystone.WideLogEvents on NuGet](https://www.nuget.org/packages/Serilog.Enrichers.Waystone.WideLogEvents)
+* [Serilog.Enrichers.Waystone.WideLogEvents.AspNetCore on NuGet](https://www.nuget.org/packages/Serilog.Enrichers.Waystone.WideLogEvents.AspNetCore)
+* [Report an issue](https://github.com/draekien-industries/waystone-dotnet/issues) — for the libraries or for these docs

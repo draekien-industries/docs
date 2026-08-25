@@ -1,6 +1,6 @@
 ---
 description: >-
-  The 28 diagnostics that ship inside Waystone.Monads, what each one means, and
+  The diagnostics that ship inside Waystone.Monads, what each one means, and
   how to turn them up or off.
 ---
 
@@ -22,10 +22,17 @@ Every rule has an ID like `WM1002`. The first digit tells you how much it matter
 Warnings show up in your build. Suggestions show up in your IDE only, so they never
 break a build that passes today. The `WM3xxx` rules stay off until you enable them.
 
-Four more diagnostics use a `WMG` prefix. Those come from the source generator rather
-than the analyzer, they are all errors, and they only fire on an enum you marked with
-`[ErrorCodeCatalog]`. They are on
+A separate set of diagnostics uses a `WMG` prefix. Those come from the source
+generator rather than the analyzer, they are all errors, and they only fire on an
+enum you marked with `[ErrorCodeCatalog]`. They are on
 [generated-error-codes.md](generated-error-codes.md "mention") instead of this page.
+
+{% hint style="info" %}
+This page lists the `WM` rules as at the version it was written for. For the set
+that ships in the version you installed, read
+[`Rules.cs`](https://github.com/draekien-industries/waystone-dotnet/blob/main/src/Waystone.Monads.Analyzers/Rules.cs)
+in the repository — every descriptor is declared there in one file.
+{% endhint %}
 
 {% hint style="warning" %}
 Do you build with `TreatWarningsAsErrors`? Then a `WM1xxx` rule that fires breaks
