@@ -20,6 +20,32 @@ for a null instead of throwing. That is the point of it.
 The null guard is new in 5.5.0. Before it, an `Ok` could hold null and the null
 surfaced later, as a `NullReferenceException` somewhere in your own code.
 
+## Printing and logging
+
+**`ToString()` never shows the wrapped value.** You get the state and nothing else:
+
+```csharp
+Result.Ok<int, Error>(1).ToString()  // "Ok { IsOk = True, IsErr = False }"
+Result.Err<int, Error>(e).ToString() // "Err { IsOk = False, IsErr = True }"
+```
+
+`Result<TOk, TErr>` is a record, and `Ok` and `Err` both keep their value in a
+private property, so the compiler-generated `ToString()` has nothing to print.
+Interpolating a result into a log message tells you which branch you are on, never
+what it holds.
+
+Log each branch with the inspect pair. Both run only on their own branch, and both
+return the result unchanged so you can keep chaining:
+
+```csharp
+Result<Order, Error> order = LoadOrder(id)
+    .Inspect(o => logger.LogInformation("Loaded order {Id}", o.Id))
+    .InspectErr(e => logger.LogWarning("Load failed: {Code} {Message}", e.Code, e.Message));
+```
+
+Use [#inspect](core-functionality.md#inspect "mention") for the `Ok` branch and
+[#inspecterr](result-of-t-and-e.md#inspecterr "mention") for the `Err` branch.
+
 ## Control Flow
 
 ### IsOkAnd

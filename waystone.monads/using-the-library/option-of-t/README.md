@@ -1,5 +1,31 @@
 # Option\<T>
 
+## Printing and logging
+
+**`ToString()` never shows the wrapped value.** You get the state and nothing else:
+
+```csharp
+Option.Some("Liam").ToString()   // "Some { IsSome = True, IsNone = False }"
+Option.None<string>().ToString() // "None { IsSome = False, IsNone = True }"
+```
+
+`Option<T>` is a record, and `Some<T>` keeps its value in a private property, so
+the compiler-generated `ToString()` has nothing to print. Interpolating an option
+into a log message therefore tells you whether a value was there, never what it
+was.
+
+To log the value when it exists, use
+[#inspect](../core-functionality.md#inspect "mention"). It runs your action only on
+a `Some`, and returns the option unchanged so you can keep chaining:
+
+```csharp
+Option<User> user = FindUser(id)
+    .Inspect(u => logger.LogInformation("Found user {Name}", u.Name));
+```
+
+Nothing runs on a `None`. If you need to log both branches, use
+[#match](../core-functionality.md#match "mention") instead.
+
 ## Control Flow
 
 ### IsSomeAnd
