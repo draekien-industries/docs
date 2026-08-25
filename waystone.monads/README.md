@@ -48,3 +48,9 @@ You should use this library if:
 {% hint style="success" %}
 If you've ever used `Option` and `Result` in Rust or F#, you'll feel right at home. If you haven't, you'll pick it up quickly - and wonder how you ever lived without it.
 {% endhint %}
+
+## Links
+
+* [Source on GitHub](https://github.com/draekien-industries/waystone-dotnet) — the `Waystone.Monads` package lives in `src/Waystone.Monads`
+* [Waystone.Monads on NuGet](https://www.nuget.org/packages/Waystone.Monads)
+* [Report an issue](https://github.com/draekien-industries/waystone-dotnet/issues) — for the library or for these docs

@@ -26,3 +26,9 @@ You should use this library if:
 ## Get Started
 
 Explore the documentation to learn about the inner workings of this library.
+
+## Links
+
+* [Source on GitHub](https://github.com/draekien-industries/waystone-dotnet) — the `Waystone.Monads.FluentValidation` package lives in `src/Waystone.Monads.FluentValidation`
+* [Waystone.Monads.FluentValidation on NuGet](https://www.nuget.org/packages/Waystone.Monads.FluentValidation)
+* [Report an issue](https://github.com/draekien-industries/waystone-dotnet/issues) — for the library or for these docs
