@@ -461,8 +461,24 @@ The lazy siblings — `AndThen`, `OrElse`, `UnwrapOrElse`, `MapOrElse` and
 
 The rule reports what it cannot prove is **free**, not what it can prove is
 expensive, because only the first is decidable. It stays silent on a constant, a
-bare local, parameter, field or property read, and `default`. It fires on a call,
-a `new` and an `await`.
+bare local, parameter, field or property read, and `default`. It also stays
+silent on an expression built entirely out of those, so it leaves
+`fallback + 1`, `defaults[0]` and `flag ? a : b` alone.
+
+It fires on a call, a `new` and an `await`. It also fires on a user-defined
+operator or implicit conversion. Both are ordinary method calls, however short
+they look — `option.UnwrapOr(count)` reports when `count` is an `int` and the
+option holds a type you can implicitly convert an `int` to.
+
+The message tells you which of two reasons applies:
+
+| The message says | What to do |
+| --- | --- |
+| `and computing it may be expensive` | Weigh it. The rule cannot tell a cheap call from a costly one |
+| `and evaluating it changes state` | Act on it. An increment or an assignment runs on every call, needed or not |
+
+Moving a state-changing argument to the `Else` sibling changes what your code
+does, not just what it costs.
 
 {% hint style="info" %}
 **A known false positive.** The rule cannot tell a cheap call from an expensive
