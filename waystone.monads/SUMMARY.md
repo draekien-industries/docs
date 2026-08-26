@@ -15,6 +15,7 @@
 ## Using the Library
 
 * [Configuration](using-the-library/configuration.md)
+* [Observability](using-the-library/observability.md)
 * [Core Functionality](using-the-library/core-functionality.md)
 * [Async](using-the-library/async.md)
 * [Option\<T>](using-the-library/option-of-t/README.md)

@@ -53,4 +53,5 @@ If you've ever used `Option` and `Result` in Rust or F#, you'll feel right at ho
 
 * [Source on GitHub](https://github.com/draekien-industries/waystone-dotnet) — the `Waystone.Monads` package lives in `src/Waystone.Monads`
 * [Waystone.Monads on NuGet](https://www.nuget.org/packages/Waystone.Monads)
+* [Waystone.Monads.Extensions.Logging on NuGet](https://www.nuget.org/packages/Waystone.Monads.Extensions.Logging) — sends the exceptions the library catches to your `ILogger`
 * [Report an issue](https://github.com/draekien-industries/waystone-dotnet/issues) — for the library or for these docs
