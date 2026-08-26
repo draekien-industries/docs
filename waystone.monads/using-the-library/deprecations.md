@@ -22,6 +22,71 @@ Packages in the Waystone family share one version number, so a v6.0.0 of
 
 ## Pending removal in 7.0.0
 
+### Seeing handled exceptions through a hand-written delegate
+
+**Deprecated in:** 6.7.0 · **Removed in:** 7.0.0 · **Replacement:**
+`Waystone.Monads.Extensions.Logging`
+
+| Deprecated | Replacement |
+| --- | --- |
+| `MonadOptions.UseExceptionLogger(Action<Exception, CallerInfo>)` | `MonadOptions.UseLoggerFactoryFrom(IServiceProvider)`, `UseLoggerFactory(ILoggerFactory)` or `UseLogger(ILogger)` |
+
+#### How to migrate
+
+Install the package and hand the library your logger. Delete the old call in the
+same change.
+
+```
+dotnet add package Waystone.Monads.Extensions.Logging
+```
+
+```diff
+-MonadOptions.Configure(options => options.UseExceptionLogger((ex, caller) =>
+-{
+-    Log.Error(ex, "Monad caught {Member}:{Line}", caller.MemberName, caller.LineNumber);
+-}));
++MonadOptions.Configure(options => options.UseLoggerFactoryFrom(app.Services));
+```
+
+Without a service provider, build a factory and pass it directly:
+
+```diff
+-MonadOptions.Configure(options => options.UseExceptionLogger(MyLogger.Handle));
++MonadOptions.Configure(options => options.UseLoggerFactory(loggerFactory));
+```
+
+You lose nothing in the move. Every entry still carries the exception and the same
+call-site details — `MemberName`, `ArgumentExpression` and `LineNumber` — and you
+gain level and category filtering from `appsettings.json`, which an opaque
+delegate could never give you. See
+[observability.md](observability.md "mention").
+
+{% hint style="danger" %}
+**Delete the old call when you add the package.** Both fire for the whole of 6.x,
+so leaving `UseExceptionLogger` in place logs every handled exception twice.
+{% endhint %}
+
+{% hint style="info" %}
+**You may not need to log at all.** If you only wanted counts, the library
+publishes a `Waystone.Monads` meter and needs no package and no configuration —
+see [observability.md](observability.md "mention").
+{% endhint %}
+
+#### Why this changed
+
+`UseExceptionLogger` holds exactly one delegate. Configure a second observer and
+it replaces the first, silently — so the library could never support more than one
+integration watching these exceptions at a time.
+
+The library now writes each handled exception to a `DiagnosticListener`, which any
+number of subscribers can share, and publishes a counter on a meter named after
+itself. The package is one subscriber. Your own tooling can be another, and
+neither has to know the other exists.
+
+You also had to write the delegate yourself, for whichever logging library you
+use. Handing us an `ILogger` is less code and behaves the way every other .NET
+library does.
+
 ### Working an error code out from an enum at run time
 
 **Deprecated in:** 6.2.0 · **Removed in:** 7.0.0 · **Replacement:** the members

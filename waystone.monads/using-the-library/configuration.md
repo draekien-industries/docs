@@ -6,25 +6,38 @@ If you need different settings for one part of your code, use a [scope](#scoped-
 
 ## Logging
 
-There are several places in this library where exceptions are silently handled and transformed into non-throwing types. You can configure a custom logging action to inspect these exceptions as they are handled by the library.
-
-Your action receives the exception and a `CallerInfo` describing the call site that
-caught it — the member name, the source text of the delegate you passed, and the line
-number.
+This library catches exceptions in several places and turns them into
+non-throwing types. To see those exceptions, install
+`Waystone.Monads.Extensions.Logging` and hand the library your logger once:
 
 ```csharp
-MonadOptions.Configure(options => options.UseExceptionLogger((ex, caller) => {
-    // replace with your logger's log method
-    Console.WriteLine($"{ex} at {caller.MemberName}:{caller.LineNumber}");
-}));
+MonadOptions.Configure(options => options.UseLoggerFactoryFrom(app.Services));
 ```
+
+Use `UseLoggerFactory(factory)` if you have no service provider, or
+`UseLogger(logger)` if you already hold a logger.
+
+Each entry carries the exception plus the call site that caught it — the member
+name, the source text of the delegate you passed, and the line number.
+
+To count these exceptions instead, install nothing at all. Read
+[observability.md](observability.md "mention") for both signals, the levels, and the
+names your dashboards will bind to.
+
+{% hint style="warning" %}
+**`UseExceptionLogger` is obsolete from 6.7.0 and goes in 7.0.0.** It takes a
+delegate you write yourself, and it holds only one — so a second integration
+silently replaces the first. Both it and the new package fire while it exists, so
+delete the old call when you add the package or you will log everything twice. See
+[Deprecations](deprecations.md#seeing-handled-exceptions-through-a-hand-written-delegate).
+{% endhint %}
 
 {% hint style="info" %}
 **The library also writes to the console whenever a debugger is attached**, whether or
 not you configure a logger. It prints the exception, the call site and the argument
-expression, then calls your logger as well. This is a debugging aid, so it costs
-nothing in a normal run — but do not read a console message as proof that your logger
-ran.
+expression, then reports it through the signals above as well. This is a debugging aid,
+so it costs nothing in a normal run — but do not read a console message as proof that
+your logger ran.
 {% endhint %}
 
 ## Cancellation
@@ -47,8 +60,8 @@ If you need the pre-6.0.0 behaviour, opt back in:
 MonadOptions.Configure(options => options.UseCancellationAsFailure());
 ```
 
-A cancellation is then caught, passed to your exception logger, and becomes a
-`None` or an `Err` as it did before.
+A cancellation is then caught, counted and logged like any other handled
+exception, and becomes a `None` or an `Err` as it did before.
 
 {% hint style="info" %}
 We recommend leaving this off. It exists so that upgrading to 6.0.0 does not force
