@@ -83,7 +83,7 @@ Without `AndThen`, you'd need to `Map` and then flatten manually, or deal with n
 {% endhint %}
 
 {% hint style="warning" %}
-This method was called `FlatMap` before 5.4.0. `FlatMap` still works and still forwards here, but it is `[Obsolete]` and goes away in v6.0.0. `WM2014` reports each call site and its quick fix does the rename. See [deprecations.md](../../upgrading-and-deprecations/deprecations.md "mention").
+This method was called `FlatMap` before 5.4.0. `FlatMap` was `[Obsolete]` through 5.x and 6.0.0 removed it, so a call to it is `CS0117` rather than a warning. `WM2014`, the rule that reported each call site and offered the rename, retired with it — delete any `.editorconfig` entry for that id. See [deprecations.md](../../upgrading-and-deprecations/deprecations.md "mention").
 {% endhint %}
 
 `Result<TOk, TErr>` has spelled this `AndThen` all along, so the two monads now agree.

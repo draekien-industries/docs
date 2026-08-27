@@ -1,5 +1,12 @@
 # v2.x to v3.x
 
+{% hint style="info" %}
+**This page describes a historical upgrade.** Its replacement code was correct for
+`3.x`, and later majors have removed some of the API it names. Land on `3.x` first if you
+are following it literally, then read the pages after this one in order.
+[Deprecations](deprecations.md) lists what has gone since.
+{% endhint %}
+
 Renamed async overloads for methods to have the `Async` suffix
 
 ```diff

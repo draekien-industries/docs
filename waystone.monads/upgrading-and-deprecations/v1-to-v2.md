@@ -1,5 +1,12 @@
 # v1.x to v2.x
 
+{% hint style="info" %}
+**This page describes a historical upgrade.** Its replacement code was correct for
+`2.x`, and later majors have removed some of the API it names. Land on `2.x` first if you
+are following it literally, then read the pages after this one in order.
+[Deprecations](deprecations.md) lists what has gone since.
+{% endhint %}
+
 ## Renamed `Bind` to `Try`
 
 The `Option.Bind` and `Result.Bind` factory methods have been renamed to `Try` to better adhere to functional programming concepts.
