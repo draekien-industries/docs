@@ -71,7 +71,7 @@ Without `AndThen`, you'd need to `Map` and then flatten manually, or deal with n
 {% endhint %}
 
 {% hint style="warning" %}
-This method was called `FlatMap` before 5.4.0. `FlatMap` still works and still forwards here, but it is `[Obsolete]` and goes away in v6.0.0. `WM2014` reports each call site and its quick fix does the rename. See [deprecations.md](../deprecations.md "mention").
+This method was called `FlatMap` before 5.4.0. `FlatMap` still works and still forwards here, but it is `[Obsolete]` and goes away in v6.0.0. `WM2014` reports each call site and its quick fix does the rename. See [deprecations.md](../../upgrading-and-deprecations/deprecations.md "mention").
 {% endhint %}
 
 `Result<TOk, TErr>` has spelled this `AndThen` all along, so the two monads now agree.

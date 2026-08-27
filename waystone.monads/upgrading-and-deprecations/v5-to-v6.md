@@ -107,7 +107,7 @@ a `Some`, and returns. It never awaits, so:
 
 - **Your exception handling is gone.** A throw inside `FetchCountAsync` escapes
   to your caller. It does not become a `None` or an `Err`, and your
-  [configured exception logger](../configuration.md) never sees it.
+  [configured exception logger](../using-the-library/configuration.md) never sees it.
 - **The task may never be awaited**, depending on what you do with the result.
 
 You only get a compiler error if the call site assigns to an explicitly typed
@@ -132,7 +132,7 @@ Call `TryAsync` and `await` where you were already awaiting:
 
 ### The analyzer finds these for you
 
-[`WM1011`](../analyzer-rules.md#wm1011) is a **warning**, not a suggestion,
+[`WM1011`](../using-the-library/analyzer-rules.md#wm1011) is a **warning**, not a suggestion,
 because it fires on code that runs. It reports any call that traps a task inside
 an `Option` or a `Result` — `Try` with an async factory, but also
 `option.Map(x => FetchAsync(x))` and anything else with an `Async` sibling it
@@ -202,7 +202,7 @@ MonadOptions.Configure(options => options.UseCancellationAsFailure());
 
 That restores the v5 behaviour everywhere: a cancellation is caught, logged, and
 becomes a `None` or an `Err` again. You can also scope it to one region with
-`MonadOptions.BeginScope`. See [Configuration](../configuration.md).
+`MonadOptions.BeginScope`. See [Configuration](../using-the-library/configuration.md).
 
 We recommend leaving it off. The opt-in exists so that upgrading is not blocked
 on rewriting every call site at once.
@@ -261,7 +261,7 @@ value is a default, so it covers none of the six expressions in the table above.
 `Option.Some(null!)` throws in v6, as it did in v5. The exception type changes
 from `InvalidOperationException` to `ArgumentNullException`.
 
-Use [`Option.FromNullable`](../core-functionality.md) when the value may be null.
+Use [`Option.FromNullable`](../using-the-library/core-functionality.md) when the value may be null.
 
 `FromNullable<T>(T?) where T : struct` no longer rejects the default either, so it
 now behaves the same way as its reference-type sibling.
@@ -286,7 +286,7 @@ int? absent = Option.None<int>().UnwrapOrNull();  // null
 int? present = Option.Some(0).UnwrapOrNull();     // 0
 ```
 
-[`WM2015`](../analyzer-rules.md#wm2015) points you at them.
+[`WM2015`](../using-the-library/analyzer-rules.md#wm2015) points you at them.
 
 ## Loud change: async extensions all return ValueTask
 
@@ -439,16 +439,16 @@ Covered methods, as at 6.0:
 - `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync`
 
 Later 6.x releases added more. See
-[Where you can use it](../core-functionality.md#where-you-can-use-it) for the
+[Where you can use it](../using-the-library/core-functionality.md#where-you-can-use-it) for the
 current set.
 
 The closure costs exactly 88 bytes at every call site — 24 for the display class,
 64 for the delegate — and the state overload removes all of it.
 
-See [Core Functionality](../core-functionality.md#state-overloads) for the detail,
+See [Core Functionality](../using-the-library/core-functionality.md#state-overloads) for the detail,
 including why the `static` keyword matters.
 
-[`WM2017`](../analyzer-rules.md#wm2017) points you at these when it sees a
+[`WM2017`](../using-the-library/analyzer-rules.md#wm2017) points you at these when it sees a
 delegate that captures.
 
 ## Analyzer rules that changed
@@ -470,9 +470,9 @@ the entry.
 
 | Rule | Severity | What it reports |
 | --- | --- | --- |
-| [`WM1011`](../analyzer-rules.md#wm1011) | Warning | An async delegate passed to a synchronous method |
-| [`WM2016`](../analyzer-rules.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
-| [`WM2017`](../analyzer-rules.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
+| [`WM1011`](../using-the-library/analyzer-rules.md#wm1011) | Warning | An async delegate passed to a synchronous method |
+| [`WM2016`](../using-the-library/analyzer-rules.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
+| [`WM2017`](../using-the-library/analyzer-rules.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
 
 ### Reworded
 

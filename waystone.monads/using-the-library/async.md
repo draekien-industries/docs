@@ -93,7 +93,7 @@ composes.
 `ValueTask` is cheaper when the work finishes synchronously and slightly more
 expensive when it does not. A three-link chain saves 144 bytes on a synchronous
 `Option` receiver and costs 84 bytes when the head is genuinely pending. See
-[v5.x to v6.x](upgrading/v5-to-v6.md#the-measured-trade-off) for the numbers.
+[v5.x to v6.x](../upgrading-and-deprecations/v5-to-v6.md#the-measured-trade-off) for the numbers.
 {% endhint %}
 
 ## Creating a monad from async work
@@ -138,7 +138,7 @@ The single type parameter overload converts the exception with
 removed in 6.0.0, and the call still compiles — it binds to the synchronous
 overload, gives you an `Option<Task<T>>`, and catches nothing.
 [`WM1011`](analyzer-rules.md#wm1011) reports every occurrence. See
-[Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
+[Silent change 1](../upgrading-and-deprecations/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
 {% endhint %}
 
 {% hint style="warning" %}

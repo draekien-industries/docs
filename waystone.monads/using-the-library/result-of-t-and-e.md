@@ -9,7 +9,7 @@ Neither side of a `Result` can hold null. `Result.Ok<string, Error>(null!)` and
 A default value is fine. `Result.Ok<int, string>(0)` is an `Ok` holding `0`, and
 `Result.Ok<Guid, string>(Guid.Empty)` is an `Ok` holding `Guid.Empty`. This is
 where `Result` differs from `Option` in 5.x, where a `Some` rejects the default of
-its type as well — see [v5.x to v6.x](upgrading/v5-to-v6.md), which brings the two
+its type as well — see [v5.x to v6.x](../upgrading-and-deprecations/v5-to-v6.md), which brings the two
 into line.
 
 {% hint style="info" %}

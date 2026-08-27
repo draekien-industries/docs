@@ -20,7 +20,7 @@ reference and configure nothing.
 {% hint style="warning" %}
 `ErrorCode.FromEnum` is obsolete from 6.2.0 and removed in 7.0.0, so this page
 describes the only supported way to get an error code from an enum. See
-[deprecations.md](deprecations.md "mention") for the migration.
+[deprecations.md](../upgrading-and-deprecations/deprecations.md "mention") for the migration.
 {% endhint %}
 
 ## Marking an enum
@@ -174,7 +174,7 @@ answer rather than two.
 Shaping enum codes is the part of `ErrorCodeFactory` the format replaces, and that part
 is obsolete from 6.2.0: `ErrorCodeFactory.FromEnum` and `ErrorCode.FromEnum` both
 report `CS0618` and are removed in 7.0.0. See
-[deprecations.md](deprecations.md "mention"). `FromException` is not affected.
+[deprecations.md](../upgrading-and-deprecations/deprecations.md "mention"). `FromException` is not affected.
 
 ## Reviewing your codes as a list
 

@@ -218,7 +218,7 @@ await it without unwrapping first, and most callers never do.
 This is a warning rather than a suggestion because it fires on code that runs and
 does the wrong thing. It is also the only protection you have against the v6
 removal of the async `Try` overloads, which rebinds those call sites silently. See
-[Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
+[Silent change 1](../upgrading-and-deprecations/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
 
 **No quick fix, deliberately.** Renaming to the `Async` sibling leaves you with an
 unawaited task, and no fixer can decide where your `await` belongs.
