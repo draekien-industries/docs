@@ -6,15 +6,31 @@ description: >-
 
 # Async
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## Introduction
 
 Most core operations have an async counterpart with an `Async` suffix. Use them
 when your transform, predicate, or side effect returns a `Task`. The full list is
 at the [bottom of this page](#the-full-surface).
 
-The async methods are extension methods on the **task that wraps the monad**, not
-methods on the monad itself. They extend `Task<Option<T>>`,
+Most async methods are extension methods on the **task that wraps the monad**,
+rather than methods on the monad itself. They extend `Task<Option<T>>`,
 `ValueTask<Option<T>>`, `Task<Result<T, E>>` and `ValueTask<Result<T, E>>`.
+
+`MatchAsync` also extends the monad directly, so you can pass an async branch to
+an `Option<T>` or `Result<T, E>` you already hold. See
+[Matching with an async branch](#matching-with-an-async-branch).
 
 That is the part worth understanding, because it is what lets you chain without
 awaiting each step:
@@ -52,7 +68,9 @@ and `Task<Result<TOk, TErr>>`. Never call `.AsTask()` on a `TryAsync` — it alr
 hands you a `Task`.
 
 ```csharp
-ValueTask<string> output = result.MatchAsync(async x => await DoWorkAsync(x), e => e.ToString());
+ValueTask<string> output = result.MatchAsync(
+    async x => await RenderAsync(x),
+    async e => await DescribeAsync(e));
 ```
 
 You await a `ValueTask` the same way you await a `Task`, so this rarely changes
@@ -127,6 +145,65 @@ overload, gives you an `Option<Task<T>>`, and catches nothing.
 `TryAsync` lets an `OperationCanceledException` through rather than turning it
 into a `None` or an `Err`. See [Configuration](configuration.md#cancellation).
 {% endhint %}
+
+## Matching with an async branch
+
+`MatchAsync` works on a monad you already hold, not only on a task that wraps
+one. Use it when one or both branches do async work.
+
+```csharp
+// both branches async
+string text = await option.MatchAsync(
+    async x => await RenderAsync(x),
+    async () => await LoadDefaultAsync());
+
+// only the Some branch is async
+string fromSome = await option.MatchAsync(
+    async x => await RenderAsync(x),
+    () => "none");
+
+// only the None branch is async
+string fromNone = await option.MatchAsync(
+    x => x.ToString(),
+    async () => await LoadDefaultAsync());
+```
+
+Pick the overload that matches your branches. A branch you write as a plain value
+stays a plain value instead of being wrapped in a completed task, and the branch
+that does not match never runs.
+
+The same three shapes work on `Task<Option<T>>` and `ValueTask<Option<T>>`
+receivers, so a chain reaches them too.
+
+{% hint style="info" %}
+These three arrived on the plain `Option<T>` receiver in 7.0.0. Before that they
+existed only on the `Task` and `ValueTask` receivers, so matching an `Option<T>`
+you already held meant wrapping it in `Task.FromResult` first.
+{% endhint %}
+
+### Option and Result cover different combinations
+
+This catches people out, so check the table before you write the call:
+
+| Branches | `Option<T>` | `Result<T, E>` |
+| --- | --- | --- |
+| Both async, returning a value | Yes | Yes |
+| One async, returning a value | Yes | **No** |
+| Async, returning nothing | **No** | Yes |
+
+The middle row is the one that bites. This does not compile:
+
+```csharp
+// does not compile
+ValueTask<string> output = result.MatchAsync(
+    async x => await RenderAsync(x),
+    e => e.ToString());
+```
+
+There is no `Result` overload taking one async branch and one plain branch that
+returns a value, so the call binds to the overload returning nothing. You get
+`CS0029` on the assignment, which points at the line but not at the cause. Make
+both branches async, or match on an `Option<T>`.
 
 ## Ending a chain
 
