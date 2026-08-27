@@ -24,10 +24,13 @@
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)
 * [Coming from Rust](using-the-library/coming-from-rust.md)
-* [Upgrading](using-the-library/upgrading/README.md)
-  * [v1.x to v2.x](using-the-library/upgrading/v1-to-v2.md)
-  * [v2.x to v3.x](using-the-library/upgrading/v2-to-v3.md)
-  * [v3.x to v4.x](using-the-library/upgrading/v3-to-v4.md)
-  * [v4.x to v5.x](using-the-library/upgrading/v4-to-v5.md)
-  * [v5.x to v6.x](using-the-library/upgrading/v5-to-v6.md)
-* [Deprecations](using-the-library/deprecations.md)
+
+## Upgrading and Deprecations
+
+* [Overview](upgrading-and-deprecations/README.md)
+* [Deprecations](upgrading-and-deprecations/deprecations.md)
+* [v1.x to v2.x](upgrading-and-deprecations/v1-to-v2.md)
+* [v2.x to v3.x](upgrading-and-deprecations/v2-to-v3.md)
+* [v3.x to v4.x](upgrading-and-deprecations/v3-to-v4.md)
+* [v4.x to v5.x](upgrading-and-deprecations/v4-to-v5.md)
+* [v5.x to v6.x](upgrading-and-deprecations/v5-to-v6.md)

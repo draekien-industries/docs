@@ -66,7 +66,7 @@ overriding `ErrorCodeFactory.FromEnum` to shape what it returns. Mark the enum w
 `[ErrorCodeCatalog]` instead and use the members that generates —
 `OrderErrorCatalog.Codes.NotFound` where you can name the member, or the
 generated `ToErrorCode()` extension where you cannot. See
-[deprecations.md](deprecations.md "mention") for the migration and
+[deprecations.md](../upgrading-and-deprecations/deprecations.md "mention") for the migration and
 [generated-error-codes.md](generated-error-codes.md "mention") for the `Format` that
 replaces a factory override. `FromException` is unaffected.
 {% endhint %}

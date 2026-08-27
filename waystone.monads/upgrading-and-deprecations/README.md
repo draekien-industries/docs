@@ -1,8 +1,15 @@
 ---
-description: What changes between major versions, and what you have to do about it.
+description: >-
+  What changes between major versions, what you have to do about it, and what is
+  on its way out.
 ---
 
-# Upgrading
+# Overview
+
+This group holds two kinds of page.
+
+* **[Deprecations](deprecations.md)** — API that still works today but is going away, with the version that removes it. Read this before you upgrade, not after.
+* **The upgrade pages** — one per major version jump, listing what breaks and what to change.
 
 Pick the page for the jump you are making. If you are skipping versions, read each
 page in order — the changes stack.
@@ -18,6 +25,3 @@ page in order — the changes stack.
 The v5.x to v6.x page is the one to read closely. Every other upgrade on this list
 breaks the build when you get it wrong. That one has three changes that do not —
 your code keeps compiling and quietly means something different.
-
-See [Deprecations](../deprecations.md) for API that is on its way out but still
-works today.

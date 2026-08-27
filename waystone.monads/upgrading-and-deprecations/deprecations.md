@@ -59,7 +59,7 @@ You lose nothing in the move. Every entry still carries the exception and the sa
 call-site details — `MemberName`, `ArgumentExpression` and `LineNumber` — and you
 gain level and category filtering from `appsettings.json`, which an opaque
 delegate could never give you. See
-[observability.md](observability.md "mention").
+[observability.md](../using-the-library/observability.md "mention").
 
 {% hint style="danger" %}
 **Delete the old call when you add the package.** Both fire for the whole of 6.x,
@@ -69,7 +69,7 @@ so leaving `UseExceptionLogger` in place logs every handled exception twice.
 {% hint style="info" %}
 **You may not need to log at all.** If you only wanted counts, the library
 publishes a `Waystone.Monads` meter and needs no package and no configuration —
-see [observability.md](observability.md "mention").
+see [observability.md](../using-the-library/observability.md "mention").
 {% endhint %}
 
 #### Why this changed
@@ -141,7 +141,7 @@ their place, and the fix produces these instead:
 
 If you shaped your codes by subclassing `ErrorCodeFactory` and overriding
 `FromEnum`, say the same thing with a `Format` — see
-[generated-error-codes.md](generated-error-codes.md "mention"). `FromException` is
+[generated-error-codes.md](../using-the-library/generated-error-codes.md "mention"). `FromException` is
 not deprecated, and a factory that only overrides it needs no change.
 
 #### Why this changed
@@ -150,7 +150,7 @@ Both of these work the code out by reflection at run time, which costs you three
 things a generated constant gives you: the compiler cannot see the code, so a
 renamed member changes your wire contract silently; the declared `Format` cannot
 be applied, because it is read at compile time; and the analyzers and the
-[error code registry](generated-error-codes.md#reviewing-your-codes-as-a-list)
+[error code registry](../using-the-library/generated-error-codes.md#reviewing-your-codes-as-a-list)
 cannot review a string nothing in the build can see.
 
 ## Removed in 6.0.0
@@ -196,9 +196,9 @@ two names for one idea. Rust, which both types follow, calls it `and_then`.
 **Removing these does not break your build, and that is the problem.** Your call
 site rebinds to the synchronous overload, keeps compiling, and stops catching
 exceptions. Read
-[Silent change 1](upgrading/v5-to-v6.md#silent-change-1-try-with-an-async-factory)
+[Silent change 1](v5-to-v6.md#silent-change-1-try-with-an-async-factory)
 before you upgrade, and turn on
-[`WM1011`](analyzer-rules.md#wm1011) — it finds every affected call.
+[`WM1011`](../using-the-library/analyzer-rules.md#wm1011) — it finds every affected call.
 {% endhint %}
 
 #### How to migrate
@@ -249,7 +249,7 @@ There was nothing to migrate.
 v6 also closed the `Option<T>` and `Result<TOk, TErr>` hierarchies, which removes
 the ability to derive from them. That was never marked `[Obsolete]`, because there
 is no way to obsolete "inheriting from this type". See
-[v5.x to v6.x](upgrading/v5-to-v6.md#loud-change-you-can-no-longer-derive-from-option-or-result).
+[v5.x to v6.x](v5-to-v6.md#loud-change-you-can-no-longer-derive-from-option-or-result).
 
-See [Async](async.md) for the full async surface, and
-[Upgrading](upgrading/) for the upgrades that have already shipped.
+See [Async](../using-the-library/async.md) for the full async surface, and
+[Upgrading](README.md) for the upgrades that have already shipped.

@@ -29,7 +29,7 @@ names your dashboards will bind to.
 delegate you write yourself, and it holds only one — so a second integration
 silently replaces the first. Both it and the new package fire while it exists, so
 delete the old call when you add the package or you will log everything twice. See
-[Deprecations](deprecations.md#seeing-handled-exceptions-through-a-hand-written-delegate).
+[Deprecations](../upgrading-and-deprecations/deprecations.md#seeing-handled-exceptions-through-a-hand-written-delegate).
 {% endhint %}
 
 {% hint style="info" %}

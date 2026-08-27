@@ -303,7 +303,7 @@ string changes. So treat every name on this page the way you treat a public type
 | Log category | `Waystone.Monads` |
 
 We will not rename them outside a major release, and we will tell you in
-[Deprecations](deprecations.md) when we do.
+[Deprecations](../upgrading-and-deprecations/deprecations.md) when we do.
 
 ## Replacing UseExceptionLogger
 
