@@ -6,6 +6,18 @@ description: >-
 
 # Observability
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 `Option.Try` and `Result.Try` catch the exception your factory throws and hand
 you back a `None` or an `Err`. That is the point of them. But it means the
 exception never reaches you, and in the `Option` case it is gone for good.
@@ -257,10 +269,66 @@ you subscribe before or after the first `Try` runs.
 Queue the work and return.
 {% endhint %}
 
+## Watching for a scope disposed out of order
+
+The library writes a second event, `Waystone.Monads.ScopeDisposedOutOfOrder`, to the
+same listener. It fires when a `MonadOptionsScope` is disposed at a point where it is
+not the innermost open scope, which means nothing was restored — see
+[What happens when you dispose out of order](configuration.md#what-happens-when-you-dispose-out-of-order).
+
+The payload is:
+
+```csharp
+public sealed record ScopeDisposedOutOfOrder(
+    MonadOptions? Scope,
+    MonadOptions? Live);
+```
+
+* `Scope` is what the disposed scope had installed. It is `null` exactly when a
+  `default(MonadOptionsScope)` was disposed, because that scope was never begun.
+* `Live` is what is in effect instead. It is `null` when no scope remains open.
+
+Subscribe the same way you subscribe to the exception event:
+
+```csharp
+listener.Subscribe(
+    new ScopeMisuse(),
+    name => name == MonadDiagnostics.ScopeDisposedOutOfOrderEventName);
+
+public sealed class ScopeMisuse : IObserver<KeyValuePair<string, object?>>
+{
+    public void OnNext(KeyValuePair<string, object?> written)
+    {
+        if (written.Value is ScopeDisposedOutOfOrder disposed)
+        {
+            // disposed.Scope is gone; disposed.Live is what is in effect instead.
+        }
+    }
+
+    public void OnCompleted()
+    { }
+
+    public void OnError(Exception error)
+    { }
+}
+```
+
+**There is no caller information in the payload.** `IDisposable.Dispose()` takes none,
+so the library has nothing to pass. Your subscriber does run synchronously inside
+`Dispose`, on the disposing thread, so capturing a stack trace there names the offending
+call site — which is the reason to write one of these at all. This is a bug in your own
+code that the library cannot fix for you, and the event is how you find it.
+
+**Expect duplicates.** A scope that has already declined to restore reports again on
+every further `Dispose`, because a readonly struct cannot record that it reported. If
+you alert on this, deduplicate.
+
 ## What the library does not report
 
-**Exceptions it lets through.** Both signals fire only when `Try` or `TryAsync`
-catches something. An exception that propagates to you is yours to log.
+**Exceptions it lets through.** The metric and the `ExceptionHandled` event fire only
+when `Try` or `TryAsync` catches something. An exception that propagates to you is yours
+to log. `ScopeDisposedOutOfOrder` is unrelated to `Try` and has no counter — it reports
+a misuse of configuration, not a failure in your work.
 
 **Cancellations, by default.** From 6.0.0 an `OperationCanceledException` is not
 caught, so nothing counts or logs it. Call
@@ -282,11 +350,15 @@ result.InspectErr(
 
 ## You pay nothing when nobody is listening
 
-Both signals check whether anything is subscribed before they do any work. With
-no listener attached, a `Try` that throws allocates exactly what it allocated
-before 6.7.0 — measured, not assumed. Attach both and you pay 40 bytes per
-handled exception, which is the event payload; the counter allocates nothing at
-all.
+Every signal on this page checks whether anything is subscribed before it does any
+work. With no listener attached, a `Try` that throws allocates exactly what it
+allocated before 6.7.0 — measured, not assumed. Attach both and you pay 40 bytes per
+handled exception, which is the event payload; the counter allocates nothing at all.
+
+`ScopeDisposedOutOfOrder` is gated the same way, so an out-of-order disposal in a
+process with no listener allocates no payload either. It also costs nothing on the
+normal path — the check runs only once `Dispose` has already decided it cannot
+restore.
 
 ## These names are a contract
 
@@ -298,6 +370,7 @@ string changes. So treat every name on this page the way you treat a public type
 | Meter | `Waystone.Monads` |
 | `DiagnosticListener` | `Waystone.Monads` |
 | Event | `Waystone.Monads.ExceptionHandled` |
+| Event | `Waystone.Monads.ScopeDisposedOutOfOrder` |
 | Counter | `waystone.monads.exceptions_handled` |
 | Tags | `error.type`, `waystone.monads.monad` |
 | Log category | `Waystone.Monads` |
@@ -308,7 +381,7 @@ We will not rename them outside a major release, and we will tell you in
 ## Replacing UseExceptionLogger
 
 `MonadOptions.UseExceptionLogger` used to be the only way to see these
-exceptions. It is obsolete from 6.7.0 and goes in 7.0.0.
+exceptions. It was obsolete from 6.7.0 and **7.0.0 removes it**.
 
 ```diff
 -MonadOptions.Configure(options => options.UseExceptionLogger((ex, caller) =>
