@@ -26,6 +26,11 @@
 * [Severity presets](using-the-library/severity-presets.md)
 * [Coming from Rust](using-the-library/coming-from-rust.md)
 
+## Companion Packages
+
+* [Overview](companion-packages/README.md)
+* [Waystone.Monads.Shouldly](companion-packages/shouldly.md)
+
 ## Upgrading and Deprecations
 
 * [Overview](upgrading-and-deprecations/README.md)
