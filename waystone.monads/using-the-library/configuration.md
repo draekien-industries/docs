@@ -1,5 +1,17 @@
 # Configuration
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 This library contains some configurable behaviours. Configuration is available via the `Configure` method of the `MonadOptions` class. It is recommended to configure each option below _once_ in the lifecycle of your application.
 
 If you need different settings for one part of your code, use a [scope](#scoped-configuration) instead of reconfiguring globally.
@@ -150,7 +162,10 @@ using (MonadOptions.BeginScope(options => options
   had when the scope opened.
 * **Takes a snapshot.** Calling `Configure` while a scope is open does not change
   that scope. The new global value applies once the scope ends.
-* **Nests.** Disposing an inner scope restores the scope around it.
+* **Nests.** Disposing the innermost scope restores the scope around it.
+* **Restores only from the inside out.** A scope that is no longer the innermost one
+  declines to restore anything when you dispose it, and reports itself instead. See
+  below.
 * **Isolates concurrent work.** A scope applies to the current asynchronous flow,
   so parallel work each sees its own options. This makes scopes safe to use in
   tests that run in parallel.
@@ -162,11 +177,44 @@ running when you opened the scope.
 
 {% hint style="warning" %}
 **Dispose scopes in the reverse of the order you opened them.** A `using` block does
-this for you. If you hold scopes in variables and dispose an outer one while an inner
-one is still open, the outer scope restores what came before *it* and the inner scope
-is discarded — silently, with no exception. Disposing the same scope twice is harmless:
-each call restores the same saved options.
+this for you. Nothing else guarantees it.
 {% endhint %}
+
+#### What happens when you dispose out of order
+
+Since 7.0.0, a scope restores only when it is the innermost one still open. Disposing
+it at any other time changes nothing and reports the mistake.
+
+`Dispose` looks at the options in effect on the current flow and picks one of three
+paths:
+
+| What it finds | What it does |
+| --- | --- |
+| The options this scope installed — so this scope is the innermost one | Restores what came before it |
+| The options this scope restored to — so it has already been disposed | Nothing, silently |
+| Anything else | Nothing, and writes a `ScopeDisposedOutOfOrder` diagnostic event |
+
+It never throws, on any path.
+
+**The third path leaves the early-disposed scope's options in effect.** They stay live
+until the inner scope that is still open is disposed, which then restores them as *its
+own* predecessor — so those options outlive the scope that installed them. That is the
+bug the event exists to tell you about.
+
+Two more cases take the third path, both worth knowing:
+
+* Disposing a scope from a different asynchronous flow than the one that opened it. A
+  scope lives in the flow, so another flow's `Dispose` never sees it.
+* Disposing a `default(MonadOptionsScope)`. Before 7.0.0 this dropped the flow back to
+  your global configuration; now it reports like any other out-of-order disposal.
+
+**Repeated disposal on the third path reports every time.** A scope that has already
+declined cannot remember that it did — it is a readonly struct — so each further
+`Dispose` writes the event again. Deduplicate in your subscriber if that matters. The
+"harmless twice" promise covers the restoring path only.
+
+To see these events, see
+[Watching for a scope disposed out of order](observability.md#watching-for-a-scope-disposed-out-of-order).
 
 {% hint style="info" %}
 `Waystone.Monads.FluentValidation` options are covered by the same scope, so you
