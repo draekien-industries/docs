@@ -255,7 +255,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2007`](#wm2007) | `UnwrapOr` given the default of the type, which is `UnwrapOrDefault` | `UnwrapOrDefault()` |
 | [`WM2008`](#wm2008) | An `Option` or `Result` compared to `null`, which reads like an absence check but is not one | The matching state check |
 | [`WM2009`](#wm2009) | `Option<Option<T>>`, which has three states where only two mean anything | — |
-| [`WM2010`](#wm2010) | `Result<T, T>`, whose two implicit conversions are ambiguous | — |
+| [`WM2010`](#wm2010) | **Retired in 7.0.0.** `Result<T, T>`, whose two implicit conversions were ambiguous | — |
 | [`WM2011`](#wm2011) | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
 | [`WM2012`](#wm2012) | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
 | [`WM2013`](#wm2013) | A discarded `Option`, as `WM1006` does for `Result` | — |
@@ -412,10 +412,14 @@ It usually means a `Map` wanted to be an `AndThen`, which is `WM2005`.
 
 ### WM2010
 
-**`Result<T, T>` cannot use its own implicit conversions.** `Result` declares one
-conversion from `TOk` and another from `TErr`. When those are the same type the
-compiler cannot choose between them, so every implicit conversion becomes a compile
-error — and `Ok` and `Err` become indistinguishable to a reader.
+**Retired in 7.0.0. This rule no longer ships.** The anchor stays because build output
+from earlier versions links here.
+
+`Result` used to declare one implicit conversion from `TOk` and another from `TErr`.
+Where those were the same type the compiler could not choose between them, so every
+implicit conversion became a compile error — and `Ok` and `Err` were indistinguishable
+to a reader. 7.0.0 removes both conversions, so there is nothing left for the rule to
+report. A `Result<T, T>` is still worth avoiding for the second reason.
 
 ```diff
 -Result<string, string> Parse(string input);
@@ -950,6 +954,9 @@ unwrap that throws fails the test anyway.
 
 You cannot drop the analyzer and keep the library, because both ship in one package.
 `.editorconfig` is how you turn rules off.
+
+To raise a whole tier rather than a rule at a time, see
+[Severity presets](severity-presets.md). One MSBuild property covers the set.
 
 The `WMS` rules configure the same way, through `dotnet_diagnostic.WMS2001.severity`
 and the like. You can drop those entirely by removing the `Waystone.Monads.Shouldly`

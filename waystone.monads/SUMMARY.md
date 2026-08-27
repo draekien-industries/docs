@@ -23,6 +23,7 @@
 * [Errors and Exceptions](using-the-library/errors-and-exceptions.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)
+* [Severity presets](using-the-library/severity-presets.md)
 * [Coming from Rust](using-the-library/coming-from-rust.md)
 
 ## Upgrading and Deprecations
