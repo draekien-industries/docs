@@ -6,6 +6,18 @@ description: >-
 
 # Core Functionality
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## Introduction
 
 While `Option<T>` and `Result<T, E>` serve different purposes (absence vs. success/failure), they share a common operational model. If you are fluent with either the `Option<T>` or `Result<T, E>` already, you're 90% of the way to mastering the other.
@@ -371,6 +383,109 @@ int length = nameResult.Match(
 
 `Match` also has an overload that takes state, and it is the one that saves the
 most — see [Match saves the most](#match-saves-the-most).
+
+### Pattern matching with Deconstruct
+
+From 7.0.0 the case types deconstruct, so C# pattern matching can bind the value
+positionally.
+
+```csharp
+using Waystone.Monads.Options;
+
+if (maybeName is Some<string>(var name))
+{
+    Console.WriteLine(name.Length);
+}
+```
+
+`Result` works the same way, on both halves:
+
+```csharp
+using Waystone.Monads.Results;
+
+if (nameResult is Ok<string, string>(var name)) { /* ... */ }
+if (nameResult is Err<string, string>(var error)) { /* ... */ }
+```
+
+Three `Deconstruct` methods exist, and only three:
+
+| Type | Signature | Binds |
+| --- | --- | --- |
+| `Some<T>` | `Deconstruct(out T value)` | The contained value |
+| `Ok<TOk, TErr>` | `Deconstruct(out TOk value)` | The Ok value |
+| `Err<TOk, TErr>` | `Deconstruct(out TErr error)` | The error |
+
+Each one is documented as never handing you null.
+
+#### None has none, deliberately
+
+There is nothing to bind, and `option is None<string>` already tests the case.
+
+So `option is None<string>()` — with the parentheses — is a **compile error**, not a
+redundant spelling. An empty positional pattern still needs a `Deconstruct` to bind
+against, and there is none:
+
+```
+CS8129: No suitable 'Deconstruct' instance or extension method was found for type
+        'None<string>', with 0 out parameters and a void return type.
+```
+
+Write it without the parentheses.
+
+#### You cannot deconstruct the monad itself
+
+`Deconstruct` is on the case types, not on `Option<T>` or `Result<TOk, TErr>`. So this
+does not compile:
+
+```csharp
+var (a, b) = maybeName; // CS1061, CS8129, CS8130
+```
+
+There is no state-plus-value tuple to destructure. Test the case first, then bind.
+
+### Where Match still wins
+
+`Match` is not the old way of doing this. It is still the right tool for the common job,
+for one concrete reason.
+
+**A `switch` expression over the closed hierarchy warns.** Even with both cases covered:
+
+```csharp
+int length = maybeName switch
+{
+    Some<string>(var name) => name.Length,
+    None<string> => 0,
+};
+```
+
+```
+CS8509: The switch expression does not handle all possible values of its input type
+        (it is not exhaustive). For example, the pattern '_' is not covered.
+```
+
+The hierarchy really is closed — an internal member stops anything outside the assembly
+deriving from `Option<T>` — but the compiler's exhaustiveness check has no knowledge of
+that idiom, so it cannot see it. Silencing the warning means adding an unreachable arm:
+
+```csharp
+_ => throw new UnreachableException(),
+```
+
+`Match` needs neither. It takes exactly two branches, both required, and returns a value
+with no warning to suppress.
+
+**So use `Match` when you want a value out of both cases**, which is most of the time.
+**Reach for a positional pattern when you are in statement position** — an `if` that
+guards a block, a `switch` statement, or a `when` clause — where `Match` would mean
+wrapping statements in a lambda that returns nothing.
+
+{% hint style="info" %}
+**A positional pattern does not trip `WM2021`.** That rule reports a *property* pattern
+reading `IsSome`, `IsNone`, `IsOk` or `IsErr` — a state check written so that nothing
+recognises it as one. A positional pattern reads none of those properties, so it is
+outside the rule entirely. See
+[`WM2021`](analyzer-rules.md#wm2021).
+{% endhint %}
 
 ### Unwrap
 
