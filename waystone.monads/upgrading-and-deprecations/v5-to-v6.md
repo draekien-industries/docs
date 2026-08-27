@@ -297,10 +297,16 @@ returned `ValueTask`; now the rule is uniform.
 You get `CS0029` or `CS1503` at every affected call site. Nothing changes
 silently.
 
-`Option.TryAsync` and `Result.TryAsync` are the exception. They are static
+`Option.TryAsync` and `Result.TryAsync` are the exception in v6. They are static
 factories rather than extensions, so they returned `Task` in v5 and still return
-`Task` now. Leave those call sites alone — adding `.AsTask()` there will not
+`Task` in v6. Leave those call sites alone — adding `.AsTask()` there will not
 compile.
+
+{% hint style="info" %}
+**7.0.0 closes that exception.** `TryAsync` and `CollectAsync` return `ValueTask`
+there, so `.AsTask()` does compile. If you are going straight to v7, see
+[v6.x to v7.x](v6-to-v7.md#loud-change-tryasync-and-collectasync-return-valuetask).
+{% endhint %}
 
 ### The repair
 

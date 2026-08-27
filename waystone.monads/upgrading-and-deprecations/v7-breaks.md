@@ -59,6 +59,7 @@ problem.
 | `ErrorCodeFactory.FromEnum` virtual removed | `[ErrorCodeCatalog]`; enum codes are settled at compile time now | `CS0115` | No |
 | `Result.Err<TOk>(Enum, string)` overload removed | `Result.Err(code.ToError(message))` | `CS1501` | No |
 | An async chaining step's delegate returns `Task` | Return `ValueTask`, or wrap it in an async lambda | `CS0411`, plus [`WM2022`](../using-the-library/analyzer-rules.md#wm2022) | **Yes**, the wrap |
+| `TryAsync` and `CollectAsync` return `ValueTask` | `Task<Option<T>> t = Option.TryAsync(f);` → add `.AsTask()`, or keep the `await` | `CS0029`, or `CS1503` passing it to `Task.WhenAll` | No |
 
 The four `FromEnum`-family removals and `UseExceptionLogger` were all obsolete in 6.x
 with a message naming the replacement. Nothing in 7.0.0 is removed without that warning
@@ -76,10 +77,11 @@ The `WM2022` fix is an ordinary analyzer fix and works either way. The
 [upgrade pages](v6-to-v7.md) say this again in context.
 
 {% hint style="info" %}
-**`.AsTask()` is not a v7 break.** If you are coming from 5.x you will also hit the v6
-change that made every async extension return `ValueTask`, which is where `.AsTask()`
-comes in. That is on [v5.x to v6.x](v5-to-v6.md#loud-change-async-extensions-all-return-valuetask),
-and the [5.x to 7.0.0 page](v5-to-v7.md) tells you where in the order to do it.
+**`.AsTask()` comes up twice.** v6 made every async *extension* return `ValueTask`;
+v7 does the same to `TryAsync` and `CollectAsync`, the two static members v6 left
+alone. If you are coming from 5.x you hit both. The v6 half is on
+[v5.x to v6.x](v5-to-v6.md#loud-change-async-extensions-all-return-valuetask), and the
+[5.x to 7.0.0 page](v5-to-v7.md) tells you where in the order to do it.
 {% endhint %}
 
 ## The one removal with no warning release

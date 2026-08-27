@@ -1,5 +1,17 @@
 # Option\<T>
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## Printing and logging
 
 **`ToString()` never shows the wrapped value.** You get the state and nothing else:
@@ -240,8 +252,8 @@ List<Option<string>> collection = [
     Option.None<string>()
 ];
 
-List<Option<string>> filtered = collection.Filter(x => x == "Hello");
-//                   ^? [Option.Some("Hello"), Option.None<string>(), Option.None<string>()]
+IEnumerable<Option<string>> filtered = collection.Filter(x => x == "Hello");
+//                          ^? [Option.Some("Hello"), Option.None<string>(), Option.None<string>()]
 ```
 
 ### Map
@@ -255,8 +267,8 @@ List<Option<string>> collection = [
     Option.None<string>()
 ];
 
-List<Option<string>> mapped = collection.Map(x => $"{x}!");
-//                   ^? [Option.Some("Hello!"), Option.Some("World!"), Option.None<string>()]
+IEnumerable<Option<string>> mapped = collection.Map(x => $"{x}!");
+//                          ^? [Option.Some("Hello!"), Option.Some("World!"), Option.None<string>()]
 ```
 
 ### Flatten
@@ -366,8 +378,8 @@ List<Option<string>> collection = [
     Option.Some("World")
 ];
 
-Option<string> first = collection.FirstOr("Victor", x => x.StartsWith("V"));
-//             ^? Option.Some("Victor")
+string first = collection.FirstOr(x => x.StartsWith("V"), "Victor");
+//     ^? "Victor"
 ```
 
 {% hint style="info" %}
@@ -384,6 +396,6 @@ List<Option<string>> collection = [
     Option.Some("World")
 ];
 
-Option<string> first = collection.FirstOrElse(() => "Victor", x => x.StartsWith("V"));
-//             ^? Option.Some("Victor")
+string first = collection.FirstOrElse(x => x.StartsWith("V"), () => "Victor");
+//     ^? "Victor"
 ```

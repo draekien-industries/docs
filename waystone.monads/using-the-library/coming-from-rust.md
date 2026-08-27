@@ -170,6 +170,6 @@ These have no Rust counterpart. Do not go looking for the original.
 | `Try`, `TryAsync` | Run a delegate and turn a thrown exception into a `None` or an `Err` |
 | The `*Async` surface | Every operation over a `Task` or `ValueTask` receiver |
 | The state overloads | Pass a captured value as an argument so the delegate allocates no closure |
-| Implicit conversions | A `T` converts to `Option<T>`; a `TOk` or `TErr` converts to `Result<TOk, TErr>` |
+| `Deconstruct` on the case types | Positional patterns, so `if let Some(x)` has a C# spelling |
 | `MonadOptions` | Global configuration — see [configuration.md](configuration.md "mention") |
 | `Select`, `SelectMany`, `Where` | C# query syntax over a monad, in a companion package — see [Waystone.Monads.Linq](../companion-packages/linq.md) |
