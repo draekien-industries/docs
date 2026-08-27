@@ -12,9 +12,79 @@ Or set the version yourself: `<PackageReference Include="Waystone.Monads" Versio
 The API can still change before `7.0.0` is stable.
 {% endhint %}
 
-This library contains some configurable behaviours. Configuration is available via the `Configure` method of the `MonadOptions` class. It is recommended to configure each option below _once_ in the lifecycle of your application.
+This library has a few configurable behaviours. You set them through
+`MonadOptions.Configure`, once, at start-up. Configure each option below _once_ in your
+application's lifetime.
 
-If you need different settings for one part of your code, use a [scope](#scoped-configuration) instead of reconfiguring globally.
+If you need different settings for one part of your code, use a
+[scope](#scoped-configuration) rather than reconfiguring globally.
+
+```csharp
+MonadOptions.Configure(options => options
+    .UseFallbackErrorCode("Unknown")
+    .UseFallbackErrorMessage("Something went wrong."));
+```
+
+## How configuration works
+
+You do not hold options. You describe them, and the library publishes the result.
+
+`Configure` hands your callback a **`MonadOptionsBuilder`**. Every `Use…` method is on
+the builder, and each returns the builder so you can chain. When your callback returns,
+the library builds an immutable `MonadOptions` from it and swaps that in as the options
+the whole process reads.
+
+Three consequences, all of which matter in practice.
+
+**There is nothing to read.** `MonadOptions` exposes no public property, accessor or
+instance member — only the two statics `Configure` and `BeginScope`. Nothing in your
+code can inspect the current configuration, and nothing needs to.
+
+**A reader never sees a half-configured state.** The swap is atomic. Code running on
+another thread reads either the options from before your `Configure` call or the ones
+from after it, never a mixture. Before 7.0.0, configuration mutated a shared object in
+place, so a concurrent reader could see one setting applied and the next not.
+
+{% hint style="danger" %}
+**Do not keep the builder.** It is authoring state, not the published options. Calls you
+make on it after your callback has returned are discarded — no exception, no warning,
+nothing takes effect.
+
+```csharp
+// Wrong. The second call does nothing.
+MonadOptionsBuilder? stashed = null;
+MonadOptions.Configure(options => stashed = options.UseFallbackErrorCode("A"));
+stashed!.UseFallbackErrorMessage("B");
+```
+
+Put every `Use…` call inside the callback.
+{% endhint %}
+
+### If you are upgrading from 6.x
+
+The common call shape is unchanged, because the lambda parameter's type is inferred:
+
+```csharp
+MonadOptions.Configure(options => options.UseFallbackErrorCode("Unknown"));
+```
+
+That compiled against 6.x and it compiles against 7.0.0. You do not have to touch call
+sites that already build.
+
+Three things do change:
+
+* An **explicitly typed** lambda parameter breaks. `(MonadOptions options) =>` becomes
+  `(MonadOptionsBuilder options) =>`, or drop the annotation and let it infer.
+* A **field, parameter, local or property typed `MonadOptions`** has no replacement.
+  Configuration is reachable only inside a `Configure` or `BeginScope` callback now, so
+  move the `Use…` calls into one rather than passing options around.
+* In the satellite packages, **`MonadOptionsExtensions` is now
+  `MonadOptionsBuilderExtensions`**. A `using static` or a qualified static call naming
+  the old class needs updating. A normal extension call on the callback's parameter — the
+  usual shape — needs nothing.
+
+The [6.x to 7.0.0 upgrade page](../upgrading-and-deprecations/v6-to-v7.md) covers this
+with the compiler diagnostics you will see.
 
 ## Logging
 
@@ -37,10 +107,10 @@ To count these exceptions instead, install nothing at all. Read
 names your dashboards will bind to.
 
 {% hint style="warning" %}
-**`UseExceptionLogger` is obsolete from 6.7.0 and goes in 7.0.0.** It takes a
-delegate you write yourself, and it holds only one — so a second integration
-silently replaces the first. Both it and the new package fire while it exists, so
-delete the old call when you add the package or you will log everything twice. See
+**`UseExceptionLogger` is gone.** It was obsolete from 6.7.0 and 7.0.0 removes it. It
+took a delegate you wrote yourself and held only one, so a second integration silently
+replaced the first. Install the package and call one of the three methods above
+instead. See
 [Deprecations](../upgrading-and-deprecations/deprecations.md#seeing-handled-exceptions-through-a-hand-written-delegate).
 {% endhint %}
 
@@ -160,8 +230,9 @@ using (MonadOptions.BeginScope(options => options
 
 * **Inherits what you do not set.** Options you leave alone keep the values they
   had when the scope opened.
-* **Takes a snapshot.** Calling `Configure` while a scope is open does not change
-  that scope. The new global value applies once the scope ends.
+* **Takes a snapshot.** Calling `Configure` while a scope is open does not change that
+  scope. The new global value applies once the scope ends. This is not new in 7.0.0 — a
+  scope has always held its own copy.
 * **Nests.** Disposing the innermost scope restores the scope around it.
 * **Restores only from the inside out.** A scope that is no longer the innermost one
   declines to restore anything when you dispose it, and reports itself instead. See
