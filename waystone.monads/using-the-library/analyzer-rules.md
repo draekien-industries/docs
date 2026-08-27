@@ -6,6 +6,18 @@ description: >-
 
 # Analyzer rules
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## What this page is for
 
 `Waystone.Monads` ships a Roslyn analyzer inside the package. Install or upgrade to
@@ -26,6 +38,10 @@ A separate set of diagnostics uses a `WMG` prefix. Those come from the source
 generator rather than the analyzer, they are all errors, and they only fire on an
 enum you marked with `[ErrorCodeCatalog]`. They are on
 [generated-error-codes.md](generated-error-codes.md "mention") instead of this page.
+
+A third set uses a `WMS` prefix. Those ship in the `Waystone.Monads.Shouldly`
+package, which you install in test projects only. They are at
+[Assertion rules](#assertion-rules) further down this page.
 
 {% hint style="info" %}
 This page lists the `WM` rules as at the version it was written for. For the set
@@ -250,6 +266,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
 | [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | — |
 | [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | — |
+| [`WM2022`](#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` | Wrap it in an async lambda |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
@@ -680,6 +697,59 @@ expression becomes a property read, a negated one becomes a negated read, and a
 first would leave the two shapes most worth correcting untouched, while implying
 the rule had been dealt with.
 
+### WM2022
+
+**`CS0411` here is not a generics problem.** `AndThenAsync` and `OrElseAsync` take a
+step that returns `ValueTask<Option<T>>` or `ValueTask<Result<TOk, TErr>>`. Hand one a
+method group that returns `Task<...>` and the conversion fails, so the compiler reports
+a type inference failure — a message that names neither `ValueTask` nor the parameter,
+and sends you looking at your type arguments. This rule says the part `CS0411` leaves
+out.
+
+```diff
+-Task<Option<Order>> LoadOrder(int id) => ...;
++ValueTask<Option<Order>> LoadOrder(int id) => ...;
+
+ // option is an Option<int>
+ ValueTask<Option<Order>> order = option.AndThenAsync(LoadOrder);
+```
+
+There are two corrections, and which you want depends on who owns the step.
+
+**Change the step to return `ValueTask`** where the step is yours. Prefer this. Every
+async member of this library returns a `ValueTask`, so a step that does the same drops
+straight into another chain as a step of its own.
+
+**Wrap it** where the step is third-party and you cannot change its signature:
+
+```csharp
+option.AndThenAsync(async id => await LoadOrder(id));
+```
+
+**The quick fix offers the wrap only**, though the message names both corrections.
+Retyping the step is safe only where it is already `async` — a `Task.FromResult` body
+does not convert — and it changes a signature every other caller of that member sees.
+A fix reading one call site cannot judge either, so the message states both and leaves
+the choice to you.
+
+#### What it does and does not report
+
+The rule fires on `AndThenAsync` and `OrElseAsync` only, on both `Option` and
+`Result`, and on both the monad and the awaited-receiver extensions.
+
+It fires only where the call **failed to bind**. That is the whole point: a call that
+compiles needs no advice, and a rule that could not read a failed call would have
+nothing to report. So `WM2022` never breaks a build that passes today — the build is
+already broken when it fires, which is also why it is a suggestion rather than a
+warning.
+
+It reports **method groups**, not lambdas. An async lambda already infers a
+`ValueTask` from its body, so there is nothing to correct.
+
+The quick fix declines on an **overloaded** method group. The lambda's parameter name
+comes from the method's own, and there is no reason to prefer one overload's spelling
+of it over another's.
+
 ## Migration aids
 
 These two rules ship **off**. They report on code that has not adopted the library
@@ -732,6 +802,124 @@ because it fires on every throw in a codebase that has not adopted `Result`.
 It skips the throws listed above, which a `Result` would not improve. `WM2003` is the
 on-by-default version, for a member that already returns `Result`.
 
+## Assertion rules
+
+These rules ship in `Waystone.Monads.Shouldly`, not in the core package. Add that
+package to a test project and you get them:
+
+```
+dotnet add package Waystone.Monads.Shouldly --prerelease
+```
+
+Their ids start with `WMS`, a second namespace beside `WM`. `WM` ids are validated
+against the core analyzer assembly, so a rule shipped from another package cannot take
+one. The `2` means what it means everywhere else on this page: working code that reads
+better another way, reported as a suggestion, on by default. There is no `WMS1` tier and
+there should not be one — every rule here fires on a test that already passes.
+
+| ID | What it reports | Quick fix |
+| --- | --- | --- |
+| [`WMS2001`](#wms2001) | An assertion on `IsSome`, `IsOk` or `Unwrap` instead of on the monad | The matching monad assertion |
+| [`WMS2002`](#wms2002) | An `await` wrapped in parentheses so a synchronous assertion can run | The `Async` assertion |
+
+Both fixes are batch-fixable, so **Fix all occurrences in Project** clears a test suite
+in one pass. Run it more than once. `WMS2001` rewrites `(await task).IsSome.ShouldBeTrue()`
+into `(await task).ShouldBeSome()`, which is then `WMS2002`'s input, and a batch fixer
+lands only non-overlapping fixes per pass.
+
+### WMS2001
+
+**Assert on the monad, not on a piece of it.** `IsSome` and `IsOk` yield a `bool`, and
+`Unwrap` yields the contained value. Either way the assertion that follows never sees
+the monad, so a failing test cannot tell you what it found.
+
+```diff
+-option.IsSome.ShouldBeTrue();
++option.ShouldBeSome();
+```
+
+The `IsSome` version fails with "expected True, was False". The `ShouldBeSome` version
+names the `None`. The `Unwrap` version is worse: `Unwrap` throws before the assertion
+runs, so the test fails on a panic rather than on an assertion, and the message is about
+`Unwrap` rather than about your expectation.
+
+```diff
+-option.Unwrap().ShouldBe(42);
++option.ShouldBeSomeValue(42);
+```
+
+The rule reads both halves of the pair, so `ShouldBeFalse` selects the opposite
+assertion:
+
+| You wrote | The fix writes |
+| --- | --- |
+| `option.IsSome.ShouldBeTrue()` or `option.IsNone.ShouldBeFalse()` | `option.ShouldBeSome()` |
+| `option.IsNone.ShouldBeTrue()` or `option.IsSome.ShouldBeFalse()` | `option.ShouldBeNone()` |
+| `result.IsOk.ShouldBeTrue()` or `result.IsErr.ShouldBeFalse()` | `result.ShouldBeOk()` |
+| `result.IsErr.ShouldBeTrue()` or `result.IsOk.ShouldBeFalse()` | `result.ShouldBeErr()` |
+| `option.Unwrap().ShouldBe(x)` | `option.ShouldBeSomeValue(x)` |
+| `result.Unwrap().ShouldBe(x)` | `result.ShouldBeOkValue(x)` |
+| `result.UnwrapErr().ShouldBe(x)` | `result.ShouldBeErrValue(x)` |
+
+`UnwrapErr` on an `Option` is not in that table because it does not compile — an
+`Option` has no error half.
+
+#### What it does not report
+
+**`ShouldBeOfType<Some<T>>()` never reports.** Those sites are usually testing the
+closed hierarchy itself, and nothing in the syntax separates that from an incidental
+type check, so rewriting them would delete the only coverage of it. This is excluded by
+design, not by omission.
+
+**A comparison overload carrying its own options never reports.** That covers
+`ShouldBe(expected, tolerance)`, the comparer overload, and the ignore-order overload.
+Those arguments describe how to compare a bare value, and they have no counterpart on an
+assertion that takes the monad. `ShouldBeTrue` and `ShouldBeFalse` need no equivalent
+exclusion — a `bool` has nothing to configure.
+
+{% hint style="info" %}
+**Two diagnostics on the `Unwrap` line is one problem.** `WMS2001` overlaps `WM2001`
+there on purpose. The spans differ — `WM2001` reports the panicking call, this rule the
+whole assertion — and applying the `WMS2001` fix resolves both, because the rewrite is
+what removes the `Unwrap`. Suppressing either to silence the pair would leave a consumer
+who does not use this package with no signal at all.
+{% endhint %}
+
+The reported span is the whole assertion, and it is **not** faded in your IDE the way
+most `WM2` rules with a fix are. Fading it would read as "this line can go", and the fix
+replaces your assertion rather than removing it.
+
+### WMS2002
+
+**Drop the parentheses around the `await`.** Member access binds tighter than `await`,
+so asserting on a task's result forces you to parenthesise it. Every assertion in this
+package is also declared on `Task` and `ValueTask` receivers, so you do not have to.
+
+```diff
+-(await LoadAsync()).ShouldBeSome();
++await LoadAsync().ShouldBeSomeAsync();
+```
+
+The fix appends `Async` to the assertion and moves the `await` outward.
+
+#### What it does not report
+
+**`(await task.ConfigureAwait(false)).ShouldBeSome()` never reports.** Read this one
+before you conclude the rule is broken — `ConfigureAwait` is what this library's own
+documented style produces everywhere, so this is the shape you are most likely to have
+written. `ConfigureAwait` returns an awaitable that is not a task, and this package
+declares no assertion on it, so moving the `await` outward would leave the rewrite with
+no receiver.
+
+**A chained assertion never reports.** In `(await task).ShouldBeSome().Name`, something
+else reads the assertion's result. Moving the `await` outward would bind `.Name` to the
+assertion's task rather than to its value, so the rewrite would change what the test
+does.
+
+The rule is scoped to an `await` of `Task<T>` or `ValueTask<T>` written directly, and to
+an assertion whose result nothing else reads. Both exclusions exist for the same reason:
+outside them, moving the `await` changes what is awaited.
+
 ## Changing a rule
 
 You configure every rule through `.editorconfig`, the standard way. Raise one:
@@ -762,3 +950,8 @@ unwrap that throws fails the test anyway.
 
 You cannot drop the analyzer and keep the library, because both ship in one package.
 `.editorconfig` is how you turn rules off.
+
+The `WMS` rules configure the same way, through `dotnet_diagnostic.WMS2001.severity`
+and the like. You can drop those entirely by removing the `Waystone.Monads.Shouldly`
+package reference, since the analyzer ships with it — which you cannot do for the `WM`
+rules, because they ship inside the library.
