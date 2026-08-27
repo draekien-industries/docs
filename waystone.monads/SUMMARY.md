@@ -30,6 +30,7 @@
 
 * [Overview](companion-packages/README.md)
 * [Waystone.Monads.Shouldly](companion-packages/shouldly.md)
+* [Waystone.Monads.Linq](companion-packages/linq.md)
 
 ## Upgrading and Deprecations
 

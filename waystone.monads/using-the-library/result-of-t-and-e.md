@@ -393,7 +393,9 @@ It stops pulling from the stream at the first `Err`, so the work behind the late
 
 ### AsEnumerable
 
-Use `AsEnumerable` on a single `Result` to treat it as a sequence of nothing or one, which is what lets the methods above compose out of LINQ.
+Use `AsEnumerable` on a single `Result` to treat it as a sequence of nothing or one, which is what lets the methods above compose out of LINQ. It discards the error on the way — an `Err` becomes an empty sequence.
+
+To write a query that stays a `Result` and keeps the error, see [Waystone.Monads.Linq](../../companion-packages/linq.md).
 
 ```csharp
 Result<int, string> result = Result.Ok<int, string>(1);
