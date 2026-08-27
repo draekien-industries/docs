@@ -42,3 +42,4 @@
 * [v4.x to v5.x](upgrading-and-deprecations/v4-to-v5.md)
 * [v5.x to v6.x](upgrading-and-deprecations/v5-to-v6.md)
 * [Every v7 break](upgrading-and-deprecations/v7-breaks.md)
+* [Upgrade with an agent](upgrading-and-deprecations/v7-agent-prompt.md)
