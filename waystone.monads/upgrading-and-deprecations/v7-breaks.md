@@ -1,0 +1,124 @@
+---
+description: >-
+  Every break in 7.0.0, the compiler diagnostic it produces, and whether a code
+  fix handles it.
+---
+
+# Every v7 break
+
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
+This is the reference list. For the upgrade itself, with an agent prompt and the order
+to work in, go to [6.x to 7.0.0](v6-to-v7.md) or [5.x to 7.0.0](v5-to-v7.md).
+
+## Start with the silent ones
+
+Three changes leave your code compiling and change what it does. Nothing in your build
+output will mention them, so they are the only part of this upgrade you have to go
+looking for.
+
+| What changed | What happens now | Where to look |
+| --- | --- | --- |
+| A delegate passed to `Map`, `MapAsync`, `Reduce` or `ReduceAsync` on an `Option` returns null | Throws `ArgumentNullException`, naming the delegate parameter — `map` or `reduce`. In 6.x the null was carried into the `Some`. | Any projection returning a nullable reference, a `FirstOrDefault`, a dictionary lookup, or an explicit `return null` |
+| A factory passed to `AndThen` or `AndThenAsync` returns a null `Option` or `Result` | Throws `ArgumentNullException`, naming `optionFactory` or `resultFactory` | Factories that can return a null monad, usually from a field or a cache |
+| A `MonadOptionsScope` is disposed when it is not the innermost open scope | Nothing is restored, and the library writes a `ScopeDisposedOutOfOrder` diagnostic event. In 6.x it restored the wrong options silently. | Any scope disposed by hand rather than with `using`, or held in a field |
+
+The first two throw where 6.x carried a null onward. That is the intended fix — the null
+was going to surface later as a `NullReferenceException` from code that had every right
+to assume a `Some` held a value. To map a null onto a `None`, use `AndThen` with
+`Option.FromNullable`.
+
+The third has its own section on [Configuration](../using-the-library/configuration.md#what-happens-when-you-dispose-out-of-order),
+and the event is on [Observability](../using-the-library/observability.md#watching-for-a-scope-disposed-out-of-order).
+
+## The loud ones
+
+These break the build. The compiler finds them for you; the table tells you what the
+diagnostic actually means, because several of them name something other than the real
+problem.
+
+| What changed | Old → new | Diagnostic | Code fix |
+| --- | --- | --- | --- |
+| Parameter names across `Option`, `Result` and their case types | `MapOr(default: x, …)` → `MapOr(defaultValue: x, …)`, and the same for `else` → `valueFactory`, `createDefault` → `defaultFactory`, `createOther` → `optionFactory` / `resultFactory` | `CS1739` | **Yes** |
+| Implicit conversions to `Option` and `Result` removed | `Option<int> o = 5;` → `Option.Some(5)` | `CS0029`, `CS1503` | **Yes** |
+| Per-family extension classes collapsed into one class per monad | `AndThenExtensions.AndThenAsync(o, f)` → `o.AndThenAsync(f)` | `CS0103`, or `CS0234` on a `using static` | No |
+| `MonadOptions` authoring moved to `MonadOptionsBuilder` | `Use…` methods are on the builder | `CS1061`, `CS1503`, `CS0029`, `CS0103` | No |
+| `MonadOptions.UseExceptionLogger` removed | `UseLogger`, `UseLoggerFactory` or `UseLoggerFactoryFrom` from `Waystone.Monads.Extensions.Logging` | `CS1061` | No |
+| `ErrorCode.FromEnum` removed | `[ErrorCodeCatalog]` and the generated `ToErrorCode()` | `CS0117` | No |
+| `Error.FromEnum` removed | `[ErrorCodeCatalog]` and the generated `{Enum}Catalog.Errors.{Member}(message)` | `CS0117` | No |
+| `ErrorCodeFactory.FromEnum` virtual removed | `[ErrorCodeCatalog]`; enum codes are settled at compile time now | `CS0115` | No |
+| `Result.Err<TOk>(Enum, string)` overload removed | `Result.Err(code.ToError(message))` | `CS1501` | No |
+| An async chaining step's delegate returns `Task` | Return `ValueTask`, or wrap it in an async lambda | `CS0411`, plus [`WM2022`](../using-the-library/analyzer-rules.md#wm2022) | **Yes**, the wrap |
+
+The four `FromEnum`-family removals and `UseExceptionLogger` were all obsolete in 6.x
+with a message naming the replacement. Nothing in 7.0.0 is removed without that warning
+release, with one exception below.
+
+### Where a code fix exists, run it first
+
+`Waystone.Monads` ships fixes for the three rows marked **Yes**. They handle the bulk of
+a real upgrade, and running them before you edit anything by hand keeps the diff small.
+
+The two keyed to `CS1739`, `CS0029` and `CS1503` attach to the **compiler diagnostic**,
+not to an analyzer rule — so `dotnet format analyzers` cannot apply them. They appear on
+the error in your IDE, where **Fix all occurrences in Project** applies them in a batch.
+The `WM2022` fix is an ordinary analyzer fix and works either way. The
+[upgrade pages](v6-to-v7.md) say this again in context.
+
+{% hint style="info" %}
+**`.AsTask()` is not a v7 break.** If you are coming from 5.x you will also hit the v6
+change that made every async extension return `ValueTask`, which is where `.AsTask()`
+comes in. That is on [v5.x to v6.x](v5-to-v6.md#loud-change-async-extensions-all-return-valuetask),
+and the [5.x to 7.0.0 page](v5-to-v7.md) tells you where in the order to do it.
+{% endhint %}
+
+## The one removal with no warning release
+
+**The implicit conversions to `Option` and `Result` were removed without being
+obsoleted first**, which is not how this repository normally treats public API.
+
+The reason is mechanical rather than a decision to move fast: an obsoleted implicit
+conversion still takes part in overload resolution. Marking it `[Obsolete]` would have
+produced a warning and left the conversion working — so the silent wrong-branch
+behaviour the removal exists to prevent would have carried on for another major version.
+There was no ordering that gave both a warning and a fix.
+
+The extension-class collapse has the same shape for a different reason: two static
+classes declaring the same extension member for the same receiver is `CS0121`, so the
+old and new spellings could not coexist for a version.
+
+## Diagnostics that mask other diagnostics
+
+Two things fire at the declaration phase, and a declaration error stops the compiler
+reporting body errors in the same project. So your first green build is not the whole
+job.
+
+**`CS0234` on a `using static`.** A missing type name blocks overload resolution in
+every file that has the `using`, so parameter renames and conversion errors in those
+files go unreported until you fix the qualifier.
+
+**`CS0115` on an `ErrorCodeFactory.FromEnum` override.** A codebase with both an
+override and call sites sees only the override error, fixes it, and then discovers the
+call sites on the next build.
+
+Build, fix, and build again. Twice is not paranoia here.
+
+## Rule ids that no longer exist
+
+`WM2010` is retired in 7.0.0. It reported a `Result<T, T>` whose two implicit
+conversions were ambiguous, and there are no implicit conversions left for it to report
+on.
+
+Retired ids are never reused, so a stale `.editorconfig` entry or `#pragma` naming one
+does nothing at all — it does not error, and it does not warn. The full list of retired
+ids is on [Deprecations](deprecations.md#rule-ids-that-are-gaps).
