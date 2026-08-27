@@ -145,3 +145,4 @@ These have no Rust counterpart. Do not go looking for the original.
 | The state overloads | Pass a captured value as an argument so the delegate allocates no closure |
 | Implicit conversions | A `T` converts to `Option<T>`; a `TOk` or `TErr` converts to `Result<TOk, TErr>` |
 | `MonadOptions` | Global configuration — see [configuration.md](configuration.md "mention") |
+| `Select`, `SelectMany`, `Where` | C# query syntax over a monad, in a companion package — see [Waystone.Monads.Linq](../companion-packages/linq.md) |

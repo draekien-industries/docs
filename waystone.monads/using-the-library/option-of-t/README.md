@@ -331,7 +331,9 @@ It stops pulling from the stream at the first `None`, so the work behind the lat
 
 ### AsEnumerable
 
-Use `AsEnumerable` on a single `Option` to treat it as a sequence of nothing or one. `Flatten` above is built out of it, and it is what lets an `Option` join a LINQ query.
+Use `AsEnumerable` on a single `Option` to treat it as a sequence of nothing or one. `Flatten` above is built out of it, and it is the way out of the monad into `System.Linq`.
+
+It is not how you write a LINQ query over an `Option`. For that — `from`, `select`, `where`, staying inside the `Option` throughout — see [Waystone.Monads.Linq](../../companion-packages/linq.md).
 
 ```csharp
 Option<string> maybeName = Option.Some("Pike");
