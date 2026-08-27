@@ -6,6 +6,18 @@ description: >-
 
 # Configuration
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads.FluentValidation --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads.FluentValidation" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 Configure this library through `MonadOptions`, the same entry point you use for
 [Waystone.Monads](https://app.gitbook.com/o/eVVl3k56v8DR211ydaly/s/nQgeZ1m9pTmEbKceyEkw/ "mention").
 There is no separate options class to reach for.
@@ -53,7 +65,8 @@ The message cannot be null or whitespace. Passing either throws an
 
 ## Chaining
 
-Both methods return `MonadValidationOptions`, so you can chain them together:
+Both methods return `MonadValidationOptionsBuilder`, so you can chain them
+together:
 
 ```csharp
 MonadOptions.Configure(options => options
@@ -61,16 +74,21 @@ MonadOptions.Configure(options => options
     .UseFallbackValidationErrorMessage("Please check the values you supplied."));
 ```
 
-They do not return `MonadOptions`, so configure the core options first if you need
-both:
+They do not return `MonadOptionsBuilder`, so configure the core options first if
+you need both:
 
 ```csharp
 MonadOptions.Configure(options =>
 {
-    options.UseExceptionLogger((ex, caller) => Log.Error(ex, "Monad exception"));
+    options.UseLogger(logger);
     options.UseValidationErrorCode("input.invalid");
 });
 ```
+
+{% hint style="info" %}
+`UseLogger` comes from `Waystone.Monads.Extensions.Logging`. It replaces
+`MonadOptions.UseExceptionLogger`, which 7.0.0 removed.
+{% endhint %}
 
 ## Scoped configuration
 

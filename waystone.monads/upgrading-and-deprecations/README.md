@@ -21,7 +21,7 @@ page in order — the changes stack.
 | [v3.x to v4.x](v3-to-v4.md) | `MonadsGlobalConfig` becomes `MonadOptions` |
 | [v4.x to v5.x](v4-to-v5.md) | Some async extensions return `ValueTask` instead of `Task` |
 | [v5.x to v6.x](v5-to-v6.md) | Three changes that keep compiling and change what your code does |
-| [v6.x to v7.0.0](v6-to-v7.md) | Three more silent changes, and eight that break the build |
+| [v6.x to v7.0.0](v6-to-v7.md) | Three more silent changes, and eleven that break the build |
 | [v5.x to v7.0.0](v5-to-v7.md) | Both of the above at once, and the order to do them in |
 
 **If you are skipping v6, take the combined page rather than reading the other two in

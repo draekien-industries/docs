@@ -143,14 +143,17 @@ Rather than repeat two tables, here is where each list lives:
 * **v6's loud changes** — `ValueTask` everywhere, `FlatMap` removed, deriving from
   `Option` or `Result` no longer allowed. On [v5.x to v6.x](v5-to-v6.md).
 * **v7's loud changes** — implicit conversions removed, configuration moved to a builder,
-  extension classes collapsed, five obsolete members gone, parameter renames. On
+  extension classes collapsed, five obsolete members gone, parameter renames, and
+  `TryAsync` and `CollectAsync` returning `ValueTask`. On
   [v6.x to v7.0.0](v6-to-v7.md), and as a reference table with diagnostics on
   [Every v7 break](v7-breaks.md).
 
 Two of v6's loud changes are worth flagging here because they multiply on this path:
 
-**`.AsTask()` sites come from v6, not v7.** If you see `CS0029` between `Task` and
-`ValueTask`, that is the v6 change. Prefer changing the declared type or awaiting the
+**`.AsTask()` sites come from both versions.** v6 moved the async extensions to
+`ValueTask`; v7 moved `TryAsync` and `CollectAsync` too. Coming from 5.x you cannot tell
+the two apart from the diagnostic, and you do not need to — treat every `CS0029` between
+`Task` and `ValueTask` the same way. Prefer changing the declared type or awaiting the
 value; `.AsTask()` allocates.
 
 **`FlatMap` and the removed extension classes overlap.** A call written as
@@ -190,3 +193,4 @@ see [v5.x to v6.x](v5-to-v6.md#analyzer-rules-that-changed) — and `WM2022` in 
 | Extension classes collapsed | v7 | **Yes** | Drop the `using static` |
 | Five obsolete members removed | v7 | **Yes** | See the v7 page |
 | Parameter renames | v7 | **Yes**, for named arguments only | Take the code fix on `CS1739` |
+| `TryAsync` and `CollectAsync` return `ValueTask` | v7 | **Yes**, if you name the type | Change the declared type, or add `.AsTask()` |

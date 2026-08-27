@@ -134,9 +134,10 @@ Rebuild and re-count either way.
   positional arguments to dodge it; the name was chosen to say what the argument is for.
 - CS0029 / CS1503 — cannot convert. Either the implicit conversions to Option and Result
   were removed, so wrap the value explicitly in Option.Some, Result.Ok or Result.Err; or
-  an async member now returns ValueTask<T> where it returned Task<T>. For the latter,
+  an async member now returns ValueTask<T> where it returned Task<T> — Option.TryAsync,
+  Result.TryAsync and CollectAsync are the three that changed in 7.0.0. For the latter,
   prefer changing the local's type or awaiting it to converting with .AsTask(), which
-  allocates.
+  allocates. A call to Task.WhenAll is the one place .AsTask() is the right answer.
 - CS0103 / CS0234 — the name does not exist. The per-family extension classes were
   collapsed into one class per monad. A using static or a qualified static call naming
   the old class must move to OptionExtensions or ResultExtensions, or better, become a

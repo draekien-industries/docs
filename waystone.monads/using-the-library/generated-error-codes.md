@@ -6,19 +6,32 @@ description: >-
 
 # Generated error codes
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## What this page is for
 
-`ErrorCode.FromEnum(InputErrors.Missing)` works out the string `"InputErrors.Missing"`
-at run time, by reflecting over the enum. That means the string your callers see is
-not written anywhere you can point at. You cannot use it in a `switch`, you cannot put
-it in an attribute, and you cannot find every place that reads it.
+Up to 6.x, `ErrorCode.FromEnum(InputErrors.Missing)` worked out the string
+`"InputErrors.Missing"` at run time, by reflecting over the enum. That meant the string
+your callers saw was not written anywhere you could point at. You could not use it in a
+`switch`, you could not put it in an attribute, and you could not find every place that
+read it.
 
 Mark the enum with `[ErrorCodeCatalog]` and `Waystone.Monads` generates those strings
 as constants when you build. This ships inside the package from 6.2.0. You add no
 reference and configure nothing.
 
 {% hint style="warning" %}
-`ErrorCode.FromEnum` is obsolete from 6.2.0 and removed in 7.0.0, so this page
+`ErrorCode.FromEnum` was obsolete from 6.2.0 and 7.0.0 removes it, so this page
 describes the only supported way to get an error code from an enum. See
 [deprecations.md](../upgrading-and-deprecations/deprecations.md "mention") for the migration.
 {% endhint %}
@@ -160,20 +173,20 @@ house style and an individual enum departs from it where it needs to.
 The generated strings come from the format and nothing else. In particular:
 
 {% hint style="warning" %}
-**A generated member never consults your `ErrorCodeFactory`.** If you install your own
-through `MonadOptions.UseErrorCodeFactory`, `ErrorCode.FromEnum` starts returning your
-codes and the generated members keep returning theirs. The generator runs at build time
-and cannot run a factory you install at run time.
+**A generated member never consults your `ErrorCodeFactory`.** The generator runs at
+build time and cannot run a factory you install at run time. A factory installed through
+`MonadOptions.UseErrorCodeFactory` still shapes the codes it derives from an exception;
+it has no say over an attributed enum.
 
 That holds for every generated member, including the fallback for an undeclared value.
-If you are using a custom factory today to shape the codes an enum produces, say the
+If you were using a custom factory in 6.x to shape the codes an enum produces, say the
 same thing with `Format` instead — you get the same strings as constants, and one
 answer rather than two.
 {% endhint %}
 
-Shaping enum codes is the part of `ErrorCodeFactory` the format replaces, and that part
-is obsolete from 6.2.0: `ErrorCodeFactory.FromEnum` and `ErrorCode.FromEnum` both
-report `CS0618` and are removed in 7.0.0. See
+Shaping enum codes is the part of `ErrorCodeFactory` the format replaces, and 7.0.0
+removes that part. `ErrorCodeFactory.FromEnum` and `ErrorCode.FromEnum` reported
+`CS0618` from 6.2.0 and are gone now — the override produces `CS0115`. See
 [deprecations.md](../upgrading-and-deprecations/deprecations.md "mention"). `FromException` is not affected.
 
 ## Reviewing your codes as a list
@@ -262,7 +275,7 @@ public enum OrderErrorCode   // rename this -> every code changes
 }
 ```
 
-This is not new — `ErrorCode.FromEnum` has always worked this way, and `ErrorCode`'s
+This is not new — `ErrorCode.FromEnum` worked the same way, and `ErrorCode`'s
 own guidance is that a code should not change between occurrences of the same error.
 Treat an attributed enum as a published contract, the way you would treat a URL.
 

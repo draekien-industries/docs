@@ -21,7 +21,7 @@ The API can still change before `7.0.0` is stable.
 ## What this page is for
 
 `Waystone.Monads` ships a Roslyn analyzer inside the package. Install or upgrade to
-6.0.0 and you get these rules. You add no reference and configure nothing.
+7.0.0 and you get these rules. You add no reference and configure nothing.
 
 Every rule has an ID like `WM1002`. The first digit tells you how much it matters:
 

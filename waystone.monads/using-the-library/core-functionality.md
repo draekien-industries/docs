@@ -51,27 +51,32 @@ Result<int, Error> ok = Result.Ok<int>(1);
 Result<int, Error> err = Result.Err<int>(new Error("MyCode", "Something went wrong..."));
 ```
 
-You can also create the error straight from an enum. This derives the error code
-the same way [`ErrorCode.FromEnum`](errors-and-exceptions.md#error-code-from-enum)
-does, and the message is required.
+You can also create the error from an enum. Mark the enum with `[ErrorCodeCatalog]` and
+the source generator gives you a factory per member, with the message required.
 
 ```csharp
+[ErrorCodeCatalog]
 enum UserErrors
 {
     NotFound
 }
 
-Result<User, Error> err = Result.Err<User>(UserErrors.NotFound, "The user was not found");
+Result<User, Error> err = Result.Err<User>(
+    UserErrorsCatalog.Errors.NotFound("The user was not found"));
 ```
+
+{% hint style="info" %}
+`[ErrorCodeCatalog]` generates `UserErrorsCatalog` at compile time. Passing an enum
+straight to `Result.Err` was removed in 7.0.0 — see
+[Generated error codes](generated-error-codes.md).
+{% endhint %}
 
 {% hint style="warning" %}
 **Neither an `Ok` nor an `Err` can hold null.** Pass one and you get an
-`ArgumentNullException`. That covers the factory methods above and the implicit
-conversions below, because everything funnels through the same guard.
+`ArgumentNullException`. Every factory method above funnels through the same guard.
 
 ```csharp
-Result.Ok<string, Error>(null!);    // throws
-Result<string, int> result = null!; // throws
+Result.Ok<string, Error>(null!); // throws
 ```
 
 New in 5.5.0. Before that, `Result.Ok<string, Error>(null!)` gave you an `Ok`
@@ -103,8 +108,9 @@ You also get a `None<User>` if the factory returns null, because a `Some` cannot
 **A cancellation is not caught.** `Try` and `TryAsync` let an
 `OperationCanceledException` propagate, so a cancelled operation throws rather
 than becoming a `None`. Cancelling is you asking the work to stop, not the work
-failing. Call `MonadOptions.UseCancellationAsFailure()` if you want the pre-6.0.0
-behaviour back — see [Configuration](configuration.md#cancellation).
+failing. Call `MonadOptions.Configure(options => options.UseCancellationAsFailure())` if
+you want the pre-6.0.0 behaviour back — see
+[Configuration](configuration.md#cancellation).
 {% endhint %}
 
 {% hint style="danger" %}
@@ -117,25 +123,25 @@ behaviour back — see [Configuration](configuration.md#cancellation).
 {% tab title="Result" %}
 ```csharp
 Result<User, string> result = Result.Try(
-    onOk: () => GetCurrentUser(),
-    onErr: ex => ex.Message
+    factory: () => GetCurrentUser(),
+    onError: ex => ex.Message
 );
 ```
 
-If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onErr` delegate you provide is invoked.&#x20;
+If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onError` delegate you provide is invoked.&#x20;
 
-`Try` also calls `onErr` when the factory returns null, because an `Ok` cannot hold null. It passes you an `ArgumentNullException` naming the `factory` argument. Nothing is logged, because nothing threw.
+`Try` also calls `onError` when the factory returns null, because an `Ok` cannot hold null. It passes you an `ArgumentNullException` naming the `factory` argument. Nothing is logged, because nothing threw.
 
 This is the one place a null does not throw. `Try` exists so you can hand over a delegate and learn whether a workable value came back, without wrapping the call in a `try` yourself — so it turns the null into an `Err` for you.
 
 {% hint style="info" %}
-The `onErr` delegate gives you a way to transform the caught exception into an error type of your choosing.
+The `onError` delegate gives you a way to transform the caught exception into an error type of your choosing.
 {% endhint %}
 
 If you are happy with the built in `Error` type, use the single type parameter
 overload. It converts the exception with
 [`Error.FromException`](errors-and-exceptions.md#error-from-exception), so you do
-not pass an `onErr` delegate.
+not pass an `onError` delegate.
 
 ```csharp
 Result<User, Error> result = Result.Try<User>(() => GetCurrentUser());
@@ -558,7 +564,7 @@ Uri avatar = maybeAvatar.UnwrapOrElse(() => GenerateAvatar());
 Result<Config, Error> getConfigResult = GetConfig("Ashton");
 //                    ^? Err<Config, Error>
 
-Config config = getConfigResult.UnwrapOrElse(() => GenerateDefaultConfig());
+Config config = getConfigResult.UnwrapOrElse(error => GenerateDefaultConfig());
 //     ^? generated config
 ```
 {% endtab %}
@@ -702,7 +708,7 @@ Uri avatar = maybeUser.MapOrElse(
 ```csharp
 Result<User, Error> getUserResult = GetUser("Changebringer");
 Uri avatar = getUserResult.MapOrElse(
-    () => GenerateAvatar(),
+    error => GenerateAvatar(),
     user => user.Avatar
 );
 ```
@@ -811,7 +817,7 @@ Removes one level of nesting from an `Result<Result<T, E>, E>`&#x20;
 ```csharp
 Result<int, string> DoWork(string source);
 Result<string, string> start = Result.Ok<string, string>("Storm Weaver");
-Result<Result<int, string, string>> output= start.Map(x => DoWork(x));
+Result<Result<int, string>, string> output = start.Map(x => DoWork(x));
 Result<int, string> flattened = output.Flatten();
 ```
 {% endtab %}

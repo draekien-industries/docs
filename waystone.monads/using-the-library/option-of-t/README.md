@@ -1,5 +1,17 @@
 # Option\<T>
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## Printing and logging
 
 **`ToString()` never shows the wrapped value.** You get the state and nothing else:
@@ -71,7 +83,7 @@ Without `AndThen`, you'd need to `Map` and then flatten manually, or deal with n
 {% endhint %}
 
 {% hint style="warning" %}
-This method was called `FlatMap` before 5.4.0. `FlatMap` still works and still forwards here, but it is `[Obsolete]` and goes away in v6.0.0. `WM2014` reports each call site and its quick fix does the rename. See [deprecations.md](../../upgrading-and-deprecations/deprecations.md "mention").
+This method was called `FlatMap` before 5.4.0. `FlatMap` was `[Obsolete]` through 5.x and 6.0.0 removed it, so a call to it is `CS0117` rather than a warning. `WM2014`, the rule that reported each call site and offered the rename, retired with it — delete any `.editorconfig` entry for that id. See [deprecations.md](../../upgrading-and-deprecations/deprecations.md "mention").
 {% endhint %}
 
 `Result<TOk, TErr>` has spelled this `AndThen` all along, so the two monads now agree.
@@ -240,8 +252,8 @@ List<Option<string>> collection = [
     Option.None<string>()
 ];
 
-List<Option<string>> filtered = collection.Filter(x => x == "Hello");
-//                   ^? [Option.Some("Hello"), Option.None<string>(), Option.None<string>()]
+IEnumerable<Option<string>> filtered = collection.Filter(x => x == "Hello");
+//                          ^? [Option.Some("Hello"), Option.None<string>(), Option.None<string>()]
 ```
 
 ### Map
@@ -255,8 +267,8 @@ List<Option<string>> collection = [
     Option.None<string>()
 ];
 
-List<Option<string>> mapped = collection.Map(x => $"{x}!");
-//                   ^? [Option.Some("Hello!"), Option.Some("World!"), Option.None<string>()]
+IEnumerable<Option<string>> mapped = collection.Map(x => $"{x}!");
+//                          ^? [Option.Some("Hello!"), Option.Some("World!"), Option.None<string>()]
 ```
 
 ### Flatten
@@ -366,8 +378,8 @@ List<Option<string>> collection = [
     Option.Some("World")
 ];
 
-Option<string> first = collection.FirstOr("Victor", x => x.StartsWith("V"));
-//             ^? Option.Some("Victor")
+string first = collection.FirstOr(x => x.StartsWith("V"), "Victor");
+//     ^? "Victor"
 ```
 
 {% hint style="info" %}
@@ -384,6 +396,6 @@ List<Option<string>> collection = [
     Option.Some("World")
 ];
 
-Option<string> first = collection.FirstOrElse(() => "Victor", x => x.StartsWith("V"));
-//             ^? Option.Some("Victor")
+string first = collection.FirstOrElse(x => x.StartsWith("V"), () => "Victor");
+//     ^? "Victor"
 ```

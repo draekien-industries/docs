@@ -48,7 +48,7 @@ Take for example the below code:
 Request? PrepareRequest(decimal input); // can return null or throw an exception
 Response DoWork(Request request);       // can still return null or throw
 
-Response SaveData(decmial? input)
+Response SaveData(decimal? input)
 {
     if (input is null) {
         return Fallback();

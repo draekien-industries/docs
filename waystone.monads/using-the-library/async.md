@@ -56,16 +56,16 @@ The async extensions live in the `Waystone.Monads.Options.Extensions` and
 are working with.
 {% endhint %}
 
-## Every async extension returns ValueTask
+## Every async member returns ValueTask
 
-From 6.0.0 the rule is uniform: **every** async extension on `Option` and
-`Result` returns `ValueTask` or `ValueTask<T>`. In 5.x some returned `Task` and
-some returned `ValueTask`, and you had to check.
+From 7.0.0 the rule has no exceptions: **every** async member on `Option` and
+`Result` returns `ValueTask` or `ValueTask<T>`. That includes the static factories.
+`Option.TryAsync`, `Result.TryAsync` and `CollectAsync` returned `Task` up to
+6.7.0 and return `ValueTask` now — see
+[Loud change: TryAsync and CollectAsync return ValueTask](../upgrading-and-deprecations/v6-to-v7.md#loud-change-tryasync-and-collectasync-return-valuetask).
 
-The rule covers extension methods. `Option.TryAsync` and `Result.TryAsync` are
-static factories rather than extensions, so they still return `Task<Option<T>>`
-and `Task<Result<TOk, TErr>>`. Never call `.AsTask()` on a `TryAsync` — it already
-hands you a `Task`.
+6.0.0 got the extension methods there. In 5.x some returned `Task` and some
+returned `ValueTask`, and you had to check.
 
 ```csharp
 ValueTask<string> output = result.MatchAsync(
@@ -117,8 +117,8 @@ cannot hold one. Nothing is logged in that case, because nothing threw.
 ```csharp
 // supply your own error type
 Result<User, string> result = await Result.TryAsync(
-    onOk: () => FetchUserAsync(id),
-    onErr: ex => ex.Message
+    asyncFactory: () => FetchUserAsync(id),
+    onError: ex => ex.Message
 );
 
 // or let the error type default to Error
@@ -126,9 +126,9 @@ Result<User, Error> builtIn = await Result.TryAsync<User>(() => FetchUserAsync(i
 ```
 
 The single type parameter overload converts the exception with
-`Error.FromException`, so you do not pass an `onErr` delegate.
+`Error.FromException`, so you do not pass an `onError` delegate.
 
-`TryAsync` also calls `onErr` when the task completes with null, passing you an
+`TryAsync` also calls `onError` when the task completes with null, passing you an
 `ArgumentNullException` that names the `asyncFactory` argument.
 {% endtab %}
 {% endtabs %}

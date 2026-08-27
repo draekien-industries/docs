@@ -1,5 +1,17 @@
 # Errors and Exceptions
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## Built in Error Types
 
 Waystone.Monads provides a set of built in error types for convenience in the case you do not wish to write your own.
@@ -48,6 +60,7 @@ public static class ErrorCodes
 You may want to use enums to define and organise your error codes, and then create `ErrorCode` instances during runtime from these enums. A factory method has been provided to facilitate this approach.
 
 ```csharp
+[ErrorCodeCatalog]
 public enum InputErrors
 {
     Missing = 1,
@@ -55,13 +68,17 @@ public enum InputErrors
     OutOfRange = 3
 }
 
+[ErrorCodeCatalog]
 public enum RegexErrors // etc.
+```
 
-var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing"
+```diff
+-var errorCode = ErrorCode.FromEnum(InputErrors.Missing); // "InputErrors.Missing"
++var errorCode = InputErrorsCatalog.Codes.Missing;        // "InputErrors.Missing"
 ```
 
 {% hint style="danger" %}
-**`ErrorCode.FromEnum` is obsolete from 6.2.0 and is removed in 7.0.0.** So is
+**`ErrorCode.FromEnum` was obsolete from 6.2.0 and 7.0.0 removes it.** So is
 overriding `ErrorCodeFactory.FromEnum` to shape what it returns. Mark the enum with
 `[ErrorCodeCatalog]` instead and use the members that generates —
 `OrderErrorCatalog.Codes.NotFound` where you can name the member, or the
@@ -128,6 +145,7 @@ uses [#error-code-from-enum](errors-and-exceptions.md#error-code-from-enum "ment
 under the hood to generate the `ErrorCode`.
 
 ```csharp
+[ErrorCodeCatalog]
 public enum InputErrors
 {
     Missing = 1,
@@ -135,17 +153,36 @@ public enum InputErrors
     OutOfRange = 3
 }
 
-Error error = Error.FromEnum(InputErrors.Malformed, "Failed to parse input as a number");
+```
+
+```diff
+-Error error = Error.FromEnum(InputErrors.Malformed, "Failed to parse input as a number");
++Error error = InputErrorsCatalog.Errors.Malformed("Failed to parse input as a number");
 //    ^? Code: "InputErrors.Malformed", Message: "Failed to parse input as a number"
 ```
 
-{% hint style="info" %}
-The message is required here, unlike `ErrorCode.FromEnum` which takes only the
-enum value. An `Error` always carries a human-readable message.
+{% hint style="danger" %}
+**`Error.FromEnum` was obsolete from 6.3.0 and 7.0.0 removes it.** Mark the enum with
+`[ErrorCodeCatalog]` and use the generated `Errors` factory, as above — or
+`value.ToError(message)` where you only know the member at run time. See
+[generated-error-codes.md](generated-error-codes.md "mention").
 {% endhint %}
 
-To create a `Result` directly from an enum, use `Result.Err<TOk>(enum, message)`.
-See [#creation](core-functionality.md#creation "mention").
+{% hint style="info" %}
+The message is required here, unlike the code-only form, which takes just the enum
+member. An `Error` always carries a human-readable message.
+{% endhint %}
+
+To create a `Result` directly from one of these, pass the generated error to
+`Result.Err`:
+
+```csharp
+Result<int, Error> result = Result.Err<int>(
+    InputErrorsCatalog.Errors.Malformed("Failed to parse input as a number"));
+```
+
+The `Result.Err<TOk>(enum, message)` overload that used to do this in one step was
+removed in 7.0.0. See [#creation](core-functionality.md#creation "mention").
 
 #### Error from Exception
 

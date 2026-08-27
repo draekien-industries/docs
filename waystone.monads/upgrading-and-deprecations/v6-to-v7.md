@@ -268,6 +268,36 @@ call that names its arguments, as `CS1739`.
 A code fix substitutes the new name. Do not switch to positional arguments to dodge it —
 the name was chosen to say what the argument is for.
 
+## Loud change: TryAsync and CollectAsync return ValueTask
+
+v6 made every async *extension* return `ValueTask` and left the static members alone.
+v7 finishes the job. `Option.TryAsync`, `Result.TryAsync` and `CollectAsync` returned
+`Task` up to 6.7.0 and return `ValueTask` now, so the rule has no exceptions left.
+
+**If you await the call, nothing changes.** You await a `ValueTask` the same way. It
+breaks only where you name the type or hand the task to something that wants a `Task`:
+
+```diff
+-Task<Option<int>> pending = Option.TryAsync(() => FetchAsync());
++ValueTask<Option<int>> pending = Option.TryAsync(() => FetchAsync());
+```
+
+```diff
+-await Task.WhenAll(Result.TryAsync(A, Fail), Result.TryAsync(B, Fail));
++await Task.WhenAll(
++    Result.TryAsync(A, Fail).AsTask(),
++    Result.TryAsync(B, Fail).AsTask());
+```
+
+You get `CS0029` on the assignment and `CS1503` on the `Task.WhenAll` call. There is no
+code fix. Two things to carry over from the v6 change:
+
+* **Await it once, and only once.** This matters when you store it first, as above.
+* `.AsTask()` allocates. Only reach for it where a `Task` is genuinely required.
+
+If you were following [v5.x to v6.x](v5-to-v6.md#loud-change-async-extensions-all-return-valuetask),
+it told you to leave `TryAsync` alone. That advice held for v6 and stops holding here.
+
 ## Analyzer rules that changed
 
 ### Added
@@ -313,4 +343,5 @@ Do these after the upgrade, not during it.
 | Extension classes collapsed | **Yes** | Drop the `using static`; call as an extension |
 | Five obsolete members removed | **Yes** | See the table above |
 | Parameter renames | **Yes**, only for named arguments | Take the code fix on `CS1739` |
+| `TryAsync` and `CollectAsync` return `ValueTask` | **Yes**, only if you name the type | Change the declared type, or add `.AsTask()` |
 | `WM2010` retired | **No** | Delete any `.editorconfig` entry for it |

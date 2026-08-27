@@ -1,10 +1,22 @@
 # Result\<T, E>
 
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+
+```
+dotnet add package Waystone.Monads --prerelease
+```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
 ## What a Result can hold
 
-Neither side of a `Result` can hold null. `Result.Ok<string, Error>(null!)` and
-`Result<string, int> x = null!;` both throw `ArgumentNullException`, because
-`TOk` and `TErr` are constrained `notnull` and the constructors now enforce it.
+Neither side of a `Result` can hold null. `Result.Ok<string, Error>(null!)` throws
+`ArgumentNullException`, because `TOk` and `TErr` are constrained `notnull` and the
+constructors enforce it.
 
 A default value is fine. `Result.Ok<int, string>(0)` is an `Ok` holding `0`, and
 `Result.Ok<Guid, string>(Guid.Empty)` is an `Ok` holding `Guid.Empty`. This is
@@ -210,18 +222,17 @@ Use `AndThen` when you need to chain a series of functions together that all ret
 
 ```csharp
 Result<string, string> SquareThenToString(int value)
-    => Result.Try<int, string>(() => value ^ 2, _ => "overflow")
+    => Result.Try<int, string>(() => checked(value * value), _ => "overflow")
         .Map(x => x.ToString());
-        
-var x = Result.Ok<int, string>(2);
-var y = Result.Ok<int, string>(4);
-Debug.Assert(x.AndThen(SquareThenToString) == y);
 
-var x = Result.Ok<int, string>(Int.MaxValue);
-Debug.Assert(x.AndThen(SquareThenToString) == Result.Err<string, string>("overflow"));
+Result<int, string> two = Result.Ok<int, string>(2);
+Debug.Assert(two.AndThen(SquareThenToString) == Result.Ok<string, string>("4"));
 
-var x = Result.Err<int, string>("NaN");
-Debug.Assert(x.AndThen(SquareThenToString) == Result.Err<string, string>("NaN"));
+Result<int, string> big = Result.Ok<int, string>(int.MaxValue);
+Debug.Assert(big.AndThen(SquareThenToString) == Result.Err<string, string>("overflow"));
+
+Result<int, string> nan = Result.Err<int, string>("NaN");
+Debug.Assert(nan.AndThen(SquareThenToString) == Result.Err<string, string>("NaN"));
 
 ```
 
@@ -268,19 +279,20 @@ Debug.Assert(x.Or(y) == Result.Err<int, string>("error 2"));
 Use `OrElse` when you need to chain a series of functions together that all return `Result` instances and you only care about the first `Ok` or the last `Err`. It performs the same operation as [#or](result-of-t-and-e.md#or "mention") for each lazily evaluated function.
 
 ```csharp
-Result<string, string> SquareThenToString(int value)
-    => Result.Try<int, string>(() => value ^ 2, _ => "overflow")
-        .Map(x => x.ToString());
-        
-var x = Result.Ok<int, string>(2);
-var y = Result.Ok<int, string>(4);
-Debug.Assert(x.OrElse(SquareThenToString) == x;
+// OrElse runs on the Err half, so its factory takes the error — not the ok value.
+Result<int, string> Recover(string error)
+    => error == "NaN"
+        ? Result.Ok<int, string>(0)
+        : Result.Err<int, string>(error);
 
-var x = Result.Ok<int, string>(Int.MaxValue);
-Debug.Assert(x.OrElse(SquareThenToString) == Result.Err<string, string>("overflow"));
+Result<int, string> two = Result.Ok<int, string>(2);
+Debug.Assert(two.OrElse(Recover) == two);
 
-var x = Result.Err<int, string>("NaN");
-Debug.Assert(x.OrElse(SquareThenToString) == Result.Err<string, string>("NaN"));
+Result<int, string> nan = Result.Err<int, string>("NaN");
+Debug.Assert(nan.OrElse(Recover) == Result.Ok<int, string>(0));
+
+Result<int, string> overflow = Result.Err<int, string>("overflow");
+Debug.Assert(overflow.OrElse(Recover) == overflow);
 
 ```
 
