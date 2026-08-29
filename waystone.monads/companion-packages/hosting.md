@@ -36,14 +36,24 @@ app.Run();
 
 That `AddWaystoneMonads` is an extension on `IHostApplicationBuilder`, which both
 `WebApplicationBuilder` and the builder from `Host.CreateApplicationBuilder`
-implement.
+implement. It has the same three overloads as the one on `IServiceCollection`,
+including the one that hands your delegate the host's built provider:
+
+```csharp
+builder.AddWaystoneMonads((provider, options) =>
+    options.UseFallbackErrorCode("Contoso")
+           .UseLoggerFactoryFrom(provider));
+```
+
+That is how you point the logging package at the host's `ILoggerFactory` — see
+[Wiring a companion package](dependency-injection.md#wiring-a-companion-package).
 
 This package depends on
 [Waystone.Monads.Extensions.DependencyInjection](dependency-injection.md), so
 installing it gives you both. Read that page for what the configuration delegate
-can do, how the container supplies an `ErrorCodeFactory` and an `ILoggerFactory`,
-and how to bind settings from `IConfiguration`. Everything here is about *when*
-those settings are applied.
+can do, how the container supplies an `ErrorCodeFactory`, how to wire a companion
+package from the container, and how to bind settings from `IConfiguration`.
+Everything here is about *when* those settings are applied.
 
 ## The call it removes
 

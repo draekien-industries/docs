@@ -20,9 +20,9 @@ application's lifetime.
 there instead.** Install
 [Waystone.Monads.Extensions.Hosting](../companion-packages/hosting.md) on a host, or
 [Waystone.Monads.Extensions.DependencyInjection](../companion-packages/dependency-injection.md)
-without one, and the container writes these settings for you. You get the container's
-`ILoggerFactory` wired automatically, optional binding from `IConfiguration`, and a
-diagnostic event when configuration was registered but never installed.
+without one, and the container writes these settings for you. You get a delegate that
+can resolve services out of the container, optional binding from `IConfiguration`, and
+a diagnostic event when configuration was registered but never installed.
 
 Reach for `MonadOptions.Configure` when there is no container — a library, a test, or
 a small console application. Reach for a [scope](#scoped-configuration) when one region
