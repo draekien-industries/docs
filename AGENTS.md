@@ -2,7 +2,9 @@
 
 ## Purpose
 
-Public documentation for the Waystone family of .NET libraries (`waystone.monads`, `waystone.monads.fluentvalidation`, `waystone.widelogevents`), published via GitBook for developers consuming those NuGet packages. This repo holds no code — only the markdown content GitBook renders.
+Public documentation for the Waystone family of .NET libraries (`waystone.monads`, `waystone.widelogevents`), published via GitBook for developers consuming those NuGet packages. This repo holds no code — only the markdown content GitBook renders.
+
+A space is not one per NuGet package. `waystone.monads` documents the core library and every companion package that ships alongside it, under *Companion Packages*. `waystone.monads.fluentvalidation` had a space of its own until 7.0.0 and no longer does — see [ADR 0004](docs/adr/0004-companion-packages-live-in-the-core-space.md).
 
 ## Conventions
 
