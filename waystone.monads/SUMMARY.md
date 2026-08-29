@@ -31,6 +31,8 @@
 * [Overview](companion-packages/README.md)
 * [Waystone.Monads.Shouldly](companion-packages/shouldly.md)
 * [Waystone.Monads.Linq](companion-packages/linq.md)
+* [Waystone.Monads.Extensions.DependencyInjection](companion-packages/dependency-injection.md)
+* [Waystone.Monads.Extensions.Hosting](companion-packages/hosting.md)
 
 ## Upgrading and Deprecations
 
