@@ -101,7 +101,7 @@ old and new spellings could not coexist for a version.
 
 ## Diagnostics that mask other diagnostics
 
-Two things fire at the declaration phase, and a declaration error stops the compiler
+Three things fire at the declaration phase, and a declaration error stops the compiler
 reporting body errors in the same project. So your first green build is not the whole
 job.
 
@@ -112,6 +112,11 @@ files go unreported until you fix the qualifier.
 **`CS0115` on an `ErrorCodeFactory.FromEnum` override.** A codebase with both an
 override and call sites sees only the override error, fixes it, and then discovers the
 call sites on the next build.
+
+**`CS0246` on a signature naming `ValidationErr`.** Only if you install
+Waystone.Monads.FluentValidation, covered below. A field, property or return type
+spelled `Result<T, ValidationErr>` is a declaration error, so the bodies that call
+`Validate` stay quiet until you change the signature.
 
 Build, fix, and build again. Twice is not paranoia here.
 
