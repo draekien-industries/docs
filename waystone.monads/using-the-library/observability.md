@@ -323,6 +323,44 @@ code that the library cannot fix for you, and the event is how you find it.
 every further `Dispose`, because a readonly struct cannot record that it reported. If
 you alert on this, deduplicate.
 
+## Watching for configuration that was never installed
+
+The library writes a third event, `Waystone.Monads.ConfigurationNotApplied`, to the
+same listener. It fires when something reads `MonadOptions` after configuration has
+been registered but before it has been installed — in practice, when an application
+called `AddWaystoneMonads` and never called `UseWaystoneMonads`. See
+[Dependency injection and hosting](../companion-packages/dependency-injection.md#forgetting-the-install).
+
+The payload carries no data:
+
+```csharp
+public sealed record ConfigurationNotApplied;
+```
+
+There is nothing useful to put in it. The event's whole meaning is that it fired at
+all, and the read that triggered it was answered from the defaults.
+
+**The signal is held, not spent, while nobody is listening.** If no subscriber is
+attached when the first early read happens, the library keeps the flag set, so a
+subscriber attached later still receives it. Installing the configuration clears it.
+
+**The signal is spent once it is written.** After one subscriber sees it, later reads
+write nothing. It tells you that the mistake exists, not how many times it was hit.
+
+In a test suite, subscribe and throw to make the omission fatal:
+
+```csharp
+listener.Subscribe(
+    observer,
+    name => name == MonadDiagnostics.ConfigurationNotAppliedEventName);
+```
+
+{% hint style="info" %}
+**You will not see this event unless you use the dependency injection package.**
+Nothing else in the library marks configuration as pending, so an application that
+calls `MonadOptions.Configure` directly never triggers it.
+{% endhint %}
+
 ## What the library does not report
 
 **Exceptions it lets through.** The metric and the `ExceptionHandled` event fire only
@@ -371,6 +409,7 @@ string changes. So treat every name on this page the way you treat a public type
 | `DiagnosticListener` | `Waystone.Monads` |
 | Event | `Waystone.Monads.ExceptionHandled` |
 | Event | `Waystone.Monads.ScopeDisposedOutOfOrder` |
+| Event | `Waystone.Monads.ConfigurationNotApplied` |
 | Counter | `waystone.monads.exceptions_handled` |
 | Tags | `error.type`, `waystone.monads.monad` |
 | Log category | `Waystone.Monads` |

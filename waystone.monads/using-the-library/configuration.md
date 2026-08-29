@@ -19,6 +19,12 @@ application's lifetime.
 If you need different settings for one part of your code, use a
 [scope](#scoped-configuration) rather than reconfiguring globally.
 
+If your application has a dependency injection container, you can have it write these
+settings instead of calling `Configure` yourself. See
+[Waystone.Monads.Extensions.DependencyInjection](../companion-packages/dependency-injection.md),
+or [Waystone.Monads.Extensions.Hosting](../companion-packages/hosting.md) on a host.
+Every `Use…` method below is the same one you call there.
+
 ```csharp
 MonadOptions.Configure(options => options
     .UseFallbackErrorCode("Unknown")
@@ -144,6 +150,18 @@ MonadOptions.Configure(options => options.UseCancellationAsFailure());
 
 A cancellation is then caught, counted and logged like any other handled
 exception, and becomes a `None` or an `Err` as it did before.
+
+`UseCancellationAsFailure` takes an optional `bool`, which defaults to `true`, so the
+call above turns the behaviour on. Pass `false` to put it back:
+
+```csharp
+MonadOptions.Configure(options => options.UseCancellationAsFailure(false));
+```
+
+You need that only when something earlier already turned it on and you want to undo it
+— a container registration from a library, or a `Configure` call elsewhere in start-up.
+A builder inherits the settings in effect when it was handed to you, so passing `false`
+is the only way to reverse the decision.
 
 {% hint style="info" %}
 We recommend leaving this off. It exists so that upgrading to 6.0.0 does not force
