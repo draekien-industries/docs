@@ -33,6 +33,7 @@
 * [Waystone.Monads.Linq](companion-packages/linq.md)
 * [Waystone.Monads.Extensions.DependencyInjection](companion-packages/dependency-injection.md)
 * [Waystone.Monads.Extensions.Hosting](companion-packages/hosting.md)
+* [Waystone.Monads.FluentValidation](companion-packages/fluentvalidation.md)
 
 ## Upgrading and Deprecations
 

@@ -310,6 +310,6 @@ To see these events, see
 [Watching for a scope disposed out of order](observability.md#watching-for-a-scope-disposed-out-of-order).
 
 {% hint style="info" %}
-`Waystone.Monads.FluentValidation` options are covered by the same scope, so you
-only ever open one.
+[`Waystone.Monads.FluentValidation`](../companion-packages/fluentvalidation.md)
+options are covered by the same scope, so you only ever open one.
 {% endhint %}

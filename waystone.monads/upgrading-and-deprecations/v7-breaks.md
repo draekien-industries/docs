@@ -115,6 +115,67 @@ call sites on the next build.
 
 Build, fix, and build again. Twice is not paranoia here.
 
+## Waystone.Monads.FluentValidation
+
+This companion package was rewritten in 7.0.0. If you do not install it, skip this
+section. If you do, it is a clean break rather than a deprecation, so nothing warned you
+in 6.x.
+
+`ValidationErr` wrapped a failed `ValidationResult` and converted to an `Error` when you
+asked. That meant `Result<TValue, ValidationErr>` could not join a chain without a
+`MapErr` at the seam, and `ToError()` read your configuration at the moment you called
+it — so the same failure produced a different code depending on where you converted it.
+
+`ValidationError` replaces it and **is** an `Error`.
+
+| What changed | Old → new | Diagnostic |
+| --- | --- | --- |
+| `ValidationErr` removed | `ValidationError`, which derives from `Error` | `CS0246` |
+| `Validate` and `ValidateAsync` err with `Error` | `Result<T, ValidationErr>` → `Result<T, Error>` | `CS0029` |
+| `ValidateAsync` returns `ValueTask` | Add `.AsTask()`, or keep the `await` | `CS0029`, `CS1503` |
+| `ValidationErr.ToError()` removed | Nothing to call — you already have an `Error` | `CS1061` |
+| `ValidationErr.Create()` removed | `Validate` or `ValidateAsync` | `CS0117` |
+| `AsValidationResult()` and `RuleSetsExecuted` removed | Use `Failures` for the failure list | `CS1061` |
+| `UseFallbackValidationErrorMessage` removed | Nothing — the case it covered cannot happen now | `CS1061` |
+
+There is no code fix for any of these.
+
+### Why the removals had no warning release
+
+`ValidationErr` could not be obsoleted alongside its replacement. The new `Validate`
+differs from the old one only in its return type, and C# cannot overload on that. The
+two spellings could only coexist in separate namespaces, which would give `CS0121` to
+anyone importing both.
+
+### Why `UseFallbackValidationErrorMessage` is gone rather than renamed
+
+It set the message used when a validation failure carried none of its own. A
+`ValidationError` now has an `internal` constructor that only the failure branch
+reaches, so it always carries at least one failure. There is no empty case left for a
+fallback to cover, and `Error` already substitutes the core fallback for a blank
+message.
+
+### Recovering the failure detail
+
+Where you used to hold a `ValidationErr`, you now pattern match:
+
+```csharp
+if (error is ValidationError validationError)
+{
+    return ValidationProblem(validationError.ToDictionary());
+}
+```
+
+`Failures` carries the `ValidationFailure` list, and `ToDictionary()` groups the
+messages by property, exactly as before. Full detail is on
+[Waystone.Monads.FluentValidation](../companion-packages/fluentvalidation.md).
+
+### The supported FluentValidation range widened
+
+The package now declares `FluentValidation >= 11.1.0 && < 13.0.0`, where 6.x pinned a
+single version. 11.1.0 is the first release carrying
+`ValidationResult.ToDictionary()` as an instance method.
+
 ## Rule ids that no longer exist
 
 `WM2010` is retired in 7.0.0. It reported a `Result<T, T>` whose two implicit
