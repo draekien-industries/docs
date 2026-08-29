@@ -192,14 +192,35 @@ using (MonadOptions.BeginScope(
 
 This is what makes the logging usable in tests that run in parallel.
 
-## Subscribe to the raw event
+## Subscribe to an event
 
 Skip this unless you are building your own integration. The logging package
 already does it for you.
 
-The library writes a `Waystone.Monads.ExceptionHandled` event to a
-`DiagnosticListener` named `Waystone.Monads`. Subscribe and you receive an
-`ExceptionHandled` record:
+The library writes three events to a `DiagnosticListener` named `Waystone.Monads`.
+`MonadDiagnostics` gives you a token for each one. A token pairs the event's name
+with the type of payload it carries:
+
+| Token | Payload |
+| --- | --- |
+| `MonadDiagnostics.ExceptionHandledEvent` | `ExceptionHandled` |
+| `MonadDiagnostics.ScopeDisposedOutOfOrderEvent` | `ScopeDisposedOutOfOrder` |
+| `MonadDiagnostics.ConfigurationNotAppliedEvent` | `ConfigurationNotApplied` |
+
+Call `Subscribe` on the token. Your callback gets the payload directly:
+
+```csharp
+using System;
+using Waystone.Monads.Diagnostics;
+
+IDisposable watching = MonadDiagnostics.ExceptionHandledEvent.Subscribe(
+    handled =>
+    {
+        // handled.Exception, handled.Caller, handled.Monad
+    });
+```
+
+The `ExceptionHandled` payload is:
 
 ```csharp
 public sealed record ExceptionHandled(
@@ -208,9 +229,39 @@ public sealed record ExceptionHandled(
     MonadKind Monad);
 ```
 
-`MonadDiagnostics` holds every name as a constant, so you never type one out.
+Subscribe once, at start-up. It does not matter whether you subscribe before or
+after the first `Try` runs.
 
-Watch for the listener, then subscribe to the one event you want:
+Use the token rather than the name constants. Typing a name by hand gives you three
+ways to get it wrong — the listener name, the event name, and the payload type — and
+every one of them fails silently. You get no exception, no warning, and an empty
+dashboard. The token cannot point at the wrong event.
+
+### Disposing the subscription
+
+Dispose the return value to detach. Disposing it twice is safe.
+
+A subscriber that runs for the life of your application can be left alone. Anything
+shorter-lived must be disposed, or it leaks an observer for the rest of the process.
+
+{% hint style="danger" %}
+**Your subscriber runs on the thread that wrote the event, synchronously.** For
+`ExceptionHandledEvent` that is the throwing thread, inside the `catch`. Two
+consequences you have to plan for:
+
+- Slow work in the subscriber delays the caller waiting for its `None` or `Err`.
+- An exception thrown from your subscriber escapes the `Try` that was supposed to
+  swallow the original one. We do not catch it for you. That is deliberate — it is
+  how you make one of these events fatal in a test suite.
+
+Queue the work and return.
+{% endhint %}
+
+### Without the token
+
+You never need a Waystone package to observe the library, and that has not changed.
+The token is a shortcut over the standard `DiagnosticListener` API, not a
+replacement for it. Here is the same subscription written by hand:
 
 ```csharp
 using System.Diagnostics;
@@ -238,7 +289,8 @@ public sealed class HandledExceptions : IObserver<KeyValuePair<string, object?>>
 {
     public void OnNext(KeyValuePair<string, object?> written)
     {
-        if (written.Value is ExceptionHandled handled)
+        if (written.Key == MonadDiagnostics.ExceptionHandledEventName
+         && written.Value is ExceptionHandled handled)
         {
             // handled.Exception, handled.Caller, handled.Monad
         }
@@ -258,16 +310,12 @@ DiagnosticListener.AllListeners.Subscribe(new MonadWatcher());
 `AllListeners` replays listeners that already exist, so it does not matter whether
 you subscribe before or after the first `Try` runs.
 
-{% hint style="danger" %}
-**Your subscriber runs on the thread that threw, synchronously, inside the
-`catch`.** Two consequences you have to plan for:
+Two traps to handle yourself if you go this way:
 
-- Slow work in the subscriber delays the caller waiting for its `None` or `Err`.
-- An exception thrown from your subscriber escapes the `Try` that was supposed to
-  swallow the original one.
-
-Queue the work and return.
-{% endhint %}
+- **`DiagnosticListener.Write` ignores your predicate.** The predicate only decides
+  what `IsEnabled` reports. Your observer receives every event written to that
+  listener, so check `written.Key` yourself — as the sample above does.
+- **The payload arrives as `object?`.** Test its type rather than casting it.
 
 ## Watching for a scope disposed out of order
 
@@ -291,26 +339,11 @@ public sealed record ScopeDisposedOutOfOrder(
 Subscribe the same way you subscribe to the exception event:
 
 ```csharp
-listener.Subscribe(
-    new ScopeMisuse(),
-    name => name == MonadDiagnostics.ScopeDisposedOutOfOrderEventName);
-
-public sealed class ScopeMisuse : IObserver<KeyValuePair<string, object?>>
-{
-    public void OnNext(KeyValuePair<string, object?> written)
+IDisposable watching = MonadDiagnostics.ScopeDisposedOutOfOrderEvent.Subscribe(
+    disposed =>
     {
-        if (written.Value is ScopeDisposedOutOfOrder disposed)
-        {
-            // disposed.Scope is gone; disposed.Live is what is in effect instead.
-        }
-    }
-
-    public void OnCompleted()
-    { }
-
-    public void OnError(Exception error)
-    { }
-}
+        // disposed.Scope is gone; disposed.Live is what is in effect instead.
+    });
 ```
 
 **There is no caller information in the payload.** `IDisposable.Dispose()` takes none,
@@ -359,12 +392,14 @@ registration and install. An application that registers, never reads early, and 
 installs gets no event — and no wrong behaviour either, because nothing consulted the
 options.
 
-In a test suite, subscribe and throw to make the omission fatal:
+In a test suite, subscribe and throw to make the omission fatal. We do not catch
+what your callback throws:
 
 ```csharp
-listener.Subscribe(
-    observer,
-    name => name == MonadDiagnostics.ConfigurationNotAppliedEventName);
+using IDisposable watching =
+    MonadDiagnostics.ConfigurationNotAppliedEvent.Subscribe(
+        _ => throw new InvalidOperationException(
+            "AddWaystoneMonads was called but UseWaystoneMonads was not."));
 ```
 
 {% hint style="info" %}
@@ -426,7 +461,12 @@ string changes. So treat every name on this page the way you treat a public type
 | Tags | `error.type`, `waystone.monads.monad` |
 | Log category | `Waystone.Monads` |
 
-We will not rename them outside a major release, and we will tell you in
+`MonadDiagnostics` holds every one of them as a constant, so you never have to type
+one out. Use the constants for anything that names a signal — a dashboard query, a
+log line, a hand-written subscription. To subscribe, use the event tokens instead:
+they name the event for you and fix the payload type at the same time.
+
+We will not rename these names outside a major release, and we will tell you in
 [Deprecations](../upgrading-and-deprecations/deprecations.md) when we do.
 
 ## Replacing UseExceptionLogger
