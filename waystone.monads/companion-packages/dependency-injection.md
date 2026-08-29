@@ -130,6 +130,13 @@ install resolves whatever `ILoggerFactory` the container has and points
 `Waystone.Monads` category. A container with no `ILoggerFactory` — a worker that
 never called `AddLogging` — leaves logging unconfigured rather than failing.
 
+**Why logging is automatic when configuration binding is not**, given that both read
+from the container: the two mistakes have different costs. Forget to bind
+`IConfiguration` and you see the defaults, which show up in the error codes and
+messages your application produces. Forget to wire the logger and you see nothing at
+all. Silence is undetectable, so we do not make you opt in to it.
+Serilog draws the same line, for the same reason.
+
 **`ErrorCodeFactory` has no interface.** It is a public, non-sealed class with
 `virtual` members, so you replace it by subclassing:
 

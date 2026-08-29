@@ -16,14 +16,18 @@ This library has a few configurable behaviours. You set them through
 `MonadOptions.Configure`, once, at start-up. Configure each option below _once_ in your
 application's lifetime.
 
-If you need different settings for one part of your code, use a
-[scope](#scoped-configuration) rather than reconfiguring globally.
+**If your application has a dependency injection container, configure the library
+there instead.** Install
+[Waystone.Monads.Extensions.Hosting](../companion-packages/hosting.md) on a host, or
+[Waystone.Monads.Extensions.DependencyInjection](../companion-packages/dependency-injection.md)
+without one, and the container writes these settings for you. You get the container's
+`ILoggerFactory` wired automatically, optional binding from `IConfiguration`, and a
+diagnostic event when configuration was registered but never installed.
 
-If your application has a dependency injection container, you can have it write these
-settings instead of calling `Configure` yourself. See
-[Waystone.Monads.Extensions.DependencyInjection](../companion-packages/dependency-injection.md),
-or [Waystone.Monads.Extensions.Hosting](../companion-packages/hosting.md) on a host.
-Every `Use…` method below is the same one you call there.
+Reach for `MonadOptions.Configure` when there is no container — a library, a test, or
+a small console application. Reach for a [scope](#scoped-configuration) when one region
+of code needs different settings. Every `Use…` method below is the same one on all
+three routes.
 
 ```csharp
 MonadOptions.Configure(options => options

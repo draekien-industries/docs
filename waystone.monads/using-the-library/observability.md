@@ -342,10 +342,22 @@ all, and the read that triggered it was answered from the defaults.
 
 **The signal is held, not spent, while nobody is listening.** If no subscriber is
 attached when the first early read happens, the library keeps the flag set, so a
-subscriber attached later still receives it. Installing the configuration clears it.
+subscriber attached later still receives it.
 
-**The signal is spent once it is written.** After one subscriber sees it, later reads
-write nothing. It tells you that the mistake exists, not how many times it was hit.
+**Configuration arriving by any route disarms it** — `UseWaystoneMonads`, the host
+install, or a plain `MonadOptions.Configure` call — whether or not the event was ever
+written.
+
+**Expect it once per process, but do not rely on it.** Writing the event disarms the
+flag, so later reads write nothing. Two threads reading at the same moment can each
+write before either disarms it. The payloads are identical and carry no data, so
+deduplicate in your subscriber if that matters.
+
+**It reports reads, not registrations.** `AddWaystoneMonads` on its own writes
+nothing. The event needs something to actually read the options in the window between
+registration and install. An application that registers, never reads early, and never
+installs gets no event — and no wrong behaviour either, because nothing consulted the
+options.
 
 In a test suite, subscribe and throw to make the omission fatal:
 
