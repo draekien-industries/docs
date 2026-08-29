@@ -93,8 +93,11 @@ does is idempotent.
 That makes it safe for a library to call during its own registration without
 knowing whether the application already has.
 
-The `configure` argument is optional. `AddWaystoneMonads()` with no delegate asks
-for the defaults and nothing else.
+There are three overloads. `AddWaystoneMonads()` with no delegate asks for the
+defaults and nothing else. `AddWaystoneMonads(options => …)` configures from
+literals. `AddWaystoneMonads((provider, options) => …)` also hands you the built
+container — see [Wiring a companion package](#wiring-a-companion-package). All
+three share one registration order.
 
 ## The builder it returns
 
@@ -107,8 +110,8 @@ builder.Services.AddWaystoneMonads()
        .Services.AddSingleton<IClock, SystemClock>();
 ```
 
-The builder exists so a companion package can offer a call that only makes sense
-once registration has happened. `Waystone.Monads.Extensions.Hosting` hangs
+The builder exists so a call that only makes sense once registration has happened
+can require one. `Waystone.Monads.Extensions.Hosting` hangs
 [`EnableInstallOnStart()`](hosting.md#on-the-older-ihostbuilder) off it, so asking
 for the install without first asking for the registration does not compile.
 
@@ -119,23 +122,50 @@ last:
 
 1. The options already in effect, so an earlier `MonadOptions.Configure` call is
    carried forward rather than discarded.
-2. `ErrorCodeFactory` and `ILoggerFactory`, if the container holds them.
-3. Every delegate passed to `AddWaystoneMonads`, in registration order.
+2. `ErrorCodeFactory`, if the container holds one.
+3. Every delegate passed to `AddWaystoneMonads`, in registration order, whichever
+   overload each came from.
 
-A delegate therefore has the last word, including over the resolved logger.
+A delegate therefore has the last word.
 
-**Logging is wired for you.** `AddWaystoneMonads` registers nothing for it. The
-install resolves whatever `ILoggerFactory` the container has and points
-`Waystone.Monads.Extensions.Logging` at it, under that package's own
-`Waystone.Monads` category. A container with no `ILoggerFactory` — a worker that
-never called `AddLogging` — leaves logging unconfigured rather than failing.
+**`ErrorCodeFactory` is the only service resolved for you.** Everything else that
+comes out of the container is wired by a delegate you pass.
 
-**Why logging is automatic when configuration binding is not**, given that both read
-from the container: the two mistakes have different costs. Forget to bind
-`IConfiguration` and you see the defaults, which show up in the error codes and
-messages your application produces. Forget to wire the logger and you see nothing at
-all. Silence is undetectable, so we do not make you opt in to it.
-Serilog draws the same line, for the same reason.
+## Wiring a companion package
+
+One `AddWaystoneMonads` overload hands your delegate the built provider, so a
+setting can come from a registered service rather than from a literal. Logging is
+the usual case:
+
+```csharp
+builder.Services.AddWaystoneMonads((provider, options) =>
+    options.UseFallbackErrorCode("Contoso")
+           .UseLoggerFactoryFrom(provider));
+```
+
+`UseLoggerFactoryFrom` ships from
+[Waystone.Monads.Extensions.Logging](../using-the-library/observability.md). **The
+package you installed is the one you call.** This package does not reference it,
+so installing this one does not drag that one into your project, and installing
+that one does not silently change what this one does. The same shape works for
+any future companion package, and the install path never grows a branch per
+package.
+
+`UseLoggerFactoryFrom` throws if the container has no `ILoggerFactory` — a worker
+that never called `AddLogging`, for instance. That is the point of asking for it
+explicitly: the mistake stops start-up rather than producing silence. Pass a
+factory to `UseLoggerFactory` directly if you have one in hand.
+
+{% hint style="info" %}
+**Earlier `7.0.0` pre-releases resolved `ILoggerFactory` at install themselves**,
+so logging appeared without being asked for and this package took a hard
+dependency on the logging one. Both are gone. Take the provider-aware overload
+above and call `UseLoggerFactoryFrom` to get the old behaviour back.
+{% endhint %}
+
+**Resolve singletons only.** The options are one process-wide snapshot, so a
+scoped service captured in a delegate outlives the scope it came from — see the
+warning below.
 
 **`ErrorCodeFactory` has no interface.** It is a public, non-sealed class with
 `virtual` members, so you replace it by subclassing:
