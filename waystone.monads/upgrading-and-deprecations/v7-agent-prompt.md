@@ -84,10 +84,11 @@ Add --prerelease, or set Version="7.0.0-beta.*". Then build and capture every
 diagnostic. Do not fix anything yet. Count the diagnostics by code and report the
 counts, so both of us know the size of the job.
 
-Build twice before you trust the count. Two diagnostics in this upgrade fire at the
+Build twice before you trust the count. Three diagnostics in this upgrade fire at the
 declaration phase and mask every body-phase error in the same project: CS0234 on a
-using static of a removed extension class, and CS0115 on an ErrorCodeFactory.FromEnum
-override. Fix those two first, then re-count.
+using static of a removed extension class, CS0115 on an ErrorCodeFactory.FromEnum
+override, and — only if the FluentValidation package is referenced — CS0246 on a
+signature naming the removed ValidationErr type. Fix those first, then re-count.
 
 ## Step 3 — take the code fixes the package offers
 
@@ -134,10 +135,12 @@ Rebuild and re-count either way.
   positional arguments to dodge it; the name was chosen to say what the argument is for.
 - CS0029 / CS1503 — cannot convert. Either the implicit conversions to Option and Result
   were removed, so wrap the value explicitly in Option.Some, Result.Ok or Result.Err; or
-  an async member now returns ValueTask<T> where it returned Task<T> — Option.TryAsync,
-  Result.TryAsync and CollectAsync are the three that changed in 7.0.0. For the latter,
-  prefer changing the local's type or awaiting it to converting with .AsTask(), which
-  allocates. A call to Task.WhenAll is the one place .AsTask() is the right answer.
+  an async member now returns ValueTask<T> where it returned Task<T> — in the core
+  package Option.TryAsync, Result.TryAsync and CollectAsync are the three that changed in
+  7.0.0, and the FluentValidation package's ValidateAsync changed with them. For the
+  ValueTask case, prefer changing the local's type or awaiting it to converting with
+  .AsTask(), which allocates. A call to Task.WhenAll is the one place .AsTask() is the
+  right answer.
 - CS0103 / CS0234 — the name does not exist. The per-family extension classes were
   collapsed into one class per monad. A using static or a qualified static call naming
   the old class must move to OptionExtensions or ResultExtensions, or better, become a
@@ -146,6 +149,13 @@ Rebuild and re-count either way.
   removed. The five are ErrorCode.FromEnum, Error.FromEnum, ErrorCodeFactory.FromEnum,
   MonadOptions.UseExceptionLogger, and the Result.Err<TOk>(Enum, string) overload. Read
   the obsoletion message in the 6.x package for the replacement it names.
+  - UseExceptionLogger is the one worth spelling out. If its delegate only logged, replace
+    it with UseLoggerFactory, UseLoggerFactoryFrom or UseLogger on the builder, from the
+    Waystone.Monads.Extensions.Logging package. If it did anything else — a metric, a
+    span, a bug report — that is an observer, not a logger: subscribe with
+    MonadDiagnostics.ExceptionHandledEvent.Subscribe instead. Do not reach for a
+    DiagnosticListener by name; the typed token exists so a wrong name cannot fail
+    silently.
 - CS0115 — no suitable method found to override. A virtual a consumer overrode is gone.
   ErrorCodeFactory.FromEnum is the one this hits: enum codes are settled at compile time
   now and a factory cannot change them. Delete the override and use [ErrorCodeCatalog]
@@ -153,6 +163,28 @@ Rebuild and re-count either way.
 - CS0411 — type arguments cannot be inferred. An async chaining step's delegate returns
   a Task where a ValueTask is wanted. WM2022 reports the same call and says which
   parameter. Change the step to return ValueTask, or wrap it in an async lambda.
+- Anything naming Waystone.Monads.FluentValidation. Check whether the solution references
+  that package before reading this; if it does not, skip the whole bullet. If it does,
+  the package was rewritten in 7.0.0 rather than deprecated, so nothing warned in 6.x and
+  no code fix exists. Every call site needs a hand edit.
+  - ValidationErr is gone (CS0246). ValidationError replaces it and derives from Error,
+    so a failed validation now joins a chain without a MapErr at the seam.
+  - Validate and ValidateAsync err with Error, not ValidationErr (CS0029). Change the
+    declared type to Result<T, Error>, and delete the MapErr that used to convert.
+  - ToError() is gone (CS1061). Delete the call — you already hold an Error.
+  - ValidationErr.Create() is gone (CS0117). Only Validate and ValidateAsync build a
+    ValidationError now; its constructor is internal.
+  - AsValidationResult() and RuleSetsExecuted are gone (CS1061). Failures carries the
+    ValidationFailure list, and ToDictionary() groups messages by property as before.
+  - UseFallbackValidationErrorMessage is gone (CS1061) with no replacement. A
+    ValidationError always carries at least one failure, so the empty case it covered
+    cannot happen. Delete the call.
+  - To read failure detail from a plain Error, pattern match: if (error is
+    ValidationError validationError). Report every place you had to add that match.
+  - Tell me if the resolved FluentValidation version moved. The package now allows
+    >= 11.1.0 && < 13.0.0 where 6.x pinned one version, so the upgrade can pull a
+    different FluentValidation than the solution was tested against. Do not pin it back
+    without asking me.
 
 ## Step 5 — verify
 
@@ -162,13 +194,25 @@ resolve.
 
 ## Step 6 — offer these, do not apply them
 
-Once the build is clean, tell me about three optional things and let me decide:
+Once the build is clean, tell me about these optional things and let me decide. Do not
+install a package or change a severity in this step.
 
 - Waystone.Monads.Shouldly, which replaces assertions on IsSome and Unwrap in the test
   suite. Its WMS2001 and WMS2002 rules are batch-fixable.
 - Waystone.Monads.Linq, which adds C# query syntax over the monads.
 - The recommended severity preset, which makes the seven misuse rules build errors. A
   major upgrade is a reasonable moment to turn it on, but it is my call, not yours.
+- Waystone.Monads.Extensions.Hosting, if the application is built on
+  Microsoft.Extensions.Hosting. builder.AddWaystoneMonads(...) registers the
+  configuration and installs it from the host's own start-up sequence, replacing the
+  hand-written MonadOptions.Configure call. Say where the current Configure call lives so
+  I can see what it would replace.
+- Waystone.Monads.Extensions.DependencyInjection, only if the application has a container
+  but is not built on the hosting abstractions. It gives services.AddWaystoneMonads(...),
+  and the configuration is applied by a separate provider.UseWaystoneMonads() call. That
+  second call is easy to forget; if it is missed the library writes a
+  Waystone.Monads.ConfigurationNotApplied event rather than failing. Prefer the hosting
+  package where both would work, because it makes that call for you.
 
 ## Rules
 
