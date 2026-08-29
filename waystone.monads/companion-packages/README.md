@@ -29,8 +29,9 @@ not because an upgrade made you.
 | [Waystone.Monads.Linq](linq.md) | Anywhere | `Select`, `SelectMany` and `Where`, so C# query syntax works over `Option` and `Result` |
 | [Waystone.Monads.Extensions.DependencyInjection](dependency-injection.md) | Any application with an `IServiceCollection` | `AddWaystoneMonads` and `UseWaystoneMonads`, so a container writes the configuration |
 | [Waystone.Monads.Extensions.Hosting](hosting.md) | Applications built on `Microsoft.Extensions.Hosting` | Runs that install at host start, so there is no second call to forget |
+| [Waystone.Monads.FluentValidation](fluentvalidation.md) | Anywhere you already use FluentValidation | `Validate` and `ValidateAsync`, so a validator returns a `Result` that errs with an `Error` |
 
-No package here changes the behaviour of anything in `Waystone.Monads`. The first two
+No package here changes the behaviour of anything in `Waystone.Monads`. Three of them
 add vocabulary: remove one and the code that used it stops compiling, and nothing else
 moves. The other two change only *who writes* your configuration, not what the settings
 mean — you can write the same settings by hand with `MonadOptions.Configure`.
