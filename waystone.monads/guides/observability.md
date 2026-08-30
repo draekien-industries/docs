@@ -20,7 +20,7 @@ reports on sources named after itself, and your pipeline finds them by name.
 | Diagnostic events | Three events you can subscribe to, including two configuration mistakes |
 
 Logs are the exception, and they are a separate page. See
-[Logging](../companion-packages/logging.md).
+[Logging](../packages/logging.md).
 
 {% hint style="info" %}
 **Why metrics need no package and logs do.** Your metrics pipeline discovers
@@ -234,7 +234,7 @@ The library writes a third event, `Waystone.Monads.ConfigurationNotApplied`, to 
 same listener. It fires when something reads `MonadOptions` after configuration has
 been registered but before it has been installed — in practice, when an application
 called `AddWaystoneMonads` and never called `UseWaystoneMonads`. See
-[Dependency injection and hosting](../companion-packages/dependency-injection.md#forgetting-the-install).
+[Dependency injection and hosting](../packages/dependency-injection.md#forgetting-the-install).
 
 The payload carries no data:
 

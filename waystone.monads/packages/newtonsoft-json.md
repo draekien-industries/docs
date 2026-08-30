@@ -2,20 +2,9 @@
 description: Serialize Option and Result with Newtonsoft.Json, in the same format the System.Text.Json package writes.
 ---
 
-# Waystone.Monads.NewtonsoftJson
+# Newtonsoft.Json
 
-
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads.NewtonsoftJson --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.NewtonsoftJson" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+`Waystone.Monads.NewtonsoftJson` — converters for `Option` and `Result`.
 
 ## What it adds
 
@@ -38,10 +27,20 @@ beforehand keeps priority.
 Without this package, an `Option<T>` on a DTO serializes as its own internals,
 `{"IsSome":false,"IsNone":true}`, and does not read back.
 
+## When to reach for it
+
+Reach for it when an `Option` or a `Result` is a member of a type you serialize, and
+your application already uses Json.NET. Without it, both types serialize as whatever
+their properties happen to expose, which is not a format anything can read back.
+
+If your application uses `System.Text.Json` instead, install
+[System.Text.Json](system-text-json.md) — the two write the same bytes, so the choice
+is decided by the serializer you already have, not by preference.
+
 ## Install it
 
 ```
-dotnet add package Waystone.Monads.NewtonsoftJson --prerelease
+dotnet add package Waystone.Monads.NewtonsoftJson
 ```
 
 The package supports `Newtonsoft.Json >= 13.0.1 && < 14.0.0`. Bring your own
@@ -216,7 +215,7 @@ reflection. Nothing reflects per call.
 
 {% hint style="warning" %}
 **Publishing with `PublishAot`? Use
-[`Waystone.Monads.SystemTextJson`](systemtextjson.md) instead.**
+[`Waystone.Monads.SystemTextJson`](system-text-json.md) instead.**
 
 That first construction is the one that fails under NativeAOT for a value-type
 argument. There is no escape hatch here, because Json.NET cannot register a
@@ -226,9 +225,19 @@ NativeAOT support of its own either.
 
 ## It matches the System.Text.Json package byte for byte
 
-[`Waystone.Monads.SystemTextJson`](systemtextjson.md) writes the same JSON. A
+[`Waystone.Monads.SystemTextJson`](system-text-json.md) writes the same JSON. A
 test in the repository serializes with one package, deserializes with the other,
 both directions, and asserts the two write identical bytes.
 
 So you can switch serializers, or run both in one system, without a migration on
 the wire.
+
+## What it does not do
+
+* It does not remove a property for a `None`. The property is written with a
+  `null` value, and an absent property is a read error rather than a `None`.
+* It does not support NativeAOT. Json.NET cannot register a converter for a single
+  closed generic type, so there is no escape hatch — use
+  [System.Text.Json](system-text-json.md) if you publish with `PublishAot`.
+* It does not change either type. Remove the package and only serialization
+  breaks.

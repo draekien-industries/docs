@@ -160,4 +160,4 @@ These have no Rust counterpart. Do not go looking for the original.
 | The state overloads | Pass a captured value as an argument so the delegate allocates no closure |
 | `Deconstruct` on the case types | Positional patterns, so `if let Some(x)` has a C# spelling |
 | `MonadOptions` | Global configuration — see [configuration.md](configuration.md "mention") |
-| `Select`, `SelectMany`, `Where` | C# query syntax over a monad, in a companion package — see [Waystone.Monads.Linq](../companion-packages/linq.md) |
+| `Select`, `SelectMany`, `Where` | C# query syntax over a monad, in a companion package — see [Waystone.Monads.Linq](../packages/linq.md) |

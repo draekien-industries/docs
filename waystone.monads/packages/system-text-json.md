@@ -2,20 +2,9 @@
 description: Serialize Option and Result with System.Text.Json, in a format a consumer already agreed to.
 ---
 
-# Waystone.Monads.SystemTextJson
+# System.Text.Json
 
-
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads.SystemTextJson --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.SystemTextJson" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+`Waystone.Monads.SystemTextJson` — converters for `Option` and `Result`.
 
 ## What it adds
 
@@ -38,10 +27,21 @@ converter after that throws.
 Without this package, an `Option<T>` on a DTO serializes as its own internals,
 `{"IsSome":false,"IsNone":true}`, and does not read back.
 
+## When to reach for it
+
+Reach for it when an `Option` or a `Result` is a member of a type you serialize, and
+your application already uses `System.Text.Json`. Without it, both types serialize as
+whatever their properties happen to expose, which is not a format anything can read
+back.
+
+If your application uses Json.NET instead, install
+[Newtonsoft.Json](newtonsoft-json.md) — the two write the same bytes, so the choice
+is decided by the serializer you already have, not by preference.
+
 ## Install it
 
 ```
-dotnet add package Waystone.Monads.SystemTextJson --prerelease
+dotnet add package Waystone.Monads.SystemTextJson
 ```
 
 The package supports `System.Text.Json >= 8.0.5 && < 11.0.0`. Bring your own
@@ -242,9 +242,18 @@ but you get correctness, not the speed.
 
 ## It matches the Newtonsoft.Json package byte for byte
 
-[`Waystone.Monads.NewtonsoftJson`](newtonsoftjson.md) writes the same JSON. A
+[`Waystone.Monads.NewtonsoftJson`](newtonsoft-json.md) writes the same JSON. A
 test in the repository serializes with one package, deserializes with the other,
 both directions, and asserts the two write identical bytes.
 
 So you can switch serializers, or run both in one system, without a migration on
 the wire.
+
+## What it does not do
+
+* It does not remove a property for a `None`. The property is written with a
+  `null` value, and an absent property is a read error rather than a `None`.
+* It does not give `Option<T>` or `Result<TOk, TErr>` the source-generation fast
+  path from a `JsonSerializerContext`. You get correctness, not speed.
+* It does not change either type. Remove the package and only serialization
+  breaks.
