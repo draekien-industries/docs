@@ -24,7 +24,7 @@ Two extension methods, `Validate` and `ValidateAsync`, on any value. Each takes 
 
 ```csharp
 using FluentValidation;
-using Waystone.Monads.FluentValidation.Results.Extensions;
+using FluentValidation.Extensions;
 
 record UserInput(int Range, string Search);
 
@@ -69,6 +69,25 @@ FluentValidation 12 targets `net8.0` only. If you build for .NET Framework or
 `netstandard2.0`, you cannot resolve it. That is FluentValidation's constraint, not
 this package's — stay on 11.x there.
 {% endhint %}
+
+## Where the types live
+
+The package shadows FluentValidation's own namespaces. Its types sit beside
+`IValidator` and `ValidationFailure` rather than under a parallel `Waystone` tree, so
+the validator file you already wrote usually needs no new `using` at all.
+
+| Member | Namespace |
+| --- | --- |
+| `ValidationError` | `FluentValidation` |
+| `Validate`, `ValidateAsync` | `FluentValidation.Extensions` |
+| `UseValidationErrorCode` | `FluentValidation.Configs` |
+
+The package and assembly are still called `Waystone.Monads.FluentValidation`. Only the
+namespaces shadow.
+
+Before `7.0.0` these lived under `Waystone.Monads.FluentValidation.*`. Every type and
+member name is unchanged — only the `using` directives move. See
+[Every v7 break](../upgrading-and-deprecations/v7-breaks.md#waystone-monads-fluentvalidation).
 
 ## It errs with `Error`, so it chains
 
@@ -137,8 +156,8 @@ Configure this through `MonadOptions`, alongside the core settings. There is no 
 options class.
 
 ```csharp
+using FluentValidation.Configs;
 using Waystone.Monads.Configs;
-using Waystone.Monads.FluentValidation.Configs;
 
 MonadOptions.Configure(options => options.UseValidationErrorCode("input.invalid"));
 ```

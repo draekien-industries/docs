@@ -142,8 +142,29 @@ it — so the same failure produced a different code depending on where you conv
 | `ValidationErr.Create()` removed | `Validate` or `ValidateAsync` | `CS0117` |
 | `AsValidationResult()` and `RuleSetsExecuted` removed | Use `Failures` for the failure list | `CS1061` |
 | `UseFallbackValidationErrorMessage` removed | Nothing — the case it covered cannot happen now | `CS1061` |
+| Namespaces shadow FluentValidation's own | `Waystone.Monads.FluentValidation.Results.Extensions` → `FluentValidation.Extensions` | `CS0246`, `CS0234` |
 
 There is no code fix for any of these.
+
+### The namespaces shadow FluentValidation's own
+
+The types moved out of `Waystone.Monads.FluentValidation.*` and into
+`FluentValidation.*`, so they sit beside `IValidator` and `ValidationFailure` in the
+namespace your validator file already imports.
+
+| Old namespace | New namespace |
+| --- | --- |
+| `Waystone.Monads.FluentValidation.Results` | `FluentValidation` |
+| `Waystone.Monads.FluentValidation.Results.Extensions` | `FluentValidation.Extensions` |
+| `Waystone.Monads.FluentValidation.Configs` | `FluentValidation.Configs` |
+
+The package and assembly keep the name `Waystone.Monads.FluentValidation`, so the
+`PackageReference` does not change. Delete the old `using` directives; a file that
+already has `using FluentValidation;` needs nothing back for `ValidationError`.
+
+No shim ships in the old namespace. A forwarding type there would be a distinct type at
+run time, so `error is ValidationError` would compile against it and silently stop
+matching — a quiet wrong answer in place of a build error.
 
 ### Why the removals had no warning release
 
