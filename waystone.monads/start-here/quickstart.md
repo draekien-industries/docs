@@ -125,5 +125,5 @@ No exceptions. No `try`/`catch`. Both outcomes are visible in the return type.
 ## Where to go next
 
 * [Why monads](why-monads.md) — the case for doing it this way at all.
-* [Option\<T>](../guides/option.md) and [Results](../core-concepts/results.md) — working with each type properly.
+* [Option\<T>](../guides/option.md) and [Result\<T, E>](../guides/result.md) — working with each type properly.
 * [Agent skills](agent-skills.md) — teach your coding agent the same habits.

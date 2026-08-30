@@ -35,7 +35,7 @@ Option<Character> FindCharacter(string name);
 
 you are not saying "this might blow up". You are saying "this might not find
 anything, and that is a normal outcome". If you need to know *why* it failed,
-reach for [`Result<T, E>`](../core-concepts/results.md) instead.
+reach for [`Result<T, E>`](result.md) instead.
 
 ## Create one
 
@@ -329,10 +329,10 @@ Reach for something else when:
 
 * The default of a value type already means absence — `0` for a count, say.
 * You care about the reason. That is
-  [`Result<T, E>`](../core-concepts/results.md).
+  [`Result<T, E>`](result.md).
 
 ## Where to go next
 
-* [Results](../core-concepts/results.md) — the same idea, for failure.
+* [Result\<T, E>](result.md) — the same idea, for failure.
 * [Async](../using-the-library/async.md) — keeping a chain intact across an `await`.
 * [Option\<T> reference](../using-the-library/option-of-t/README.md) — every overload, when you need one this page did not show.
