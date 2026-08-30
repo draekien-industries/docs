@@ -62,8 +62,8 @@ Result<int, Error> errWithDefaultError =
     Result.Err<int>(new Error("quest.failed", "Something went wrong"));
 ```
 
-See [Errors and exceptions](../using-the-library/errors-and-exceptions.md) for what
-`Error` holds and how to build one from an enum.
+See [Errors](errors.md) for what `Error` holds and how to build one from an
+enum.
 
 ### Neither side can hold null
 
@@ -332,6 +332,7 @@ Reach for [`Option<T>`](option.md) instead when you do not care about the reason
 ## Where to go next
 
 * [Option\<T>](option.md) — the same idea, for absence.
-* [Errors and exceptions](../using-the-library/errors-and-exceptions.md) — the `Error` type, error codes, and when to throw anyway.
-* [Async](../using-the-library/async.md) — keeping a chain intact across an `await`.
+* [Errors](errors.md) — the `Error` type, error codes, and building one from an exception.
+* [Exceptions](exceptions.md) — what the library throws, and when.
+* [Async](async.md) — keeping a chain intact across an `await`.
 * [Result\<T, E> reference](../using-the-library/result-of-t-and-e.md) — every overload, when you need one this page did not show.

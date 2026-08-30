@@ -109,7 +109,7 @@ Result<UserInput, Error> result =
 ```
 
 `ValidateAsync` returns a `ValueTask`, which is what lets a chain ending in it be passed
-as a step to `AndThenAsync`. See [Async](../using-the-library/async.md).
+as a step to `AndThenAsync`. See [Async](../guides/async.md).
 
 ## `ValidationError`
 

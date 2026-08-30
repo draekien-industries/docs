@@ -43,7 +43,7 @@ Result<int, string> err = Result.Err<int, string>("Something went wrong...");
 ```
 
 Supply both type parameters when you use your own error type. If you are happy
-with the built in [`Error`](errors-and-exceptions.md#error) type, use the single
+with the built in [`Error`](../guides/errors.md#build-an-error) type, use the single
 type parameter overloads instead — they default the error type to `Error`.
 
 ```csharp
@@ -140,7 +140,7 @@ The `onError` delegate gives you a way to transform the caught exception into an
 
 If you are happy with the built in `Error` type, use the single type parameter
 overload. It converts the exception with
-[`Error.FromException`](errors-and-exceptions.md#error-from-exception), so you do
+[`Error.FromException`](../guides/exceptions.md#turning-an-exception-into-an-error), so you do
 not pass an `onError` delegate.
 
 ```csharp

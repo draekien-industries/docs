@@ -1,71 +1,72 @@
 ---
 description: >-
-  Learn how to chain asynchronous work through Option and Result without
-  awaiting every step.
+  Chain asynchronous work through Option and Result without awaiting every
+  step.
 ---
 
 # Async
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+Most operations have an async counterpart with an `Async` suffix. Use one when
+your transform, predicate, or side effect returns a `Task`. The full list is at
+the [bottom of this page](#the-full-surface).
 
-```
-dotnet add package Waystone.Monads --prerelease
-```
+## The receiver is the task, not the monad
 
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
-## Introduction
-
-Most core operations have an async counterpart with an `Async` suffix. Use them
-when your transform, predicate, or side effect returns a `Task`. The full list is
-at the [bottom of this page](#the-full-surface).
+This is the part worth understanding, and it is not obvious.
 
 Most async methods are extension methods on the **task that wraps the monad**,
-rather than methods on the monad itself. They extend `Task<Option<T>>`,
-`ValueTask<Option<T>>`, `Task<Result<T, E>>` and `ValueTask<Result<T, E>>`.
+not on the monad itself. They extend `Task<Option<T>>`, `ValueTask<Option<T>>`,
+`Task<Result<T, E>>` and `ValueTask<Result<T, E>>`.
 
-`MatchAsync` also extends the monad directly, so you can pass an async branch to
-an `Option<T>` or `Result<T, E>` you already hold. See
-[Matching with an async branch](#matching-with-an-async-branch).
-
-That is the part worth understanding, because it is what lets you chain without
-awaiting each step:
+That is what lets you chain without awaiting each step:
 
 ```csharp
 // no intermediate awaits, one await at the end
-User user = await FetchUserAsync(id)
-    .MapAsync(u => EnrichAsync(u))
-    .UnwrapOrAsync(Guest);
+Character character = await SummonCharacterAsync(id)
+    .MapAsync(c => EnrichAsync(c))
+    .UnwrapOrAsync(Commoner);
 ```
 
-Without the extensions you would await into a local variable at every step:
+Without them, you would await into a local at every step:
 
 ```csharp
-Option<User> fetched = await FetchUserAsync(id);
-Option<User> enriched = await fetched.MapAsync(u => EnrichAsync(u));
-User user = enriched.UnwrapOr(Guest);
+Option<Character> fetched = await SummonCharacterAsync(id);
+Option<Character> enriched = await fetched.MapAsync(c => EnrichAsync(c));
+
+Character character = enriched.UnwrapOr(Commoner);
 ```
 
+Two things about that first sample, because both catch people out:
+
+* **`EnrichAsync` must return `Task<Character>`.** `MapAsync` takes
+  `Func<T, Task<TOut>>` or a plain `Func<T, TOut>`. It does not take a
+  `ValueTask` factory.
+* **`Commoner` is a value, not a function.** `UnwrapOrAsync` takes `T`, the same
+  as `UnwrapOr`. Pass a method group and you get `CS0411`.
+
 {% hint style="info" %}
-The async extensions live in the `Waystone.Monads.Options.Extensions` and
-`Waystone.Monads.Results.Extensions` namespaces. Add the `using` for the monad you
-are working with.
+These overloads are generated, by `Waystone.SourceGenerators`, from the
+synchronous methods. That is why the surface is so uniform, and why you will not
+find them written out in the library source.
 {% endhint %}
+
+{% hint style="info" %}
+They live in `Waystone.Monads.Options.Extensions` and
+`Waystone.Monads.Results.Extensions`. Add the `using` for the monad you are
+working with.
+{% endhint %}
+
+`MatchAsync` is the exception — it also extends the monad directly, so you can
+pass an async branch to an `Option<T>` or `Result<T, E>` you already hold. See
+[Matching with an async branch](#matching-with-an-async-branch).
 
 ## Every async member returns ValueTask
 
 From 7.0.0 the rule has no exceptions: **every** async member on `Option` and
-`Result` returns `ValueTask` or `ValueTask<T>`. That includes the static factories.
-`Option.TryAsync`, `Result.TryAsync` and `CollectAsync` returned `Task` up to
-6.7.0 and return `ValueTask` now — see
+`Result` returns `ValueTask` or `ValueTask<T>`. That includes the static
+factories. `Option.TryAsync`, `Result.TryAsync` and `CollectAsync` returned
+`Task` up to 6.7.0 — see
 [Loud change: TryAsync and CollectAsync return ValueTask](../upgrading-and-deprecations/v6-to-v7.md#loud-change-tryasync-and-collectasync-return-valuetask).
-
-6.0.0 got the extension methods there. In 5.x some returned `Task` and some
-returned `ValueTask`, and you had to check.
 
 ```csharp
 ValueTask<string> output = result.MatchAsync(
@@ -76,9 +77,8 @@ ValueTask<string> output = result.MatchAsync(
 You await a `ValueTask` the same way you await a `Task`, so this rarely changes
 your code. Two things to know:
 
-- **Await it once, and only once.** This matters if you store the result before
-  awaiting it.
-- **Call `.AsTask()` when you need a `Task`** — most often for `Task.WhenAll`.
+* **Await it once, and only once.** This matters if you store it before awaiting.
+* **Call `.AsTask()` when you need a `Task`** — most often for `Task.WhenAll`.
 
 ```csharp
 await Task.WhenAll(
@@ -93,43 +93,46 @@ composes.
 `ValueTask` is cheaper when the work finishes synchronously and slightly more
 expensive when it does not. A three-link chain saves 144 bytes on a synchronous
 `Option` receiver and costs 84 bytes when the head is genuinely pending. See
-[v5.x to v6.x](../upgrading-and-deprecations/v5-to-v6.md#the-measured-trade-off) for the numbers.
+[v5.x to v6.x](../upgrading-and-deprecations/v5-to-v6.md#the-measured-trade-off)
+for the numbers.
 {% endhint %}
 
-## Creating a monad from async work
+## Create a monad from async work
 
-Use `TryAsync` to capture a factory that returns a `Task` and may throw.
+`TryAsync` captures a factory that returns a `Task` and may throw.
 
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-Option<User> maybeUser = await Option.TryAsync(() => FetchUserAsync(id));
+Option<Character> maybeCharacter = await Option.TryAsync(
+    () => SummonCharacterOrThrowAsync(id));
 ```
 
-If `FetchUserAsync` throws, the exception is caught and logged via your
-[configured exception logger](configuration.md), and you get back a `None<User>`.
+If the factory throws, the exception is caught and sent to your
+[configured exception logger](../using-the-library/configuration.md), and you get
+back a `None<Character>`.
 
-You also get a `None<User>` if the task completes with null, because a `Some`
-cannot hold one. Nothing is logged in that case, because nothing threw.
+You also get a `None<Character>` if the task completes with `null`, because a
+`Some` cannot hold one. Nothing is logged in that case, because nothing threw.
 {% endtab %}
 
 {% tab title="Result" %}
 ```csharp
 // supply your own error type
-Result<User, string> result = await Result.TryAsync(
-    asyncFactory: () => FetchUserAsync(id),
-    onError: ex => ex.Message
-);
+Result<Character, string> result = await Result.TryAsync(
+    asyncFactory: () => SummonCharacterOrThrowAsync(id),
+    onError: ex => ex.Message);
 
 // or let the error type default to Error
-Result<User, Error> builtIn = await Result.TryAsync<User>(() => FetchUserAsync(id));
+Result<Character, Error> builtIn = await Result.TryAsync<Character>(
+    () => SummonCharacterOrThrowAsync(id));
 ```
 
 The single type parameter overload converts the exception with
 `Error.FromException`, so you do not pass an `onError` delegate.
 
-`TryAsync` also calls `onError` when the task completes with null, passing you an
-`ArgumentNullException` that names the `asyncFactory` argument.
+`TryAsync` also calls `onError` when the task completes with `null`, passing you
+an `ArgumentNullException` that names the `asyncFactory` argument.
 {% endtab %}
 {% endtabs %}
 
@@ -137,13 +140,15 @@ The single type parameter overload converts the exception with
 **Never pass an async factory to `Try`.** The overloads that accepted one were
 removed in 6.0.0, and the call still compiles — it binds to the synchronous
 overload, gives you an `Option<Task<T>>`, and catches nothing.
-[`WM1011`](analyzer-rules.md#wm1011) reports every occurrence. See
+[`WM1011`](../using-the-library/analyzer-rules.md#wm1011) reports every
+occurrence. See
 [Silent change 1](../upgrading-and-deprecations/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
 {% endhint %}
 
 {% hint style="warning" %}
 `TryAsync` lets an `OperationCanceledException` through rather than turning it
-into a `None` or an `Err`. See [Configuration](configuration.md#cancellation).
+into a `None` or an `Err`. See
+[Configuration](../using-the-library/configuration.md#cancellation).
 {% endhint %}
 
 ## Matching with an async branch
@@ -154,12 +159,12 @@ one. Use it when one or both branches do async work.
 ```csharp
 // both branches async
 string text = await option.MatchAsync(
-    async x => await RenderAsync(x),
+    async x => await RenderNumberAsync(x),
     async () => await LoadDefaultAsync());
 
 // only the Some branch is async
 string fromSome = await option.MatchAsync(
-    async x => await RenderAsync(x),
+    async x => await RenderNumberAsync(x),
     () => "none");
 
 // only the None branch is async
@@ -205,7 +210,7 @@ returns a value, so the call binds to the overload returning nothing. You get
 `CS0029` on the assignment, which points at the line but not at the cause. Make
 both branches async, or match on an `Option<T>`.
 
-## Ending a chain
+## End a chain
 
 The consuming operations have async counterparts too, so you can finish a chain
 without awaiting the monad first.
@@ -213,43 +218,47 @@ without awaiting the monad first.
 {% tabs %}
 {% tab title="Option" %}
 ```csharp
-User user = await FetchUserAsync(id).UnwrapAsync();
-User orGuest = await FetchUserAsync(id).UnwrapOrAsync(Guest);
-User orDefault = await FetchUserAsync(id).UnwrapOrDefaultAsync();
-User expected = await FetchUserAsync(id).ExpectAsync("the user must exist");
+Character character = await SummonCharacterAsync(id).UnwrapAsync();
+Character orCommoner = await SummonCharacterAsync(id).UnwrapOrAsync(Commoner);
+Character? orDefault = await SummonCharacterAsync(id).UnwrapOrDefaultAsync();
+Character expected = await SummonCharacterAsync(id).ExpectAsync("the character must exist");
 ```
 {% endtab %}
 
 {% tab title="Result" %}
 ```csharp
-User user = await FetchUserAsync(id).UnwrapAsync();
-User orGuest = await FetchUserAsync(id).UnwrapOrAsync(Guest);
-User orDefault = await FetchUserAsync(id).UnwrapOrDefaultAsync();
-User expected = await FetchUserAsync(id).ExpectAsync("the user must exist");
+Character character = await LoadCharacterAsync(id).UnwrapAsync();
+Character orCommoner = await LoadCharacterAsync(id).UnwrapOrAsync(Commoner);
+Character? orDefault = await LoadCharacterAsync(id).UnwrapOrDefaultAsync();
+Character expected = await LoadCharacterAsync(id).ExpectAsync("the character must exist");
 
-Error error = await FetchUserAsync(id).UnwrapErrAsync();
-Error expectedErr = await FetchUserAsync(id).ExpectErrAsync("the fetch must fail");
+Error error = await LoadCharacterAsync(id).UnwrapErrAsync();
+Error expectedErr = await LoadCharacterAsync(id).ExpectErrAsync("the load must fail");
 ```
 {% endtab %}
 {% endtabs %}
 
+{% hint style="warning" %}
+**`UnwrapOrDefaultAsync` returns `T?`, not `T`.** Assign it to a nullable local.
+With nullable reference types on, `Character orDefault = …` is `CS8600`.
+{% endhint %}
+
 {% hint style="info" %}
 `UnwrapAsync`, `UnwrapErrAsync`, `ExpectAsync` and `ExpectErrAsync` throw for the
 same reasons their synchronous versions do. See
-[UnwrapException and UnmetExpectationException](errors-and-exceptions.md#custom-exceptions).
+[Exceptions](exceptions.md).
 {% endhint %}
 
 ## The full surface
 
 Every method below behaves exactly like the synchronous version documented in
-[Core Functionality](core-functionality.md), [Option\<T>](../guides/option.md)
-and [Result\<T, E>](result-of-t-and-e.md). The only difference is that it accepts
-an async delegate, a task receiver, or both.
+[Option\<T>](option.md) and [Result\<T, E>](result.md). The only difference is
+that it accepts an async delegate, a task receiver, or both.
 
 {% hint style="info" %}
 Some of these take state, so the delegate does not have to capture. Not all of
 them do yet — see
-[On the async surface](core-functionality.md#on-the-async-surface).
+[On the async surface](../using-the-library/core-functionality.md#on-the-async-surface).
 {% endhint %}
 
 ### Option\<T>
