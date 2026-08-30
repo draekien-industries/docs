@@ -105,7 +105,7 @@ the call yourself — so it turns the `null` into an `Err` for you.
 {% hint style="danger" %}
 **Do not pass an async factory to `Try`.** It compiles, gives you a
 `Result<Task<T>, E>`, and catches nothing. Use `TryAsync`.
-[`WM1011`](../../using-the-library/analyzer-rules.md#wm1011) reports every
+[`WM1011`](../../analyzers/runtime-bugs.md#wm1011) reports every
 occurrence.
 {% endhint %}
 

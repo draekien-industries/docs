@@ -289,7 +289,7 @@ site rebinds to the synchronous overload, keeps compiling, and stops catching
 exceptions. Read
 [Silent change 1](v5-to-v6.md#silent-change-1-try-with-an-async-factory)
 before you upgrade, and turn on
-[`WM1011`](../using-the-library/analyzer-rules.md#wm1011) — it finds every affected call.
+[`WM1011`](../analyzers/runtime-bugs.md#wm1011) — it finds every affected call.
 {% endhint %}
 
 #### How to migrate

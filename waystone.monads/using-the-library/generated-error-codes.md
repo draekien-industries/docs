@@ -347,4 +347,4 @@ share a format: `"order.{member:kebab}"` on both `OrderErrorCode` and `ShipmentE
 makes `NotFound` collide.
 
 `WM2018` reports that. It is a suggestion, not a warning — see
-[#wm2018](analyzer-rules.md#wm2018 "mention").
+[#wm2018](../analyzers/idioms.md#wm2018 "mention").

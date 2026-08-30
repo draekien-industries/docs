@@ -304,10 +304,10 @@ it told you to leave `TryAsync` alone. That advice held for v6 and stops holding
 
 | Rule | Severity | What it reports |
 | --- | --- | --- |
-| [`WM2022`](../using-the-library/analyzer-rules.md#wm2022) | Suggestion | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` |
+| [`WM2022`](../analyzers/idioms.md#wm2022) | Suggestion | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` |
 
 Two more ship in the new test package rather than in the library:
-[`WMS2001` and `WMS2002`](../using-the-library/analyzer-rules.md#assertion-rules).
+[`WMS2001` and `WMS2002`](../analyzers/assertion-rules.md).
 
 ### Removed
 
@@ -325,7 +325,7 @@ reused, so a stale entry does nothing at all — it neither errors nor warns.
   `WMS2002` convert an existing suite in a batch.
 * **[Waystone.Monads.Linq](../companion-packages/linq.md)** — C# query syntax over
   `Option` and `Result`.
-* **[Severity presets](../using-the-library/severity-presets.md)** — one MSBuild
+* **[Severity presets](../analyzers/severity-presets.md)** — one MSBuild
   property makes the seven misuse rules build errors. A major upgrade is a reasonable
   moment to turn it on.
 

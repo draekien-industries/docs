@@ -56,7 +56,7 @@ prior knowledge assumed.
 Installing `Waystone.Monads` gets you the two types, a Roslyn analyzer, and a
 source generator. You configure none of it. The analyzer flags the mistakes
 people make with these types, and the generator turns an enum into a set of
-error codes. See [Analyzer rules](using-the-library/analyzer-rules.md) and
+error codes. See [Analyzer rules](analyzers/README.md) and
 [Generated error codes](using-the-library/generated-error-codes.md).
 
 Optional packages sit beside the library — Shouldly assertions, LINQ query

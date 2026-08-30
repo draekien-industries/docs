@@ -2,22 +2,11 @@
 description: >-
   Turn the analyzer up in one line, without listing thirty rules in your
   .editorconfig.
+icon: sliders
 ---
 
 # Severity presets
 
-
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
 
 ## Pick a preset in one line
 
@@ -57,7 +46,7 @@ everything on.
 **`strict` will report a lot on an existing codebase**, and the two adoption rules
 will account for most of it by a wide margin. They fire on every nullable return and
 every `throw`, converted or not — see
-[Migration aids](analyzer-rules.md#migration-aids).
+[Migration aids](migration-aids.md).
 
 If you want the idiom rules enforced without that noise, take `recommended` and raise
 the idiom tier yourself. That is not what `strict` is for.
