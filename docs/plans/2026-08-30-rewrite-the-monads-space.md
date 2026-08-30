@@ -337,20 +337,24 @@ is `source-generation/README.md`.
 | `companion-packages/dependency-injection.md` | whole page | `packages/dependency-injection.md` | Dependency injection |
 | `companion-packages/hosting.md` | whole page | `packages/hosting.md` | Hosting |
 | `companion-packages/fluentvalidation.md` | whole page | `packages/fluent-validation.md` | FluentValidation |
+| `companion-packages/systemtextjson.md` | whole page | `packages/system-text-json.md` | System.Text.Json |
+| `companion-packages/newtonsoftjson.md` | whole page | `packages/newtonsoft-json.md` | Newtonsoft.Json |
 | new | — | `packages/logging.md` | Logging |
-| new | — | `packages/system-text-json.md` | System.Text.Json |
-| new | — | `packages/newtonsoft-json.md` | Newtonsoft.Json |
 
-`packages/logging.md` has no old path of its own but does inherit content — the
-logging half of `using-the-library/observability.md`, recorded in the Guides
-table above. The two JSON pages have no source at all. Both packages shipped
-after this plan was written ([DRA-81](https://linear.app/draekien-industries/issue/DRA-81),
-[DRA-82](https://linear.app/draekien-industries/issue/DRA-82)) and neither is in
-`SUMMARY.md` today. The redirects layer skips all three rather than hunting for
-a source.
+`packages/logging.md` is the only page in this group with no old path. It does
+inherit content — the logging half of
+`using-the-library/observability.md`, recorded in the Guides table above — so
+the redirects layer skips it rather than hunting for a source of its own.
 
-`fluentvalidation.md` to `fluent-validation.md` is the only rename that rule 9
-forces. Every other file already reads as kebab-case.
+The two JSON pages were written and merged
+([docs#43](https://github.com/draekien-industries/docs/pull/43)) after the
+issues behind this rewrite were filed, so they are ordinary moves rather than
+new pages. They need a rewrite for group shape and a kebab-case rename, not a
+first draft.
+
+Rule 9 forces three renames: `fluentvalidation.md`, `systemtextjson.md` and
+`newtonsoftjson.md`. Every other file already reads as kebab-case. Use
+`git mv` for all three so the history follows.
 
 ### Upgrading
 
@@ -401,6 +405,14 @@ here with a reason. No standing exclusion is left.
 | `Waystone.Monads.NewtonsoftJson` | `packages/newtonsoft-json.md` |
 | `Waystone.Monads.SourceGenerators` | `source-generation/` |
 | `Waystone.SourceGenerators` | Excluded — see below |
+| `Waystone.Monads.EntityFrameworkCore` | Excluded — does not exist |
+
+`Waystone.Monads.EntityFrameworkCore` has a page written for it in
+[docs#44](https://github.com/draekien-industries/docs/pull/44), closed unmerged
+on 2026-08-30 alongside waystone-dotnet#198. The package is not shipping — the
+recommendation is to map into persistence models instead. Do not resurrect that
+page. Storing an `Option` in a column worked, but querying one mostly did not,
+and one of the failures was silent.
 
 `Waystone.SourceGenerators` is `IsPackable=false` and absent from the
 `PackMonadAnalyzers` target, so it never runs on a consumer's compilation and
