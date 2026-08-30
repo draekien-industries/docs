@@ -2,20 +2,9 @@
 description: Run a FluentValidation validator and get a Result back, with the failures attached to the error.
 ---
 
-# Waystone.Monads.FluentValidation
+# FluentValidation
 
-
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads.FluentValidation --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.FluentValidation" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+`Waystone.Monads.FluentValidation` — a validator that returns a `Result`.
 
 ## What it adds
 
@@ -52,10 +41,19 @@ Result<UserInput, Error> result =
     await input.ValidateAsync(new UserInputValidator(), cancellationToken);
 ```
 
+## When to reach for it
+
+Reach for it where a validation failure is an ordinary outcome your caller handles,
+and you are already writing FluentValidation validators. `Validate` gives you a
+`Result` that chains with everything else in the library.
+
+Skip it if you throw on invalid input by design, or if you do not use
+FluentValidation. Nothing else here depends on it.
+
 ## Install it
 
 ```
-dotnet add package Waystone.Monads.FluentValidation --prerelease
+dotnet add package Waystone.Monads.FluentValidation
 ```
 
 You also need `FluentValidation` itself, which you almost certainly already have —
@@ -171,7 +169,7 @@ either throws an `ArgumentException`.
 ```csharp
 MonadOptions.Configure(options =>
 {
-    options.UseLogger(logger);
+    options.UseFallbackErrorCode("Contoso");
     options.UseValidationErrorCode("input.invalid");
 });
 ```
@@ -206,3 +204,11 @@ Only validation failures become an `Err`.
 If you are coming from `6.x`, this package no longer has a `ValidationErr` type and the
 extension methods return something different. See
 [Every v7 break](../upgrading-and-deprecations/v7-breaks.md#waystone-monads-fluentvalidation).
+
+## What it does not do
+
+* It does not turn exceptions into an `Err`. Only validation failures become one.
+* It does not run asynchronous rules from `Validate`. That call throws; use
+  `ValidateAsync`.
+* It does not register your validators. That is FluentValidation's own container
+  wiring, unchanged.

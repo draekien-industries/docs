@@ -4,22 +4,27 @@ description: >-
   calls MonadOptions.Configure by hand.
 ---
 
-# Waystone.Monads.Extensions.DependencyInjection
+# Dependency injection
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+`Waystone.Monads.Extensions.DependencyInjection` — lets a container write the
+library's configuration.
 
-```
-dotnet add package Waystone.Monads.Extensions.DependencyInjection --prerelease
-```
+## What it adds
 
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.Extensions.DependencyInjection" Version="7.0.0-beta.*" />`.
+`AddWaystoneMonads` on `IServiceCollection` and `UseWaystoneMonads` on
+`IServiceProvider`. Between them they move the configuration call out of a
+hand-written static and into the container you already have.
 
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+## When to reach for it
 
-Install this when your application already has a container and you would rather
+Reach for it when your application already has a container and you would rather
 configure the library there than in a hand-written static call.
+
+If your application is built on `Microsoft.Extensions.Hosting`, install
+[Hosting](hosting.md) instead. It depends on this package, so you get everything
+here as well, and it makes the second call for you.
+
+## Install it
 
 ```
 dotnet add package Waystone.Monads.Extensions.DependencyInjection
@@ -33,12 +38,6 @@ var app = builder.Build();
 
 app.Services.UseWaystoneMonads();
 ```
-
-{% hint style="success" %}
-**On a host, install [Waystone.Monads.Extensions.Hosting](hosting.md) instead.** It
-depends on this package, so you get everything here, and it makes the second call for
-you.
-{% endhint %}
 
 This package does not change what the library does. `MonadOptions` stays ambient —
 `Option` and `Result` still read it statically, no monad gains a constructor
@@ -237,3 +236,12 @@ Both services are resolved through `IServiceProvider.GetService` rather than any
 container-specific API, so `UseWaystoneMonads` works on a provider produced by any
 conforming container. `AddWaystoneMonads` needs an `IServiceCollection`; a
 container that populates itself from one (which most do) is enough.
+
+## What it does not do
+
+* It does not change what the library does. `MonadOptions` stays ambient, no monad
+  gains a constructor dependency, and nothing is threaded through your call sites.
+* It does not apply the configuration for you. `UseWaystoneMonads` is a second call
+  you have to make — unless you install [Hosting](hosting.md).
+* It does not require a Microsoft container. Both services resolve through
+  `IServiceProvider.GetService`.

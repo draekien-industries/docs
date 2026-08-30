@@ -290,7 +290,7 @@ IEnumerable<string> sequence = maybeName.AsEnumerable();
 
 For real LINQ query syntax over an `Option` — `from`, `where`, `select`, staying
 inside the monad the whole way — see
-[Waystone.Monads.Linq](../companion-packages/linq.md).
+[Waystone.Monads.Linq](../packages/linq.md).
 
 ## Printing and logging
 

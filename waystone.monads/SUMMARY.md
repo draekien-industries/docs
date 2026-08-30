@@ -53,17 +53,17 @@
 * [Assertion rules](analyzers/assertion-rules.md)
 * [Severity presets](analyzers/severity-presets.md)
 
-## Companion Packages
+## Companion packages
 
-* [Overview](companion-packages/README.md)
-* [Shouldly](companion-packages/shouldly.md)
-* [Linq](companion-packages/linq.md)
-* [DependencyInjection](companion-packages/dependency-injection.md)
-* [Hosting](companion-packages/hosting.md)
-* [Logging](companion-packages/logging.md)
-* [FluentValidation](companion-packages/fluentvalidation.md)
-* [SystemTextJson](companion-packages/systemtextjson.md)
-* [NewtonsoftJson](companion-packages/newtonsoftjson.md)
+* [Overview](packages/README.md)
+* [Shouldly](packages/shouldly.md)
+* [LINQ](packages/linq.md)
+* [Dependency injection](packages/dependency-injection.md)
+* [Hosting](packages/hosting.md)
+* [Logging](packages/logging.md)
+* [FluentValidation](packages/fluent-validation.md)
+* [System.Text.Json](packages/system-text-json.md)
+* [Newtonsoft.Json](packages/newtonsoft-json.md)
 
 ## Upgrading and Deprecations
 

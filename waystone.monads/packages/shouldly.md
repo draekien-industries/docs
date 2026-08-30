@@ -4,22 +4,11 @@ description: >-
   the state it found.
 ---
 
-# Waystone.Monads.Shouldly
+# Shouldly
 
+`Waystone.Monads.Shouldly` — Shouldly assertions for `Option` and `Result`.
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads.Shouldly --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.Shouldly" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
-## What it fixes
+## What it adds
 
 Assert on a piece of a monad and the failure message is about that piece, not about the
 monad. This is the shape most test suites have:
@@ -49,10 +38,19 @@ The `Unwrap` shape is worse than the `IsOk` shape. `result.Unwrap().ShouldBe(42)
 throws from `Unwrap` before the assertion runs at all, so the test fails on a panic
 and the message is about unwrapping rather than about what you expected.
 
+## When to reach for it
+
+Reach for it in any test project that asserts on an `Option` or a `Result`. That is
+the only place it belongs — it is a test-only package and it has no use in production
+code.
+
+Skip it if your suite already reads well. Nothing here changes what passes or fails;
+it changes what a failure tells you.
+
 ## Install it
 
 ```
-dotnet add package Waystone.Monads.Shouldly --prerelease
+dotnet add package Waystone.Monads.Shouldly
 ```
 
 The package targets `netstandard2.0`, depends on Shouldly 4.3.0, and brings
@@ -143,7 +141,6 @@ result
     but was
 Err("failed")
 
-
 Additional Info:
     the seed data should have loaded
 ```
@@ -161,3 +158,12 @@ a suite in one pass.
 
 They are documented with the rest of the rules, on
 [Assertion rules](../analyzers/assertion-rules.md).
+
+## What it does not do
+
+* It does not ship for any assertion library but Shouldly. There is no xUnit,
+  NUnit or FluentAssertions equivalent.
+* It does not change `Option` or `Result`. Remove the package and your production
+  code still compiles.
+* It does not assert on the *contents* of a value for you. `ShouldBeSome()` hands
+  the value back so your next assertion can.

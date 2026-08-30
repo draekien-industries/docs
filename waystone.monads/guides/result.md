@@ -300,7 +300,7 @@ The short version:
 * `Partition` — keeps both sides, so you learn which ones failed.
 
 For LINQ query syntax over a `Result`, see
-[Waystone.Monads.Linq](../companion-packages/linq.md).
+[Waystone.Monads.Linq](../packages/linq.md).
 
 ## Printing and logging
 

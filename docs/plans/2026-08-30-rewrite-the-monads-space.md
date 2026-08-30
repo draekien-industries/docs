@@ -647,3 +647,24 @@ The second reports one standing false positive:
 `v7-breaks.md#waystone-monads-fluentvalidation`. GitBook turns the dots in
 `## Waystone.Monads.FluentValidation` into hyphens; a naive slugifier drops them.
 The link is correct.
+
+## Companion packages URL mapping
+
+DRA-172 moved the directory and renamed three files. Every one of these is a live
+URL. DRA-174 redirects all nine; none of the anchors moved, and GitBook carries a
+fragment across a page-level redirect, so no anchor column is needed here.
+
+| Old URL | New URL |
+| --- | --- |
+| `companion-packages` | `packages` |
+| `companion-packages/shouldly` | `packages/shouldly` |
+| `companion-packages/linq` | `packages/linq` |
+| `companion-packages/dependency-injection` | `packages/dependency-injection` |
+| `companion-packages/hosting` | `packages/hosting` |
+| `companion-packages/logging` | `packages/logging` |
+| `companion-packages/fluentvalidation` | `packages/fluent-validation` |
+| `companion-packages/systemtextjson` | `packages/system-text-json` |
+| `companion-packages/newtonsoftjson` | `packages/newtonsoft-json` |
+
+The group is still named `Companion packages` in `SUMMARY.md`, per the decision at
+the top of this file. Only the URL segment shortened.

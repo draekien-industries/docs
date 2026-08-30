@@ -171,7 +171,7 @@ IEnumerable<int> sequence = result.AsEnumerable();
 ```
 
 To write a query that stays a `Result` and keeps the error, see
-[Waystone.Monads.Linq](../../companion-packages/linq.md).
+[Waystone.Monads.Linq](../../packages/linq.md).
 
 `Option<T>` has the same method, and `Flatten` on a sequence of either is built
 out of it.

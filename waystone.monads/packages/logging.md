@@ -7,21 +7,34 @@ icon: file-lines
 
 # Logging
 
-`Waystone.Monads.Extensions.Logging` sends the exceptions the library catches to
-your `ILogger`. It is the only signal that needs a package — counters and
-diagnostic events work with no install at all. See
-[Observability](../guides/observability.md) for those.
+`Waystone.Monads.Extensions.Logging` — sends the exceptions the library catches to
+your `ILogger`.
 
-## Log handled exceptions
+## What it adds
 
-Install the package:
+`UseLoggerFactory` and `UseLoggerFactoryFrom` on `MonadOptions`. Once one of them
+is called, every exception `Option.Try`, `Result.Try` and their async siblings
+swallow becomes a log entry with the call site attached.
+
+## When to reach for it
+
+Reach for it when the library is catching exceptions you would otherwise never
+see. A `Try` that turns a throw into a `None` is doing its job, and it is also the
+one place a real bug can hide silently.
+
+It is the only signal that needs a package. Counters and diagnostic events work
+with no install at all — see [Observability](../guides/observability.md) for those.
+
+## Install it
 
 ```
 dotnet add package Waystone.Monads.Extensions.Logging
 ```
 
-Then point it at your logger once, during start-up. Pick the line that matches
-how your application is built.
+## Point it at your logger
+
+Do this once, during start-up. Pick the line that matches how your application is
+built.
 
 **You have a host and a service provider:**
 
@@ -151,3 +164,12 @@ exception is reported twice until you delete the old call.
 The old hook held one delegate. A second observer replaced the first without
 saying so, which meant it could never support more than one integration at a
 time. The diagnostic event has no such limit.
+
+## What it does not do
+
+* It does not log anything you handle yourself. Only the exceptions the library
+  catches reach it.
+* It does not replace `Observability`. Counters and the diagnostic events are in
+  the core package and need no install.
+* It does not accept more than one logger factory. The last call wins, and a scope
+  overrides it for the block.

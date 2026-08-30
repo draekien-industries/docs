@@ -6,8 +6,8 @@ application's lifetime.
 
 **If your application has a dependency injection container, configure the library
 there instead.** Install
-[Waystone.Monads.Extensions.Hosting](../companion-packages/hosting.md) on a host, or
-[Waystone.Monads.Extensions.DependencyInjection](../companion-packages/dependency-injection.md)
+[Waystone.Monads.Extensions.Hosting](../packages/hosting.md) on a host, or
+[Waystone.Monads.Extensions.DependencyInjection](../packages/dependency-injection.md)
 without one, and the container writes these settings for you. You get a delegate that
 can resolve services out of the container, optional binding from `IConfiguration`, and
 a diagnostic event when configuration was registered but never installed.
@@ -101,7 +101,7 @@ Each entry carries the exception plus the call site that caught it — the membe
 name, the source text of the delegate you passed, and the line number.
 
 The three methods above ship in that package, and
-[Logging](../companion-packages/logging.md) covers them properly — the levels, the
+[Logging](../packages/logging.md) covers them properly — the levels, the
 category, and what lands in each entry.
 
 To count these exceptions instead, install nothing at all. Read
@@ -301,6 +301,6 @@ To see these events, see
 [Watching for a scope disposed out of order](observability.md#watching-for-a-scope-disposed-out-of-order).
 
 {% hint style="info" %}
-[`Waystone.Monads.FluentValidation`](../companion-packages/fluentvalidation.md)
+[`Waystone.Monads.FluentValidation`](../packages/fluent-validation.md)
 options are covered by the same scope, so you only ever open one.
 {% endhint %}

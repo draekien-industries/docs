@@ -4,22 +4,27 @@ description: >-
   sequence, so there is no second call to forget.
 ---
 
-# Waystone.Monads.Extensions.Hosting
+# Hosting
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+`Waystone.Monads.Extensions.Hosting` — applies the container-registered
+configuration at host start.
 
-```
-dotnet add package Waystone.Monads.Extensions.Hosting --prerelease
-```
+## What it adds
 
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.Extensions.Hosting" Version="7.0.0-beta.*" />`.
+`AddWaystoneMonads` on `IHostApplicationBuilder`, and a hosted service that runs
+`UseWaystoneMonads` as the host starts. That removes the second call.
 
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+## When to reach for it
 
-Install this if your application is built on `Microsoft.Extensions.Hosting`. It is
-the shape most applications want.
+Reach for it if your application is built on `Microsoft.Extensions.Hosting`. It is
+the shape most applications want, and it is the package to install rather than
+[Dependency injection](dependency-injection.md) — it depends on that one, so you
+get both.
+
+Skip it for a console application, a test, or a container you built by hand. There
+is no host to hook, so install the dependency injection package alone.
+
+## Install it
 
 ```
 dotnet add package Waystone.Monads.Extensions.Hosting
@@ -119,3 +124,11 @@ Configuration is applied at host start, not at container build.
 Nothing here applies. Call `UseWaystoneMonads()` on the provider yourself —
 [Waystone.Monads.Extensions.DependencyInjection](dependency-injection.md) is all a
 console application, a test, or a container built by hand needs.
+
+## What it does not do
+
+* It does not apply configuration at container build. It applies it at host start,
+  so work done before the host starts still reads the defaults.
+* It does not add any setting of its own. Everything the delegate can do belongs
+  to [Dependency injection](dependency-injection.md).
+* It does not help outside a host. See `Without a host`, above.

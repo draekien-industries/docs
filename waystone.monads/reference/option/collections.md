@@ -159,7 +159,7 @@ IEnumerable<string> sequence = maybeName.AsEnumerable();
 
 It is **not** how you write a LINQ query over an `Option`. For that — `from`,
 `select`, `where`, staying inside the `Option` throughout — see
-[Waystone.Monads.Linq](../../companion-packages/linq.md).
+[Waystone.Monads.Linq](../../packages/linq.md).
 
 ## FirstOrNone
 

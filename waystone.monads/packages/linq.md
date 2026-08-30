@@ -2,20 +2,9 @@
 description: C# query syntax over Option and Result, with no change in behaviour.
 ---
 
-# Waystone.Monads.Linq
+# LINQ
 
-
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads.Linq --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads.Linq" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+`Waystone.Monads.Linq` — C# query syntax over `Option` and `Result`.
 
 ## What it adds
 
@@ -47,10 +36,18 @@ Option<Quote> quote = FindCustomer(id)
 Pick whichever reads better to you. Three or more steps that each need the earlier
 values is where query syntax wins, because the nesting flattens out.
 
+## When to reach for it
+
+Reach for it when a chain of `AndThen` calls has grown enough that the names of the
+intermediate values stop being obvious. A `from … select` query names each step.
+
+Skip it for a single step. `option.Map(x => x + 1)` is already shorter than the
+query that does the same thing.
+
 ## Install it
 
 ```
-dotnet add package Waystone.Monads.Linq --prerelease
+dotnet add package Waystone.Monads.Linq
 ```
 
 Then add one line to the file that needs it:
@@ -147,3 +144,11 @@ If you call these as methods with named arguments, note that the factory paramet
 follow this library's chain-step naming (`optionFactory` and `resultFactory`) while
 `resultSelector` keeps the name LINQ gives it. Positional calls and query syntax are
 unaffected.
+
+## What it does not do
+
+* It adds no async shapes. C# query syntax has no `await`, so there is nothing to
+  bind to.
+* It gives `Result` no `where` clause, because filtering out an `Ok` has no error
+  to fall back on.
+* It changes no behaviour. Every clause forwards to a method that already existed.

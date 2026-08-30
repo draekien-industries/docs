@@ -320,10 +320,10 @@ reused, so a stale entry does nothing at all — it neither errors nor warns.
 
 ## New, and worth a look once the build is clean
 
-* **[Waystone.Monads.Shouldly](../companion-packages/shouldly.md)** — assertions that
+* **[Waystone.Monads.Shouldly](../packages/shouldly.md)** — assertions that
   take the monad, so a failing test names the `None` or `Err` it found. `WMS2001` and
   `WMS2002` convert an existing suite in a batch.
-* **[Waystone.Monads.Linq](../companion-packages/linq.md)** — C# query syntax over
+* **[Waystone.Monads.Linq](../packages/linq.md)** — C# query syntax over
   `Option` and `Result`.
 * **[Severity presets](../analyzers/severity-presets.md)** — one MSBuild
   property makes the seven misuse rules build errors. A major upgrade is a reasonable

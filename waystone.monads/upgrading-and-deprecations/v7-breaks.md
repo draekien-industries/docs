@@ -194,7 +194,7 @@ if (error is ValidationError validationError)
 
 `Failures` carries the `ValidationFailure` list, and `ToDictionary()` groups the
 messages by property, exactly as before. Full detail is on
-[Waystone.Monads.FluentValidation](../companion-packages/fluentvalidation.md).
+[Waystone.Monads.FluentValidation](../packages/fluent-validation.md).
 
 ### The supported FluentValidation range widened
 
