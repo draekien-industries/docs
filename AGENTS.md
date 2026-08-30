@@ -53,8 +53,33 @@ instead looks like it worked and is undone by the next run.
 A slot inside a fenced code block is left alone, which is why the example above is not
 itself filled in.
 
-`guides/configuration.md` is the only page converted so far. The rest still hold hand-
-written copies, and each moves across as it is next edited. See
+### Converting a page is part of editing it
+
+**Editing a page that still holds a hand-written C# block converts that block.** Do
+not leave one behind and do not convert the whole space in a sweep — the pages move
+across one edit at a time, so the work lands next to a reviewer who is already
+reading that page.
+
+The steps, in `waystone-dotnet`:
+
+1. Find the sample project that page belongs to. Most are under
+   `sample/Waystone.Monads.Docs/`; the analyzer, hosting, configuration and
+   observability pages quote the runnable projects directly under `sample/`.
+2. Add the block's code there so it compiles, wrapped in
+   `#region <page-slug>-<what-it-shows>`. Lower case, hyphens only. The name is
+   published, so it has to read as a description.
+3. Replace the page's fenced block with `<!-- snippet: key -->` and
+   `<!-- endSnippet -->` on their own lines, nothing between them.
+4. Build the sample project, then run `dotnet run --project tools/Waystone.DocSnippets`.
+5. Read the diff here. Only the two comment lines and the fence should be new. Any
+   other change means the sample and the page disagreed — the compiling sample wins,
+   but look at it before accepting it.
+
+This applies to C# only. `diff`, `ini`, `jsonc`, `xml` and shell blocks stay
+hand-written, and so do the `upgrading/` pages, whose samples are older majors that
+no longer compile against the current source.
+
+Converted so far: `guides/configuration.md`. See
 [docs/explorations/2026-08-31-single-sourcing-code-samples.md](docs/explorations/2026-08-31-single-sourcing-code-samples.md).
 
 ## Gotchas
