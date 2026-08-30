@@ -242,7 +242,7 @@ same reasons their synchronous versions do. See
 ## The full surface
 
 Every method below behaves exactly like the synchronous version documented in
-[Core Functionality](core-functionality.md), [Option\<T>](option-of-t/README.md)
+[Core Functionality](core-functionality.md), [Option\<T>](../guides/option.md)
 and [Result\<T, E>](result-of-t-and-e.md). The only difference is that it accepts
 an async delegate, a task receiver, or both.
 

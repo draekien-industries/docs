@@ -161,5 +161,5 @@ string display = patron.Match(
 ## Where to go next
 
 * [Quickstart](quickstart.md) — install the package and run both types yourself.
-* [Options](../core-concepts/options.md) — absence, in depth.
+* [Option\<T>](../guides/option.md) — absence, in depth.
 * [Results](../core-concepts/results.md) — failure, in depth.
