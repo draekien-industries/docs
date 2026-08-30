@@ -248,24 +248,24 @@ write it. You see them in your IDE, and they stay out of your build.
 | --- | --- | --- |
 | [`WM2001`](#wm2001) | `Unwrap` and `UnwrapErr`, which throw when there is no value | `UnwrapOrDefault()` |
 | [`WM2002`](#wm2002) | `Expect`, which throws when its invariant does not hold | `UnwrapOrDefault()` |
-| [`WM2003`](#wm2003) | A `throw` inside a member that returns `Result`, so the failure escapes the channel your signature promises | — |
-| [`WM2004`](#wm2004) | An `IsSome` check with an `Unwrap` inside it, which asks the same question twice | — |
+| [`WM2003`](#wm2003) | A `throw` inside a member that returns `Result`, so the failure escapes the channel your signature promises | None |
+| [`WM2004`](#wm2004) | An `IsSome` check with an `Unwrap` inside it, which asks the same question twice | None |
 | [`WM2005`](#wm2005) | `Map` followed by `Flatten`, which is `AndThen` | `AndThen` |
-| [`WM2006`](#wm2006) | A state check combined with an unwrap of the same value, which is `IsSomeAnd`, `IsNoneOr`, `IsOkAnd` or `IsErrAnd` | — |
+| [`WM2006`](#wm2006) | A state check combined with an unwrap of the same value, which is `IsSomeAnd`, `IsNoneOr`, `IsOkAnd` or `IsErrAnd` | None |
 | [`WM2007`](#wm2007) | `UnwrapOr` given the default of the type, which is `UnwrapOrDefault` | `UnwrapOrDefault()` |
 | [`WM2008`](#wm2008) | An `Option` or `Result` compared to `null`, which reads like an absence check but is not one | The matching state check |
-| [`WM2009`](#wm2009) | `Option<Option<T>>`, which has three states where only two mean anything | — |
-| [`WM2010`](#wm2010) | **Retired in 7.0.0.** `Result<T, T>`, whose two implicit conversions were ambiguous | — |
+| [`WM2009`](#wm2009) | `Option<Option<T>>`, which has three states where only two mean anything | None |
+| [`WM2010`](#wm2010) | **Retired in 7.0.0.** `Result<T, T>`, whose two implicit conversions were ambiguous | None |
 | [`WM2011`](#wm2011) | A declaration that names `Some`, `None`, `Ok` or `Err` instead of `Option` or `Result`, so it can hold only one of the two states | The base type |
-| [`WM2012`](#wm2012) | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | — |
-| [`WM2013`](#wm2013) | A discarded `Option`, as `WM1006` does for `Result` | — |
+| [`WM2012`](#wm2012) | A nullable member sitting alongside members that use `Option`, so one type has two ways of saying "absent" | None |
+| [`WM2013`](#wm2013) | A discarded `Option`, as `WM1006` does for `Result` | None |
 | [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 | [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
-| [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | — |
-| [`WM2018`](#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | — |
+| [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | None |
+| [`WM2018`](#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | None |
 | [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
-| [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | — |
-| [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | — |
+| [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | None |
+| [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | None |
 | [`WM2022`](#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` | Wrap it in an async lambda |
 
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
@@ -330,7 +330,7 @@ Ignores the same throws `WM3002` does, listed under Migration aids.
 ### WM2004
 
 **An `IsSome` check with an `Unwrap` inside it asks the same question twice.** Nothing
-enforces that the two answers agree; the reader is left to notice.
+enforces that the two answers agree; whoever reads the code has to notice.
 
 ```diff
 -if (option.IsSome) Console.WriteLine(option.Unwrap());
@@ -490,8 +490,8 @@ needs it. An expensive call or one with a side effect runs unconditionally.
 +option.UnwrapOrElse(() => LoadFallbackFromDisk())
 ```
 
-The lazy siblings — `AndThen`, `OrElse`, `UnwrapOrElse`, `MapOrElse` and
-`OkOrElse` — take a delegate and only call it when the other branch is taken.
+The lazy siblings (`AndThen`, `OrElse`, `UnwrapOrElse`, `MapOrElse` and
+`OkOrElse`) take a delegate and only call it when the other branch is taken.
 
 The rule reports what it cannot prove is **free**, not what it can prove is
 expensive, because only the first is decidable. It stays silent on a constant, a
@@ -553,7 +553,7 @@ share one display class but need a delegate each, so the call costs 152 bytes
 rather than 88.
 
 It reads the list off the receiver's own type rather than matching names, so a
-delegate-taking method with no state overload — `ZipWith` and `Reduce` — never
+delegate-taking method with no state overload (`ZipWith` and `Reduce`) never
 gets pointed at one that does not exist.
 
 It stays quiet when:
@@ -782,7 +782,7 @@ you pass to `Option.Try` or `Result.Try`.
 
 **A nullable return leaves the absent case easy to ignore.** `Option<T>` makes the
 caller acknowledge it. Off by default, because in a codebase that has not adopted the
-library this fires on very nearly every member.
+library this fires on nearly every member.
 
 ```diff
 -User? FindUser(int id);
@@ -852,7 +852,7 @@ runs, so the test fails on a panic rather than on an assertion, and the message 
 +option.ShouldBeSomeValue(42);
 ```
 
-The rule reads both halves of the pair, so `ShouldBeFalse` selects the opposite
+The rule reads both halves of the pair, so `ShouldBeFalse` picks the opposite
 assertion:
 
 | You wrote | The fix writes |
@@ -883,8 +883,8 @@ exclusion — a `bool` has nothing to configure.
 
 {% hint style="info" %}
 **Two diagnostics on the `Unwrap` line is one problem.** `WMS2001` overlaps `WM2001`
-there on purpose. The spans differ — `WM2001` reports the panicking call, this rule the
-whole assertion — and applying the `WMS2001` fix resolves both, because the rewrite is
+there on purpose. The spans differ: `WM2001` reports the panicking call, this rule the
+whole assertion. Applying the `WMS2001` fix resolves both, because the rewrite is
 what removes the `Unwrap`. Suppressing either to silence the pair would leave a consumer
 who does not use this package with no signal at all.
 {% endhint %}

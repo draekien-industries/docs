@@ -72,7 +72,7 @@ Without a service provider, build a factory and pass it directly:
 ```
 
 You lose nothing in the move. Every entry still carries the exception and the same
-call-site details — `MemberName`, `ArgumentExpression` and `LineNumber` — and you
+call-site details (`MemberName`, `ArgumentExpression` and `LineNumber`), and you
 gain level and category filtering from `appsettings.json`, which an opaque
 delegate could never give you. See
 [observability.md](../using-the-library/observability.md "mention").
@@ -330,8 +330,8 @@ The synchronous overloads keep the `Try` name:
 - `Result.Try<TOk>(Func<TOk>, …)`
 
 {% hint style="info" %}
-`Result.TryAsync<TOk>(Func<Task<TOk>>, …)` — the overload that defaults the error
-type to `Error` — was introduced as `TryAsync` and never had a `Try` spelling.
+`Result.TryAsync<TOk>(Func<Task<TOk>>, …)` , the overload that defaults the error
+type to `Error`, was introduced as `TryAsync` and never had a `Try` spelling.
 There was nothing to migrate.
 {% endhint %}
 

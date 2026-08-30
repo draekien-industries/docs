@@ -1,0 +1,7 @@
+{
+  "allow": [
+    "component",
+    "implement",
+    "underscore"
+  ]
+}

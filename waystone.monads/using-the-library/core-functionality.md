@@ -22,7 +22,7 @@ The API can still change before `7.0.0` is stable.
 
 While `Option<T>` and `Result<T, E>` serve different purposes (absence vs. success/failure), they share a common operational model. If you are fluent with either the `Option<T>` or `Result<T, E>` already, you're 90% of the way to mastering the other.
 
-The core APIs defined below work the same across both types, differing only in terms of semantics.
+The core APIs defined below work the same across both types, differing only in what they mean.
 
 ## Creation
 
@@ -92,7 +92,7 @@ A default value is fine and always has been. `Result.Ok<int, string>(0)` is an
 
 Use `Try` to safely capture potentially exception-throwing logic inside a monadic wrapper. This is useful if you want to begin a monadic chain from a method you do not have control over.
 
-`Try` asks one question: did the factory hand back a value you can work with? If it did not — because it threw, or because it returned something the monad cannot hold — you get the empty or failed case.
+`Try` asks one question: did the factory hand back a value you can work with? If it did not, because it threw or because it returned something the monad cannot hold, you get the empty or failed case.
 
 {% tabs %}
 {% tab title="Option" %}
@@ -128,7 +128,7 @@ Result<User, string> result = Result.Try(
 );
 ```
 
-If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onError` delegate you provide is invoked.&#x20;
+If the `GetCurrentUser` call throws, the exception is caught and logged via your configured exception logger, and the `onError` delegate you passed runs.&#x20;
 
 `Try` also calls `onError` when the factory returns null, because an `Ok` cannot hold null. It passes you an `ArgumentNullException` naming the `factory` argument. Nothing is logged, because nothing threw.
 
@@ -194,7 +194,7 @@ Result<int, string> lengthResult =  nameResult.Map(name => name.Length);
 
 ### More Transforms
 
-There are additional transform methods specific to the `Option<T>` and `Result<T, E>` types.&#x20;
+There are more transform methods specific to the `Option<T>` and `Result<T, E>` types.&#x20;
 
 <table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="option-of-t/#transform">#transform</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#transform">#transform</a></td></tr></tbody></table>
 
@@ -325,7 +325,7 @@ These are ideal for short-circuiting logic or quick guards, but avoid using them
 
 {% tabs %}
 {% tab title="Option" %}
-Use `IsOk` and `IsErr` when you need to check the state of the `Result<T, E>` and don't need to access it's value just quite yet.
+Use `IsOk` and `IsErr` when you need to check the state of the `Result<T, E>` and don't need to reach its value yet.
 
 ```csharp
 Result<DateTime, Error> safeParseResult = SafeParse("2025-01-01");
@@ -336,7 +336,7 @@ safeParseResult.IsErr; // false
 {% endtab %}
 
 {% tab title="Result" %}
-Use `IsSome` and `IsNone` when you want to check the state of the monad and don't need to access it's value just quite yet.
+Use `IsSome` and `IsNone` when you want to check the state of the monad and don't need to reach its value yet.
 
 ```csharp
 Option<string> maybeName = Option.Some("John");
@@ -349,7 +349,7 @@ maybeName.IsNone; // false
 
 ## Consume
 
-You will eventually need to escape from a monadic wrapper in order to access to a concrete value. This is where consume methods come in.
+You will eventually need to escape from a monadic wrapper to reach the concrete value. This is where consume methods come in.
 
 ### Match
 
@@ -427,7 +427,7 @@ Each one is documented as never handing you null.
 
 There is nothing to bind, and `option is None<string>` already tests the case.
 
-So `option is None<string>()` — with the parentheses — is a **compile error**, not a
+So `option is None<string>()`, with the parentheses, is a **compile error**, not a
 redundant spelling. An empty positional pattern still needs a `Deconstruct` to bind
 against, and there is none:
 
@@ -469,8 +469,8 @@ CS8509: The switch expression does not handle all possible values of its input t
         (it is not exhaustive). For example, the pattern '_' is not covered.
 ```
 
-The hierarchy really is closed — an internal member stops anything outside the assembly
-deriving from `Option<T>` — but the compiler's exhaustiveness check has no knowledge of
+The hierarchy really is closed, because an internal member stops anything outside the assembly
+deriving from `Option<T>`, but the compiler's exhaustiveness check has no knowledge of
 that idiom, so it cannot see it. Silencing the warning means adding an unreachable arm:
 
 ```csharp
@@ -481,8 +481,8 @@ _ => throw new UnreachableException(),
 with no warning to suppress.
 
 **So use `Match` when you want a value out of both cases**, which is most of the time.
-**Reach for a positional pattern when you are in statement position** — an `if` that
-guards a block, a `switch` statement, or a `when` clause — where `Match` would mean
+**Reach for a positional pattern when you are in statement position** (an `if` that
+guards a block, a `switch` statement, or a `when` clause), where `Match` would mean
 wrapping statements in a lambda that returns nothing.
 
 {% hint style="info" %}
@@ -602,7 +602,7 @@ On a value type that last part is the catch. The signature reads `T?`, but `T` i
 
 ### UnwrapOrNull
 
-Use `UnwrapOrNull` when the value is a value type and you need the absent case to stay visible. It returns `T?` — a real `Nullable<T>` — so `null` means absent and every other value came from a `Some` or an `Ok`.
+Use `UnwrapOrNull` when the value is a value type and you need the absent case to stay visible. It returns `T?`, a real `Nullable<T>`, so `null` means absent and every other value came from a `Some` or an `Ok`.
 
 {% tabs %}
 {% tab title="Option" %}
@@ -628,10 +628,10 @@ int? count = countResult.UnwrapOrNull();
 
 ### Expect
 
-A sibling to [#unwrap](core-functionality.md#unwrap "mention"), but allows you to provide a meaningful error message when an exception is thrown. Use `Expect` to consume the monadic wrapper when you expect it to be in a `Some` or `Ok` state, and you want to fail loudly if it isn't.
+A sibling to [#unwrap](core-functionality.md#unwrap "mention"), but lets you give a meaningful error message when an exception is thrown. Use `Expect` to consume the monadic wrapper when you expect it to be in a `Some` or `Ok` state, and you want to fail loudly if it isn't.
 
 {% hint style="info" %}
-This method is useful in scenarios where an absent value indicates a logic error or misuse of the API - not a runtime condition to recover from.
+This method is useful in scenarios where an absent value means a logic error or misuse of the API - not a runtime condition to recover from.
 {% endhint %}
 
 {% tabs %}
@@ -651,7 +651,7 @@ string name = nameResult.Expect("Expected a name, but got an error");
 {% endtabs %}
 
 {% hint style="warning" %}
-An `UnmetExpectationException` with your provided message will be thrown when the value is absent or failure.
+An `UnmetExpectationException` carrying the message you gave is thrown when the value is absent or a failure.
 {% endhint %}
 
 ### More Consumes

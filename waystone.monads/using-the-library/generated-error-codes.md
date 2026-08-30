@@ -194,7 +194,7 @@ removes that part. `ErrorCodeFactory.FromEnum` and `ErrorCode.FromEnum` reported
 An error code is a wire contract, and the thing that makes one hard to hold onto is that
 a rename changes it silently. You can make the whole set reviewable by committing it.
 
-Add an `ErrorCodes.txt` to the project and list it as an additional file:
+Add an `ErrorCodes.txt` to the project and list it as an `AdditionalFiles` item:
 
 ```xml
 <ItemGroup>
@@ -263,8 +263,8 @@ it is the simpler thing to write even though only one of them needs it.
 
 ## Renaming is a breaking change
 
-The code is built from two names: the enum's and the member's. Rename either — or edit
-the format — and every consumer reading the code sees a different string, with nothing
+The code is built from two names: the enum's and the member's. Rename either (or edit
+the format) and every consumer reading the code sees a different string, with nothing
 in the compiler to tell you.
 
 ```csharp
@@ -334,7 +334,7 @@ set the format, whether that is the enum's or the assembly's.
 ### WMG0006
 
 **A format without `{member}` gives every member the same code.** `"{enum:kebab}"`
-generates one string for the whole enum, so the codes stop identifying anything.
+generates one string for the whole enum, so the codes stop telling the members apart.
 Include `{member}`.
 
 ## Reusing a code across two enums

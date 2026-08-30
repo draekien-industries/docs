@@ -12,7 +12,7 @@ Monads sound intimidating, but in practice, they're just a way to chain operatio
 In C#, we usually deal with values directly. Monads, on the other hand, wrap values and give you a consistent way to work with them, even when things get messy.
 
 {% hint style="success" %}
-Monads provide a structured way to represent chained computations, especially ones that might fail, return nothing, or produce side effects
+Monads give you a structured way to represent chained computations, especially ones that might fail, return nothing, or produce side effects
 {% endhint %}
 
 Monads are used to encode optional values and fallible computations without resorting to `null` or `try/catch`. The library implements two monads:
@@ -22,7 +22,7 @@ Monads are used to encode optional values and fallible computations without reso
 
 ## A practical definition
 
-A monad is a type that wraps a value and provides consistent semantics for composing operations on it.&#x20;
+A monad is a type that wraps a value and defines consistent semantics for composing operations on it.&#x20;
 
 {% hint style="success" %}
 A monad must:
@@ -40,7 +40,7 @@ When writing C# code without monads, we resort to:
 * Throwing `Exceptions` for every instance of an error, even if the error is a valid business rule
 * Wrapping methods inside `try/catch` blocks just to log the `Exception` and then re-throw it
 * Writing `null` guard clauses everywhere
-* Writing `if/else` blocks or `switch` blocks in order to handle branching logic
+* Writing `if/else` blocks or `switch` blocks to handle branching logic
 
 Take for example the below code:
 
@@ -142,7 +142,7 @@ Option<string> email = GetUserById(id)
     .Map(p => p.Email);
 ```
 
-If the user doesn't exist, or the profile is missing, the train never crashes. It just stops safely at `None`. You can later decide what to do (show an error message, fall back to defaults, etc).
+If that user doesn't exist, or the profile is missing, the train never crashes. It just stops safely at `None`. You can later decide what to do (show an error message, fall back to defaults, etc).
 
 ```csharp
 string displayEmail = email.Match(

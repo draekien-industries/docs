@@ -233,8 +233,8 @@ Subscribe once, at start-up. It does not matter whether you subscribe before or
 after the first `Try` runs.
 
 Use the token rather than the name constants. Typing a name by hand gives you three
-ways to get it wrong — the listener name, the event name, and the payload type — and
-every one of them fails silently. You get no exception, no warning, and an empty
+ways to get it wrong: the listener name, the event name, and the payload type. Every
+one of them fails silently. You get no exception, no warning, and an empty
 dashboard. The token cannot point at the wrong event.
 
 ### Disposing the subscription

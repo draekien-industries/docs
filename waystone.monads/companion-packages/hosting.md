@@ -10,10 +10,10 @@ description: >-
 **This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
 
 ```
-dotnet add package Waystone.Monads --prerelease
+dotnet add package Waystone.Monads.Extensions.Hosting --prerelease
 ```
 
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+Or set the version yourself: `<PackageReference Include="Waystone.Monads.Extensions.Hosting" Version="7.0.0-beta.*" />`.
 
 The API can still change before `7.0.0` is stable.
 {% endhint %}

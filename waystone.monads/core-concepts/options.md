@@ -118,6 +118,6 @@ Avoid `Option<T>` when:
 
 ## Summary
 
-`Option<T>` is a core abstraction in functional programming for modeling optional values. It turns invisible, error-prone absence into an explicit, composable structure. It helps you reason without uncertainty, eliminates entire classes of bugs, and leads to cleaner, more predictable code.
+`Option<T>` is a core abstraction in functional programming for modeling optional values. It turns invisible, error-prone absence into an explicit, composable structure. It helps you reason without uncertainty, removes entire classes of bugs, and leads to cleaner, more predictable code.
 
 Stop checking for `null`. Start using `Option<T>` - and let the type system work with you instead of against you.

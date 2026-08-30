@@ -90,7 +90,7 @@ This method was called `FlatMap` before 5.4.0. `FlatMap` was `[Obsolete]` throug
 
 ### Filter
 
-Use `Filter` to retain only the values that pass a predicate. If the value doesn't match, the result becomes a `None`.
+Use `Filter` to keep only the values that pass a predicate. If the value doesn't match, the result becomes a `None`.
 
 ```csharp
 Option<string> maybeName = Option.Some("Thordak");
@@ -239,11 +239,11 @@ Option<string> result = first
 
 ## Collections
 
-Sometimes you may find yourself working with a collection of optionals that contain the same value type, e.g. `List<Option<T>>`. The following methods are provided to assist you when working with collections containing optional types.
+Sometimes you may find yourself working with a collection of optionals that contain the same value type, e.g. `List<Option<T>>`. The following methods help you work with collections containing optional types.
 
 ### Filter
 
-Provides the same functionality as [#filter](./#filter "mention") but for a collection of options. All options that do not match the provided predicate are flipped into a `None`.
+Does the same as [#filter](./#filter "mention") but for a collection of options. Every option that does not match the predicate you gave is flipped into a `None`.
 
 ```csharp
 List<Option<string>> collection = [
@@ -258,7 +258,7 @@ IEnumerable<Option<string>> filtered = collection.Filter(x => x == "Hello");
 
 ### Map
 
-Provides the same functionality as [#map](../core-functionality.md#map "mention") but for a collection of options. The same transformation will be applied to all members of the collection if they are `Some`.
+Does the same as [#map](../core-functionality.md#map "mention") but for a collection of options. The same transformation will be applied to all members of the collection if they are `Some`.
 
 ```csharp
 List<Option<string>> collection = [
@@ -345,7 +345,7 @@ It stops pulling from the stream at the first `None`, so the work behind the lat
 
 Use `AsEnumerable` on a single `Option` to treat it as a sequence of nothing or one. `Flatten` above is built out of it, and it is the way out of the monad into `System.Linq`.
 
-It is not how you write a LINQ query over an `Option`. For that — `from`, `select`, `where`, staying inside the `Option` throughout — see [Waystone.Monads.Linq](../../companion-packages/linq.md).
+It is not how you write a LINQ query over an `Option`. For that (`from`, `select`, `where`, staying inside the `Option` throughout) see [Waystone.Monads.Linq](../../companion-packages/linq.md).
 
 ```csharp
 Option<string> maybeName = Option.Some("Pike");
@@ -370,7 +370,7 @@ Option<string> first = collection.FirstOrNone(x => x.StartsWith("H"));
 
 ### FirstOr
 
-Returns the first element of the collection that matches the predicate, or the provided fallback value if there are no matches.
+Returns the first element of the collection that matches the predicate, or the fallback value you gave if there are no matches.
 
 ```csharp
 List<Option<string>> collection = [
@@ -388,7 +388,7 @@ If your fallback value is expensive to generate, consider using `FirstOrElse` to
 
 ### FirstOrElse
 
-Returns the first element of the collection that matches the predicate, or executes the provided factory to construct the fallback value if there are no matches.
+Returns the first element of the collection that matches the predicate, or runs the factory you gave to construct the fallback value if there are no matches.
 
 ```csharp
 List<Option<string>> collection = [
