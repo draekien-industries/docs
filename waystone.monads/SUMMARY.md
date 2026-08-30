@@ -34,6 +34,8 @@
 * [DependencyInjection](companion-packages/dependency-injection.md)
 * [Hosting](companion-packages/hosting.md)
 * [FluentValidation](companion-packages/fluentvalidation.md)
+* [SystemTextJson](companion-packages/systemtextjson.md)
+* [NewtonsoftJson](companion-packages/newtonsoftjson.md)
 
 ## Upgrading and Deprecations
 
