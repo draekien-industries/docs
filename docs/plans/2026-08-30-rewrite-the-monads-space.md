@@ -457,12 +457,70 @@ referencing `src/` by `ProjectReference` rather than by `PackageReference`. A
 project reference is the better choice anyway — it compiles the samples against
 exactly what shipped, with no wait for a NuGet index to catch up.
 
-So DRA-163 is a standalone pull request in `waystone-dotnet`, and it lands
-before this stack does. Every layer here then has something to compile against.
-That matters: both samples on the configuration page failed against 6.x — one
-used a delegate arity that never existed, the other assigned internal
-properties — and neither failure was visible to inspection. A full rewrite
-touches every sample in the space, and checking them by eye will not hold.
+So DRA-163 is a standalone pull request in `waystone-dotnet`
+([#202](https://github.com/draekien-industries/waystone-dotnet/pull/202)), and it
+lands before this stack does. It is `sample/Waystone.Monads.Docs/`, nine library
+projects with no entry point — the build succeeding is the test.
+
+### Building the samples
+
+```
+dotnet build sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Samples.slnx
+```
+
+Run it from the `waystone-dotnet` root before opening any layer's PR. The
+projects are also in `Waystone.Net.sln`, which is what CI builds; the `.slnx` is
+a convenience for working on one page without building the test matrix.
+
+**One project per install list, not one project referencing everything.** A page
+tells a reader which package to add. If every sample compiled in one project
+that referenced all nine, a page could quietly depend on a package its install
+section never mentions and the build would stay green.
+
+**One file per page**, named for the page, with the page path in a `<summary>`
+on the type. When a build breaks, the file name is the page to go and fix. The
+core project mirrors the page tree in folders.
+
+`TreatWarningsAsErrors` is on, so an obsolete API in a sample fails the build
+rather than scrolling past in a log.
+
+### The samples are D&D-themed
+
+Every type and value is tabletop fantasy — characters, quests, spells, rituals,
+dice. The published pages already lean that way (`Grog`, `Keyleth`, `Thordak`,
+`Pike`, `Vex'ahlia`, `The Raven Queen`), and the sample projects now match.
+
+It is not decoration. `Order`, `UserInput` and `Person` are the shapes every
+sample in every library uses, so a reader skims them. A `Quest` with a
+`GoldReward`, or a `SpellInput` with a `Range`, forces them to look — and
+`Range` is a real constraint on a real spell in a way `UserInput.Range` never
+was. Reuse the cast when writing a page rather than inventing one.
+
+### Eight page bugs it found before the rewrite started
+
+Every one reads fine and none was visible to inspection. Each is recorded on the
+Linear issue for the layer that rewrites its page.
+
+| Page | Bug |
+| --- | --- |
+| `fluentvalidation.md` | Chains `UseValidationErrorCode` after `UseLogger`, which ships in a package the install section never names |
+| `systemtextjson.md`, `newtonsoftjson.md` | Both packages shadow the serializer namespaces; this plan first asserted the opposite |
+| `newtonsoftjson.md` | Its converters are not generic; the System.Text.Json ones are |
+| `async.md` | `UnwrapOrAsync` takes a value, not a factory |
+| `async.md` | `UnwrapOrDefaultAsync` returns `T?`, so the page's assignment does not compile under nullable |
+| `async.md` | `MapAsync` never takes a `ValueTask` factory |
+| `errors-and-exceptions.md` | Declares `Error error1` twice in one block |
+| `core-functionality.md` | Annotates `UnwrapOrDefault` on a `Result` as `int?`, then says the value is `0` |
+
+`quickstart.md` has a ninth: its namespace table calls
+`Waystone.Monads.Options.Extensions` the home of "the `Async` extensions", but
+`UnwrapOrNull`, `MapOrNull`, `Transpose` and the collection surface are all
+synchronous and all live there too.
+
+Two blocks in the space cannot be pinned at all, because the page shows them
+*because* they fail: the `var (a, b) = maybeName;` deconstruction, and the
+`MatchAsync` whose `Err` branch is synchronous. Each has a comment in the sample
+file saying so rather than being silently dropped.
 
 Two layers share a file and have to land in the same stack.
 `packages/logging.md` is **written** by DRA-172 and **removed from the
