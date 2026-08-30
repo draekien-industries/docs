@@ -36,6 +36,7 @@
 * [FluentValidation](companion-packages/fluentvalidation.md)
 * [SystemTextJson](companion-packages/systemtextjson.md)
 * [NewtonsoftJson](companion-packages/newtonsoftjson.md)
+* [EntityFrameworkCore](companion-packages/entityframeworkcore.md)
 
 ## Upgrading and Deprecations
 

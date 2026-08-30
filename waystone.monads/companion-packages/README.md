@@ -32,12 +32,19 @@ not because an upgrade made you.
 | [Waystone.Monads.FluentValidation](fluentvalidation.md) | Anywhere you already use FluentValidation | `Validate` and `ValidateAsync`, so a validator returns a `Result` that errs with an `Error` |
 | [Waystone.Monads.SystemTextJson](systemtextjson.md) | Anywhere an `Option` or `Result` crosses a wire | Converters that round-trip both types through `System.Text.Json` |
 | [Waystone.Monads.NewtonsoftJson](newtonsoftjson.md) | The same, on Json.NET | The same converters, writing byte-identical JSON |
+| [Waystone.Monads.EntityFrameworkCore](entityframeworkcore.md) | Anywhere an `Option` is a persisted property | Value converters that store an `Option` in a single nullable column, where `None` is `NULL` |
 
 No package here changes the behaviour of anything in `Waystone.Monads`. Three of them
 add vocabulary: remove one and the code that used it stops compiling, and nothing else
 moves. Two change only *who writes* your configuration, not what the settings mean —
-you can write the same settings by hand with `MonadOptions.Configure`. The last two
-teach a serializer a format it did not know; your own code does not change at all.
+you can write the same settings by hand with `MonadOptions.Configure`. Two teach a
+serializer a format it did not know; your own code does not change at all.
+
+The last one is different, and worth singling out.
+[Waystone.Monads.EntityFrameworkCore](entityframeworkcore.md) teaches Entity Framework
+Core to store an `Option` in a column. Storing works, but querying that column mostly
+does not — most of what you would write in a `Where` throws. Read its page before you
+adopt it, not after.
 
 The two JSON packages write the same format on purpose. Pick the serializer you already
 use, and a payload one of them writes is a payload the other reads.
