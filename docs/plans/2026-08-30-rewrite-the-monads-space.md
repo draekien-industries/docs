@@ -1,7 +1,7 @@
 ---
 title: Rewrite the waystone.monads space around reader intent
 date: 2026-08-30
-status: active
+status: done
 supersedes:
 ---
 
@@ -709,3 +709,36 @@ has not been seen rendered.** Check it on the first preview after DRA-173 merges
 The fallback, if it does not render, is one edit per page: replace the `<details>`
 wrapper with a `{% hint %}` linking down to an `## Upgrade with an agent` section
 holding the same fenced block. That costs a click and carries no rendering risk.
+
+## Correction: the analyzers already ship help links
+
+DRA-170 and DRA-174 were both written on the premise that "no descriptor sets a
+`helpLinkUri` today, so nothing in the shipped analyzer breaks". **That is wrong.**
+Both analyzer packages have shipped one on every descriptor since before v7:
+
+```
+src/Waystone.Monads.Analyzers/Rules.cs:458
+src/Waystone.Monads.Shouldly.Analyzers/Rules.cs:80
+
+    "https://draekien-industries.wpei.me/using-the-library/analyzer-rules#"
+  + id.ToLowerInvariant()
+```
+
+So every 7.0.0 build that reports a `WM` or `WMS` diagnostic offers the reader a
+link of the form `…/using-the-library/analyzer-rules#wm2017`, and 7.0.0 is already
+published — those links cannot be recalled.
+
+What this stack does to them: the redirect in `.gitbook.yaml` sends
+`using-the-library/analyzer-rules` to `analyzers/` and GitBook drops the fragment,
+so the reader lands on the Analyzers overview rather than on `WM2017`. The overview
+carries a table of every rule id linking to its entry, which was built for exactly
+this. One extra click, no 404.
+
+It is not the intended experience, and DRA-177 is now the fix rather than a nicety:
+point `helpLinkUri` at the full new URL per rule, using the anchor mapping recorded
+above. Until that ships, every rule link in a consumer's build output is one click
+short.
+
+## Status
+
+Done. All twelve layers of the stack are open as PRs #46 through #58 on stack #48.
