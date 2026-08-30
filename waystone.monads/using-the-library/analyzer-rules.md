@@ -546,7 +546,7 @@ delegate.
 
 The rule covers every method that has a state overload, which is nearly every
 delegate-taking method on both types. See
-[Where you can use it](core-functionality.md#where-you-can-use-it) for the list.
+[Where you can use it](../reference/state-overloads.md#where-you-can-use-it) for the list.
 
 `Match` is the most expensive of them to call with a closure. Its two branches
 share one display class but need a delegate each, so the call costs 152 bytes

@@ -276,7 +276,7 @@ Option<string> exclusive = bardsong.Xor(silence);                // Some("Scanla
 A `List<Option<T>>` has its own set of helpers — `Collect`, `Flatten`, `Map`,
 `Filter`, `FirstOrNone` and friends. They live in
 `Waystone.Monads.Options.Extensions`, and are covered on the
-[Option\<T> reference](../using-the-library/option-of-t/README.md#collections).
+[Option\<T> collections reference](../reference/option/collections.md).
 
 To step out of a single `Option` and into `System.Linq`, use `AsEnumerable`. It
 gives you a sequence of nothing or one:
@@ -335,4 +335,4 @@ Reach for something else when:
 
 * [Result\<T, E>](result.md) — the same idea, for failure.
 * [Async](async.md) — keeping a chain intact across an `await`.
-* [Option\<T> reference](../using-the-library/option-of-t/README.md) — every overload, when you need one this page did not show.
+* [Option\<T> API](../reference/option/README.md) — every overload, when you need one this page did not show.

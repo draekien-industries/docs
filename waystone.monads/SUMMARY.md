@@ -18,11 +18,26 @@
 * [Observability](guides/observability.md)
 * [Coming from Rust](guides/coming-from-rust.md)
 
+## Reference
+
+* [Option\<T> API](reference/option/README.md)
+  * [Creation](reference/option/creation.md)
+  * [Transform](reference/option/transform.md)
+  * [Consume](reference/option/consume.md)
+  * [Side effects](reference/option/side-effects.md)
+  * [Nesting and conversion](reference/option/nesting.md)
+  * [Collections](reference/option/collections.md)
+* [Result\<T, E> API](reference/result/README.md)
+  * [Creation](reference/result/creation.md)
+  * [Transform](reference/result/transform.md)
+  * [Consume](reference/result/consume.md)
+  * [Side effects](reference/result/side-effects.md)
+  * [Nesting and conversion](reference/result/nesting.md)
+  * [Collections](reference/result/collections.md)
+* [State overloads](reference/state-overloads.md)
+
 ## Using the Library
 
-* [Core Functionality](using-the-library/core-functionality.md)
-* [Option\<T> collections](using-the-library/option-of-t/README.md)
-* [Result\<T, E> collections](using-the-library/result-of-t-and-e.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)
 * [Severity presets](using-the-library/severity-presets.md)

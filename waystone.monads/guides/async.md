@@ -258,7 +258,7 @@ that it accepts an async delegate, a task receiver, or both.
 {% hint style="info" %}
 Some of these take state, so the delegate does not have to capture. Not all of
 them do yet — see
-[On the async surface](../using-the-library/core-functionality.md#on-the-async-surface).
+[On the async surface](../reference/state-overloads.md#on-the-async-surface).
 {% endhint %}
 
 ### Option\<T>
