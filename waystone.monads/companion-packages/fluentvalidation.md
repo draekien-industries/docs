@@ -190,7 +190,7 @@ using (MonadOptions.BeginScope(options => options.UseValidationErrorCode("debug.
 
 The code is read **when the validation runs**, not when you later read the error. An
 error created inside a scope keeps that scope's code after the scope closes. See
-[Configuration](../using-the-library/configuration.md) for the full scope semantics.
+[Configuration](../guides/configuration.md) for the full scope semantics.
 
 ## Exceptions still throw
 

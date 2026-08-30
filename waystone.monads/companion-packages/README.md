@@ -42,6 +42,8 @@ teach a serializer a format it did not know; your own code does not change at al
 The two JSON packages write the same format on purpose. Pick the serializer you already
 use, and a payload one of them writes is a payload the other reads.
 
-There is one more package, `Waystone.Monads.Extensions.Logging`, which is not on this
-list because it configures the library rather than extending it. It is on
-[Observability](../using-the-library/observability.md).
+There is one more package, [Waystone.Monads.Extensions.Logging](logging.md). It sits
+apart from the list because it configures the library rather than extending it — it
+hands the library your `ILogger`, so the exceptions it swallows reach your logs.
+[Observability](../guides/observability.md) covers the signals that need no package
+at all.

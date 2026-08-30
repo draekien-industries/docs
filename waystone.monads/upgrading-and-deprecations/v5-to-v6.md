@@ -107,7 +107,7 @@ a `Some`, and returns. It never awaits, so:
 
 - **Your exception handling is gone.** A throw inside `FetchCountAsync` escapes
   to your caller. It does not become a `None` or an `Err`, and your
-  [configured exception logger](../using-the-library/configuration.md) never sees it.
+  [configured exception logger](../guides/configuration.md) never sees it.
 - **The task may never be awaited**, depending on what you do with the result.
 
 You only get a compiler error if the call site assigns to an explicitly typed
@@ -202,7 +202,7 @@ MonadOptions.Configure(options => options.UseCancellationAsFailure());
 
 That restores the v5 behaviour everywhere: a cancellation is caught, logged, and
 becomes a `None` or an `Err` again. You can also scope it to one region with
-`MonadOptions.BeginScope`. See [Configuration](../using-the-library/configuration.md).
+`MonadOptions.BeginScope`. See [Configuration](../guides/configuration.md).
 
 We recommend leaving it off. The opt-in exists so that upgrading is not blocked
 on rewriting every call site at once.

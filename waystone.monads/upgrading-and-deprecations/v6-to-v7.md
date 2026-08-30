@@ -145,9 +145,9 @@ from a different asynchronous flow than the one that opened it — a scope lives
 flow, so another flow's `Dispose` never sees it and now reports.
 
 Full contract on
-[Configuration](../using-the-library/configuration.md#what-happens-when-you-dispose-out-of-order);
+[Configuration](../guides/configuration.md#what-happens-when-you-dispose-out-of-order);
 the event and a subscriber on
-[Observability](../using-the-library/observability.md#watching-for-a-scope-disposed-out-of-order).
+[Observability](../guides/observability.md#watching-for-a-scope-disposed-out-of-order).
 
 ## Loud change: the implicit conversions are gone
 
@@ -201,7 +201,7 @@ Three things do break:
 
 Do not keep the builder past the callback. Calls on it afterwards are discarded without
 an error. Full model on
-[Configuration](../using-the-library/configuration.md#how-configuration-works).
+[Configuration](../guides/configuration.md#how-configuration-works).
 
 ## Loud change: the extension classes collapsed
 

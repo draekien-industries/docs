@@ -78,7 +78,7 @@ listener.Subscribe(
 
 The signal is held rather than spent while nothing is subscribed, so a subscriber
 attached at any point before the install still receives it. See
-[Watching for configuration that was never installed](../using-the-library/observability.md#watching-for-configuration-that-was-never-installed).
+[Watching for configuration that was never installed](../guides/observability.md#watching-for-configuration-that-was-never-installed).
 
 [Waystone.Monads.Extensions.Hosting](hosting.md) removes the second call, and with
 it the chance of forgetting it.
@@ -144,7 +144,7 @@ builder.Services.AddWaystoneMonads((provider, options) =>
 ```
 
 `UseLoggerFactoryFrom` ships from
-[Waystone.Monads.Extensions.Logging](../using-the-library/observability.md). **The
+[Waystone.Monads.Extensions.Logging](logging.md). **The
 package you installed is the one you call.** This package does not reference it,
 so installing this one does not drag that one into your project, and installing
 that one does not silently change what this one does. The same shape works for
@@ -185,7 +185,7 @@ install either fails scope validation or quietly captures the root instance and
 hands it to every request for the life of the process.
 
 Per-request configuration is a different problem, and this package does not solve
-it. Use [`MonadOptions.BeginScope`](../using-the-library/configuration.md#scoped-configuration).
+it. Use [`MonadOptions.BeginScope`](../guides/configuration.md#scoped-configuration).
 {% endhint %}
 
 ## Reading from configuration

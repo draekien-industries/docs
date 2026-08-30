@@ -100,7 +100,7 @@ Use `Try` to safely capture potentially exception-throwing logic inside a monadi
 Option<User> maybeUser = Option.Try(() => GetCurrentUser());
 ```
 
-If the `GetCurrentUser` call throws, the exception is caught and logged via your [configured exception logger](configuration.md), and you get back a `None<User>` instance.
+If the `GetCurrentUser` call throws, the exception is caught and logged via your [configured exception logger](../guides/configuration.md), and you get back a `None<User>` instance.
 
 You also get a `None<User>` if the factory returns null, because a `Some` cannot hold one. Nothing is logged in that case, because nothing threw. A default value is fine: `Option.Try(() => 0)` gives you `Some(0)`.
 
@@ -110,7 +110,7 @@ You also get a `None<User>` if the factory returns null, because a `Some` cannot
 than becoming a `None`. Cancelling is you asking the work to stop, not the work
 failing. Call `MonadOptions.Configure(options => options.UseCancellationAsFailure())` if
 you want the pre-6.0.0 behaviour back — see
-[Configuration](configuration.md#cancellation).
+[Configuration](../guides/configuration.md#cancellation).
 {% endhint %}
 
 {% hint style="danger" %}

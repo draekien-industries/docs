@@ -75,7 +75,7 @@ You lose nothing in the move. Every entry still carries the exception and the sa
 call-site details (`MemberName`, `ArgumentExpression` and `LineNumber`), and you
 gain level and category filtering from `appsettings.json`, which an opaque
 delegate could never give you. See
-[observability.md](../using-the-library/observability.md "mention").
+[observability.md](../guides/observability.md "mention").
 
 {% hint style="danger" %}
 **If you are still on 6.x, delete the old call as you add the package.** Both fire for
@@ -87,7 +87,7 @@ twice. On 7.0.0 the member is gone, so the double-logging window is closed — y
 {% hint style="info" %}
 **You may not need to log at all.** If you only wanted counts, the library
 publishes a `Waystone.Monads` meter and needs no package and no configuration —
-see [observability.md](../using-the-library/observability.md "mention").
+see [observability.md](../guides/observability.md "mention").
 {% endhint %}
 
 #### Why this changed
@@ -226,7 +226,7 @@ and a rule cannot see the order in which disposals will happen at run time. The 
 exists because that is the only place the mistake is visible.
 
 Full contract on
-[Configuration](../using-the-library/configuration.md#what-happens-when-you-dispose-out-of-order).
+[Configuration](../guides/configuration.md#what-happens-when-you-dispose-out-of-order).
 
 ### Rule ids that are gaps
 
