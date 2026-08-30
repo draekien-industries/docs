@@ -36,9 +36,13 @@
   * [Collections](reference/result/collections.md)
 * [State overloads](reference/state-overloads.md)
 
-## Using the Library
+## Source generation
 
-* [Generated error codes](using-the-library/generated-error-codes.md)
+* [Overview](source-generation/README.md)
+* [Error code catalogs](source-generation/error-code-catalogs.md)
+* [Code format language](source-generation/code-format.md)
+* [Reviewing generated codes](source-generation/reviewing-codes.md)
+* [Generator diagnostics](source-generation/diagnostics.md)
 
 ## Analyzers
 

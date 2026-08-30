@@ -604,3 +604,46 @@ Checked against `src/Waystone.Monads.Analyzers/Rules.cs` and
 
 `WMG0001`–`WMG0006` stay with DRA-171. They are generator diagnostics, not
 analyzer rules, and they belong on the Source generation group's pages.
+
+## Source generation anchor mapping
+
+DRA-171 split `using-the-library/generated-error-codes.md` across five pages.
+Unlike the analyzer split, the old page's anchors do not all land on one new page,
+so a single redirect cannot serve them. DRA-174 redirects the page URL to the
+group overview and accepts that a reader following an old fragment lands on the
+overview's chooser table.
+
+| Old anchor | New URL |
+| --- | --- |
+| *(none)* | `source-generation` |
+| `#what-this-page-is-for` | `source-generation#why-it-exists` |
+| `#marking-an-enum` | `source-generation#marking-an-enum` |
+| `#what-you-get` | `source-generation/error-code-catalogs#what-you-get` |
+| `#a-value-that-is-not-a-declared-member` | `source-generation/error-code-catalogs#a-value-that-is-not-a-declared-member` |
+| `#reusing-a-code-across-two-enums` | `source-generation/error-code-catalogs#reusing-a-code-across-two-enums` |
+| `#choosing-the-code-format` | `source-generation/code-format#choosing-the-code-format` |
+| `#the-format-language` | `source-generation/code-format#the-format-language` |
+| `#one-format-for-the-whole-assembly` | `source-generation/code-format#one-format-for-the-whole-assembly` |
+| `#the-format-is-your-contract-not-your-factory` | `source-generation/code-format#the-format-is-your-contract-not-your-factory` |
+| `#reviewing-your-codes-as-a-list` | `source-generation/reviewing-codes#reviewing-your-codes-as-a-list` |
+| `#making-a-divergence-fail-the-build` | `source-generation/reviewing-codes#making-a-divergence-fail-the-build` |
+| `#renaming-is-a-breaking-change` | `source-generation/reviewing-codes#renaming-is-a-breaking-change` |
+| `#diagnostics` | `source-generation/diagnostics` |
+| `#wmg0001` … `#wmg0006` | `source-generation/diagnostics#wmg0001` … `#wmg0006` |
+
+`using-the-library/` no longer exists after this layer. Its three pages went to
+`analyzers/` (two) and `source-generation/` (one).
+
+## Link checking
+
+Two scripts were run at the end of DRA-170 and DRA-171, and DRA-174 should run
+both again over the finished tree:
+
+1. Every relative `.md` link target exists on disk.
+2. Every `#anchor` matches a heading on its target page.
+
+The second reports one standing false positive:
+`companion-packages/fluentvalidation.md` links to
+`v7-breaks.md#waystone-monads-fluentvalidation`. GitBook turns the dots in
+`## Waystone.Monads.FluentValidation` into hyphens; a naive slugifier drops them.
+The link is correct.

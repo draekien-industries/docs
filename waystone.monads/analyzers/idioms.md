@@ -373,7 +373,7 @@ reported; two enums sharing a name with different formats do not collide and are
 **No quick fix.** The fix is a rename or a different format, and which of the two enums
 should keep the code is not something the analyzer can work out.
 
-See [generated-error-codes.md](../using-the-library/generated-error-codes.md "mention") for what the
+See [Error code catalogs](../source-generation/error-code-catalogs.md) for what the
 attribute generates.
 
 ## WM2019
@@ -398,7 +398,7 @@ Reported on the member, because that is the thing you can act on.
 block kept. One invocation is enough however many diagnostics there are.
 
 A project with no `ErrorCodes.txt` never sees this rule. See
-[#reviewing-your-codes-as-a-list](../using-the-library/generated-error-codes.md#reviewing-your-codes-as-a-list "mention").
+[#reviewing-your-codes-as-a-list](../source-generation/reviewing-codes.md#reviewing-your-codes-as-a-list "mention").
 
 ## WM2020
 
@@ -423,7 +423,7 @@ divergence.
 {% hint style="warning" %}
 This rule's severity cannot be set from a path-matched `.editorconfig` section, not even
 `[*]`. It needs a global analyzer config — see
-[#making-a-divergence-fail-the-build](../using-the-library/generated-error-codes.md#making-a-divergence-fail-the-build "mention").
+[#making-a-divergence-fail-the-build](../source-generation/reviewing-codes.md#making-a-divergence-fail-the-build "mention").
 {% endhint %}
 
 ## WM2021

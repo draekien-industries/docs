@@ -248,7 +248,7 @@ the declaration, so a codebase with both an override and call sites sees only th
 override error, fixes it, and discovers the call sites on the next build. Build twice.
 {% endhint %}
 
-See [Generated error codes](../using-the-library/generated-error-codes.md) for the
+See [Generated error codes](../source-generation/README.md) for the
 `[ErrorCodeCatalog]` route.
 
 ## Loud change: parameter names

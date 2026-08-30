@@ -91,7 +91,7 @@ ErrorCode code = SpellErrorsCatalog.Codes.SigilMalformed;
 This is a generated API with more to it than one line — the naming format, the
 `ToErrorCode()` extension for when you only know the member at run time, the
 `using` it needs. See
-[Generated error codes](../using-the-library/generated-error-codes.md).
+[Generated error codes](../source-generation/README.md).
 
 {% hint style="danger" %}
 **`ErrorCode.FromEnum` was obsolete from 6.2.0 and 7.0.0 removed it.** So is
@@ -148,7 +148,7 @@ Result<int, Error> result = Result.Err<int>(
 `Result.Err<TOk>(enum, message)` overload that used to collapse the two calls into
 one. Use the generated factory as above, or `value.ToError(message)` where you only
 know the member at run time. See
-[Generated error codes](../using-the-library/generated-error-codes.md).
+[Generated error codes](../source-generation/README.md).
 {% endhint %}
 
 ## From an exception you caught
@@ -161,5 +161,5 @@ next to the exceptions themselves — see
 ## Where to go next
 
 * [Exceptions](exceptions.md) — what the library throws, and when.
-* [Generated error codes](../using-the-library/generated-error-codes.md) — the `[ErrorCodeCatalog]` surface in full.
+* [Generated error codes](../source-generation/README.md) — the `[ErrorCodeCatalog]` surface in full.
 * [Result\<T, E>](result.md) — putting the error to work.

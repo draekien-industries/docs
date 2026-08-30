@@ -68,7 +68,7 @@ Result<Adventurer, Error> err = Result.Err<Adventurer>(
 
 {% hint style="info" %}
 Passing an enum straight to `Result.Err` was removed in 7.0.0. See
-[Generated error codes](../../using-the-library/generated-error-codes.md).
+[Generated error codes](../../source-generation/README.md).
 {% endhint %}
 
 ## Result.Try
