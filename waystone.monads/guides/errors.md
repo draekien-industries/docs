@@ -97,7 +97,7 @@ This is a generated API with more to it than one line — the naming format, the
 **`ErrorCode.FromEnum` was obsolete from 6.2.0 and 7.0.0 removed it.** So is
 overriding `ErrorCodeFactory.FromEnum` to shape what it returns. Mark the enum
 with `[ErrorCodeCatalog]` and use the generated members instead. See
-[deprecations.md](../upgrading-and-deprecations/deprecations.md "mention") for the
+[deprecations.md](../upgrading/deprecations.md "mention") for the
 migration. `FromException` is unaffected.
 {% endhint %}
 

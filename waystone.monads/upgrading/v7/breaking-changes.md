@@ -6,20 +6,8 @@ description: >-
 
 # Every v7 break
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
 This is the reference list. For the upgrade itself, with an agent prompt and the order
-to work in, go to [6.x to 7.0.0](v6-to-v7.md) or [5.x to 7.0.0](v5-to-v7.md).
+to work in, go to [6.x to 7.0.0](from-v6.md) or [5.x to 7.0.0](from-v5.md).
 
 ## Start with the silent ones
 
@@ -38,8 +26,8 @@ was going to surface later as a `NullReferenceException` from code that had ever
 to assume a `Some` held a value. To map a null onto a `None`, use `AndThen` with
 `Option.FromNullable`.
 
-The third has its own section on [Configuration](../guides/configuration.md#what-happens-when-you-dispose-out-of-order),
-and the event is on [Observability](../guides/observability.md#watching-for-a-scope-disposed-out-of-order).
+The third has its own section on [Configuration](../../guides/configuration.md#what-happens-when-you-dispose-out-of-order),
+and the event is on [Observability](../../guides/observability.md#watching-for-a-scope-disposed-out-of-order).
 
 ## The loud ones
 
@@ -58,7 +46,7 @@ problem.
 | `Error.FromEnum` removed | `[ErrorCodeCatalog]` and the generated `{Enum}Catalog.Errors.{Member}(message)` | `CS0117` | No |
 | `ErrorCodeFactory.FromEnum` virtual removed | `[ErrorCodeCatalog]`; enum codes are settled at compile time now | `CS0115` | No |
 | `Result.Err<TOk>(Enum, string)` overload removed | `Result.Err(code.ToError(message))` | `CS1501` | No |
-| An async chaining step's delegate returns `Task` | Return `ValueTask`, or wrap it in an async lambda | `CS0411`, plus [`WM2022`](../analyzers/idioms.md#wm2022) | **Yes**, the wrap |
+| An async chaining step's delegate returns `Task` | Return `ValueTask`, or wrap it in an async lambda | `CS0411`, plus [`WM2022`](../../analyzers/idioms.md#wm2022) | **Yes**, the wrap |
 | `TryAsync` and `CollectAsync` return `ValueTask` | `Task<Option<T>> t = Option.TryAsync(f);` → add `.AsTask()`, or keep the `await` | `CS0029`, or `CS1503` passing it to `Task.WhenAll` | No |
 
 The four `FromEnum`-family removals and `UseExceptionLogger` were all obsolete in 6.x
@@ -74,14 +62,14 @@ The two keyed to `CS1739`, `CS0029` and `CS1503` attach to the **compiler diagno
 not to an analyzer rule — so `dotnet format analyzers` cannot apply them. They appear on
 the error in your IDE, where **Fix all occurrences in Project** applies them in a batch.
 The `WM2022` fix is an ordinary analyzer fix and works either way. The
-[upgrade pages](v6-to-v7.md) say this again in context.
+[upgrade pages](from-v6.md) say this again in context.
 
 {% hint style="info" %}
 **`.AsTask()` comes up twice.** v6 made every async *extension* return `ValueTask`;
 v7 does the same to `TryAsync` and `CollectAsync`, the two static members v6 left
 alone. If you are coming from 5.x you hit both. The v6 half is on
-[v5.x to v6.x](v5-to-v6.md#loud-change-async-extensions-all-return-valuetask), and the
-[5.x to 7.0.0 page](v5-to-v7.md) tells you where in the order to do it.
+[v5.x to v6.x](../older/v5-to-v6.md#loud-change-async-extensions-all-return-valuetask), and the
+[5.x to 7.0.0 page](from-v5.md) tells you where in the order to do it.
 {% endhint %}
 
 ## The one removal with no warning release
@@ -194,7 +182,7 @@ if (error is ValidationError validationError)
 
 `Failures` carries the `ValidationFailure` list, and `ToDictionary()` groups the
 messages by property, exactly as before. Full detail is on
-[Waystone.Monads.FluentValidation](../packages/fluent-validation.md).
+[Waystone.Monads.FluentValidation](../../packages/fluent-validation.md).
 
 ### The supported FluentValidation range widened
 
@@ -210,4 +198,4 @@ on.
 
 Retired ids are never reused, so a stale `.editorconfig` entry or `#pragma` naming one
 does nothing at all — it does not error, and it does not warn. The full list of retired
-ids is on [Deprecations](deprecations.md#rule-ids-that-are-gaps).
+ids is on [Deprecations](../deprecations.md#rule-ids-that-are-gaps).

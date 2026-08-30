@@ -88,5 +88,5 @@ answer rather than two.
 Shaping enum codes is the part of `ErrorCodeFactory` the format replaces, and 7.0.0
 removes that part. `ErrorCodeFactory.FromEnum` and `ErrorCode.FromEnum` reported
 `CS0618` from 6.2.0 and are gone now — the override produces `CS0115`. See
-[deprecations.md](../upgrading-and-deprecations/deprecations.md "mention"). `FromException` is not affected.
+[deprecations.md](../upgrading/deprecations.md "mention"). `FromException` is not affected.
 

@@ -668,3 +668,44 @@ fragment across a page-level redirect, so no anchor column is needed here.
 
 The group is still named `Companion packages` in `SUMMARY.md`, per the decision at
 the top of this file. Only the URL segment shortened.
+
+## Upgrading URL mapping
+
+DRA-173 dropped `-and-deprecations` from the directory, nested the v7 and older
+material, and deleted one page. Every row is a live URL for DRA-174.
+
+| Old URL | New URL |
+| --- | --- |
+| `upgrading-and-deprecations` | `upgrading` |
+| `upgrading-and-deprecations/deprecations` | `upgrading/deprecations` |
+| `upgrading-and-deprecations/v6-to-v7` | `upgrading/v7/from-v6` |
+| `upgrading-and-deprecations/v5-to-v7` | `upgrading/v7/from-v5` |
+| `upgrading-and-deprecations/v7-breaks` | `upgrading/v7/breaking-changes` |
+| `upgrading-and-deprecations/v7-agent-prompt` | `upgrading` |
+| `upgrading-and-deprecations/v5-to-v6` | `upgrading/older/v5-to-v6` |
+| `upgrading-and-deprecations/v4-to-v5` | `upgrading/older/v4-to-v5` |
+| `upgrading-and-deprecations/v3-to-v4` | `upgrading/older/v3-to-v4` |
+| `upgrading-and-deprecations/v2-to-v3` | `upgrading/older/v2-to-v3` |
+| `upgrading-and-deprecations/v1-to-v2` | `upgrading/older/v1-to-v2` |
+
+`v7-agent-prompt` is the one page with no equivalent. Its prompt was split into the
+two v7 pages' collapsible blocks and its general material moved to
+`upgrading/README.md`, so the group overview is the closest landing.
+
+Two anchors moved off pages that still exist:
+`upgrading-and-deprecations/v5-to-v6#upgrade-with-an-agent` and
+`upgrading-and-deprecations/v6-to-v7#upgrade-with-an-agent` are now `<summary>`
+elements rather than headings, so neither is an anchor any more. A reader following
+one lands at the top of the right page, which is where the block is.
+
+### The collapsible block is unverified
+
+`<details>` / `<summary>` is GitBook's markdown for an expandable block, and the
+seven prompts use it with a plain ```` ``` ```` fenced block inside — no nested
+fences, which is the case most likely to break. Nothing in this repository used one
+before, and there is no way to run a GitBook preview from a local clone, so **this
+has not been seen rendered.** Check it on the first preview after DRA-173 merges.
+
+The fallback, if it does not render, is one edit per page: replace the `<details>`
+wrapper with a `{% hint %}` linking down to an `## Upgrade with an agent` section
+holding the same fenced block. That costs a click and carries no rendering risk.

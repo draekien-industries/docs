@@ -85,7 +85,7 @@ namespaces shadow.
 
 Before `7.0.0` these lived under `Waystone.Monads.FluentValidation.*`. Every type and
 member name is unchanged — only the `using` directives move. See
-[Every v7 break](../upgrading-and-deprecations/v7-breaks.md#waystone-monads-fluentvalidation).
+[Every v7 break](../upgrading/v7/breaking-changes.md#waystone-monads-fluentvalidation).
 
 ## It errs with `Error`, so it chains
 
@@ -203,7 +203,7 @@ Only validation failures become an `Err`.
 
 If you are coming from `6.x`, this package no longer has a `ValidationErr` type and the
 extension methods return something different. See
-[Every v7 break](../upgrading-and-deprecations/v7-breaks.md#waystone-monads-fluentvalidation).
+[Every v7 break](../upgrading/v7/breaking-changes.md#waystone-monads-fluentvalidation).
 
 ## What it does not do
 

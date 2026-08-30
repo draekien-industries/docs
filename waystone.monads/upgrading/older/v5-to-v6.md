@@ -6,12 +6,14 @@ description: >-
 
 # v5.x to v6.x
 
-## Upgrade with an agent
+<details>
 
-Copy this into Claude Code or a similar tool, pointed at your solution. It covers
-every mechanical part of the upgrade.
+<summary>Upgrade with an agent — copy this prompt</summary>
 
-````text
+Pointed at your solution, in Claude Code or a similar tool. It covers every
+mechanical part of this upgrade.
+
+```text
 Upgrade this solution from Waystone.Monads v5 to v6. Work through these steps in
 order and report what you changed at each one.
 
@@ -58,7 +60,9 @@ order and report what you changed at each one.
 
 10. Build again and report anything left over. Do not suppress a WM1011 warning
     — bring it to me instead.
-````
+```
+
+</details>
 
 {% hint style="warning" %}
 **One step it cannot do for you.** `Option.Some(0)` returns a `Some` in v6 where
@@ -82,7 +86,7 @@ v6 has three changes that do **not** break your build:
 Everything else in v6 breaks loudly. The compiler will find it for you.
 
 Work through the three sections below in order. The
-[agent prompt](#upgrade-with-an-agent) above covers everything mechanical.
+agent prompt above covers everything mechanical.
 
 ## Silent change 1: Try with an async factory
 
@@ -107,7 +111,7 @@ a `Some`, and returns. It never awaits, so:
 
 - **Your exception handling is gone.** A throw inside `FetchCountAsync` escapes
   to your caller. It does not become a `None` or an `Err`, and your
-  [configured exception logger](../guides/configuration.md) never sees it.
+  [configured exception logger](../../guides/configuration.md) never sees it.
 - **The task may never be awaited**, depending on what you do with the result.
 
 You only get a compiler error if the call site assigns to an explicitly typed
@@ -132,7 +136,7 @@ Call `TryAsync` and `await` where you were already awaiting:
 
 ### The analyzer finds these for you
 
-[`WM1011`](../analyzers/runtime-bugs.md#wm1011) is a **warning**, not a suggestion,
+[`WM1011`](../../analyzers/runtime-bugs.md#wm1011) is a **warning**, not a suggestion,
 because it fires on code that runs. It reports any call that traps a task inside
 an `Option` or a `Result` — `Try` with an async factory, but also
 `option.Map(x => FetchAsync(x))` and anything else with an `Async` sibling it
@@ -202,7 +206,7 @@ MonadOptions.Configure(options => options.UseCancellationAsFailure());
 
 That restores the v5 behaviour everywhere: a cancellation is caught, logged, and
 becomes a `None` or an `Err` again. You can also scope it to one region with
-`MonadOptions.BeginScope`. See [Configuration](../guides/configuration.md).
+`MonadOptions.BeginScope`. See [Configuration](../../guides/configuration.md).
 
 We recommend leaving it off. The opt-in exists so that upgrading is not blocked
 on rewriting every call site at once.
@@ -261,7 +265,7 @@ value is a default, so it covers none of the six expressions in the table above.
 `Option.Some(null!)` throws in v6, as it did in v5. The exception type changes
 from `InvalidOperationException` to `ArgumentNullException`.
 
-Use [`Option.FromNullable`](../reference/option/creation.md#optionfromnullable) when the value may be null.
+Use [`Option.FromNullable`](../../reference/option/creation.md#optionfromnullable) when the value may be null.
 
 `FromNullable<T>(T?) where T : struct` no longer rejects the default either, so it
 now behaves the same way as its reference-type sibling.
@@ -286,7 +290,7 @@ int? absent = Option.None<int>().UnwrapOrNull();  // null
 int? present = Option.Some(0).UnwrapOrNull();     // 0
 ```
 
-[`WM2015`](../analyzers/idioms.md#wm2015) points you at them.
+[`WM2015`](../../analyzers/idioms.md#wm2015) points you at them.
 
 ## Loud change: async extensions all return ValueTask
 
@@ -305,7 +309,7 @@ compile.
 {% hint style="info" %}
 **7.0.0 closes that exception.** `TryAsync` and `CollectAsync` return `ValueTask`
 there, so `.AsTask()` does compile. If you are going straight to v7, see
-[v6.x to v7.x](v6-to-v7.md#loud-change-tryasync-and-collectasync-return-valuetask).
+[v6.x to v7.x](../v7/from-v6.md#loud-change-tryasync-and-collectasync-return-valuetask).
 {% endhint %}
 
 ### The repair
@@ -445,16 +449,16 @@ Covered methods, as at 6.0:
 - `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync`
 
 Later 6.x releases added more. See
-[Where you can use it](../reference/state-overloads.md#where-you-can-use-it) for the
+[Where you can use it](../../reference/state-overloads.md#where-you-can-use-it) for the
 current set.
 
 The closure costs exactly 88 bytes at every call site: 24 for the display class,
 64 for the delegate. The state overload removes all of it.
 
-See [State overloads](../reference/state-overloads.md) for the detail,
+See [State overloads](../../reference/state-overloads.md) for the detail,
 including why the `static` keyword matters.
 
-[`WM2017`](../analyzers/idioms.md#wm2017) points you at these when it sees a
+[`WM2017`](../../analyzers/idioms.md#wm2017) points you at these when it sees a
 delegate that captures.
 
 ## Analyzer rules that changed
@@ -476,9 +480,9 @@ the entry.
 
 | Rule | Severity | What it reports |
 | --- | --- | --- |
-| [`WM1011`](../analyzers/runtime-bugs.md#wm1011) | Warning | An async delegate passed to a synchronous method |
-| [`WM2016`](../analyzers/idioms.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
-| [`WM2017`](../analyzers/idioms.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
+| [`WM1011`](../../analyzers/runtime-bugs.md#wm1011) | Warning | An async delegate passed to a synchronous method |
+| [`WM2016`](../../analyzers/idioms.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
+| [`WM2017`](../../analyzers/idioms.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
 
 ### Reworded
 

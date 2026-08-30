@@ -83,7 +83,7 @@ never run.
 This was called `FlatMap` before 5.4.0. It was `[Obsolete]` through 5.x and 6.0.0
 removed it, so a call to it is `CS0117` rather than a warning. `WM2014`, the rule
 that reported each call site, retired with it — delete any `.editorconfig` entry
-for that id. See [deprecations.md](../upgrading-and-deprecations/deprecations.md "mention").
+for that id. See [deprecations.md](../upgrading/deprecations.md "mention").
 {% endhint %}
 
 ### Filter
