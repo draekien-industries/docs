@@ -1,17 +1,5 @@
 # Coming from Rust
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
 Waystone.Monads ports Rust's `std::option::Option` and `std::result::Result`. If you already know those types, most of what you know carries over. This page covers the parts that do not.
 
 Read it for three things:
@@ -139,7 +127,7 @@ From 7.0.0 the case types deconstruct, so the closest thing to Rust's `if let` i
 | `if let Err(e) = result` | `if (result is Err<TOk, TErr>(var e))` |
 | `if let None = option` | `if (option is None<T>)` — no parentheses; there is nothing to bind |
 
-Reach for these in statement position, where Rust would use `if let`. Reach for `Match` where Rust would use `match`. See [Pattern matching with Deconstruct](core-functionality.md#pattern-matching-with-deconstruct).
+Reach for these in statement position, where Rust would use `if let`. Reach for `Match` where Rust would use `match`. See [Pattern matching with Deconstruct](../using-the-library/core-functionality.md#pattern-matching-with-deconstruct).
 
 Do not name a case type in a declaration either. A variable, parameter or return typed as `Some<T>` can hold only one of the two states, which defeats the point. `WM2011` reports it and points you at the base type.
 

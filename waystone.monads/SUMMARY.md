@@ -14,18 +14,18 @@
 * [Errors](guides/errors.md)
 * [Exceptions](guides/exceptions.md)
 * [Async](guides/async.md)
+* [Configuration](guides/configuration.md)
+* [Observability](guides/observability.md)
+* [Coming from Rust](guides/coming-from-rust.md)
 
 ## Using the Library
 
-* [Configuration](using-the-library/configuration.md)
-* [Observability](using-the-library/observability.md)
 * [Core Functionality](using-the-library/core-functionality.md)
 * [Option\<T> collections](using-the-library/option-of-t/README.md)
 * [Result\<T, E> collections](using-the-library/result-of-t-and-e.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)
 * [Severity presets](using-the-library/severity-presets.md)
-* [Coming from Rust](using-the-library/coming-from-rust.md)
 
 ## Companion Packages
 
@@ -34,6 +34,7 @@
 * [Linq](companion-packages/linq.md)
 * [DependencyInjection](companion-packages/dependency-injection.md)
 * [Hosting](companion-packages/hosting.md)
+* [Logging](companion-packages/logging.md)
 * [FluentValidation](companion-packages/fluentvalidation.md)
 * [SystemTextJson](companion-packages/systemtextjson.md)
 * [NewtonsoftJson](companion-packages/newtonsoftjson.md)

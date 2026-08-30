@@ -1,17 +1,5 @@
 # Configuration
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
 This library has a few configurable behaviours. You set them through
 `MonadOptions.Configure`, once, at start-up. Configure each option below _once_ in your
 application's lifetime.
@@ -112,9 +100,12 @@ Use `UseLoggerFactory(factory)` if you have no service provider, or
 Each entry carries the exception plus the call site that caught it — the member
 name, the source text of the delegate you passed, and the line number.
 
+The three methods above ship in that package, and
+[Logging](../companion-packages/logging.md) covers them properly — the levels, the
+category, and what lands in each entry.
+
 To count these exceptions instead, install nothing at all. Read
-[observability.md](observability.md "mention") for both signals, the levels, and the
-names your dashboards will bind to.
+[Observability](observability.md) for the signals that need no package.
 
 {% hint style="warning" %}
 **`UseExceptionLogger` is gone.** It was obsolete from 6.7.0 and 7.0.0 removes it. It
@@ -195,7 +186,7 @@ MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFac
 and removed in 7.0.0, because a factory runs too late for the compiler, the analyzers
 or the error code registry to see what it returns. Shape enum codes with
 `[ErrorCodeCatalog(Format = "…")]` instead — see
-[generated-error-codes.md](generated-error-codes.md "mention") — and keep the factory
+[generated-error-codes.md](../using-the-library/generated-error-codes.md "mention") — and keep the factory
 for `FromException`, which is unaffected.
 {% endhint %}
 

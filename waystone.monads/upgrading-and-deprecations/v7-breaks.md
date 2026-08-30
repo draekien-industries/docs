@@ -38,8 +38,8 @@ was going to surface later as a `NullReferenceException` from code that had ever
 to assume a `Some` held a value. To map a null onto a `None`, use `AndThen` with
 `Option.FromNullable`.
 
-The third has its own section on [Configuration](../using-the-library/configuration.md#what-happens-when-you-dispose-out-of-order),
-and the event is on [Observability](../using-the-library/observability.md#watching-for-a-scope-disposed-out-of-order).
+The third has its own section on [Configuration](../guides/configuration.md#what-happens-when-you-dispose-out-of-order),
+and the event is on [Observability](../guides/observability.md#watching-for-a-scope-disposed-out-of-order).
 
 ## The loud ones
 

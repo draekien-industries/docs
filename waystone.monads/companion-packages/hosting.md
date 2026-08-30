@@ -109,7 +109,7 @@ service collection is being populated, or between `Build()` and `Run()`, runs
 ahead of every hosted service. It is answered from the defaults and reported
 through the `Waystone.Monads.ConfigurationNotApplied` diagnostic event, exactly as
 it is without this package. See
-[Watching for configuration that was never installed](../using-the-library/observability.md#watching-for-configuration-that-was-never-installed).
+[Watching for configuration that was never installed](../guides/observability.md#watching-for-configuration-that-was-never-installed).
 
 Configuration is applied at host start, not at container build.
 {% endhint %}
