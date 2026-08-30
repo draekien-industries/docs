@@ -30,7 +30,7 @@ test projects only. They are not in the core package.
 A separate set of diagnostics uses a `WMG` prefix. Those come from the source
 generator rather than the analyzer, they are all errors, and they only fire on an
 enum you marked with `[ErrorCodeCatalog]`. They are on
-[generated-error-codes.md](../using-the-library/generated-error-codes.md "mention")
+[Source generation](../source-generation/README.md)
 instead.
 
 {% hint style="info" %}

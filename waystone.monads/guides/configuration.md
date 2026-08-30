@@ -186,7 +186,7 @@ MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFac
 and removed in 7.0.0, because a factory runs too late for the compiler, the analyzers
 or the error code registry to see what it returns. Shape enum codes with
 `[ErrorCodeCatalog(Format = "…")]` instead — see
-[generated-error-codes.md](../using-the-library/generated-error-codes.md "mention") — and keep the factory
+[Code format language](../source-generation/code-format.md) — and keep the factory
 for `FromException`, which is unaffected.
 {% endhint %}
 

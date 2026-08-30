@@ -164,7 +164,7 @@ their place, and the fix produces these instead:
 
 If you shaped your codes by subclassing `ErrorCodeFactory` and overriding
 `FromEnum`, say the same thing with a `Format` — see
-[generated-error-codes.md](../using-the-library/generated-error-codes.md "mention"). `FromException` is
+[Source generation](../source-generation/README.md). `FromException` is
 not deprecated, and a factory that only overrides it needs no change.
 
 #### Why this changed
@@ -173,7 +173,7 @@ Both of these work the code out by reflection at run time, which costs you three
 things a generated constant gives you: the compiler cannot see the code, so a
 renamed member changes your wire contract silently; the declared `Format` cannot
 be applied, because it is read at compile time; and the analyzers and the
-[error code registry](../using-the-library/generated-error-codes.md#reviewing-your-codes-as-a-list)
+[error code registry](../source-generation/reviewing-codes.md#reviewing-your-codes-as-a-list)
 cannot review a string nothing in the build can see.
 
 ### Removed in 7.0.0 with no deprecation window

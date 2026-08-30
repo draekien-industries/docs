@@ -67,7 +67,7 @@ enum with `[ErrorCodeCatalog]`, the generated `{EnumName}Catalog` class and the
 `ToError`, `ToErrorCode` and `ToErrorCodeName` extensions are emitted into the enum's
 own namespace, not into a Waystone one. Fully qualifying the enum at the call site
 is not enough — the extensions still need `using` for the namespace the enum lives
-in. See [generated-error-codes.md](../using-the-library/generated-error-codes.md "mention").
+in. See [Source generation](../source-generation/README.md).
 {% endhint %}
 
 ## Your first Option\<T>
