@@ -140,7 +140,7 @@ The `onError` delegate gives you a way to transform the caught exception into an
 
 If you are happy with the built in `Error` type, use the single type parameter
 overload. It converts the exception with
-[`Error.FromException`](../guides/errors.md#from-an-exception-you-caught), so you do
+[`Error.FromException`](../guides/exceptions.md#turning-an-exception-into-an-error), so you do
 not pass an `onError` delegate.
 
 ```csharp

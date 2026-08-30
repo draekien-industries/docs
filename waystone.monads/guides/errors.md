@@ -153,54 +153,10 @@ know the member at run time. See
 
 ## From an exception you caught
 
-Sometimes you are at the boundary — you caught something, and you want it as a
-`Result` rather than a rethrow. Both types convert.
-
-```csharp
-try
-{
-    // do work
-}
-catch (ScryingFailedException e)
-{
-    Error error = Error.FromException(e);
-    //    ^? Code: "ScryingFailed", Message: e.Message
-}
-```
-
-The code is the exception's type name with a trailing `Exception` removed. There
-is no prefix, the suffix match ignores case, and the exception's message is never
-read — so nothing from its text reaches the code.
-
-| Exception type | Resulting code |
-| --- | --- |
-| `SqlException` | `Sql` |
-| `InvalidOperationException` | `InvalidOperation` |
-| `ScryingFailedException` | `ScryingFailed` |
-| `TimeoutException` | `Timeout` |
-| `Exception` | `Exception` |
-
-`Exception` itself is the one special case. It keeps its whole name rather than
-reducing to an empty code.
-
-`ErrorCode.FromException` does the same job when you want only the code:
-
-```csharp
-ErrorCode code = ErrorCode.FromException(e); // "ScryingFailed"
-```
-
-{% hint style="warning" %}
-**This is a fallback, not a strategy.** Codes derived from exception types drift
-out of step with the codes you define by hand, and they do not help at all for
-failures that were never exceptions. Reach for it at a boundary you do not
-control, not throughout your domain.
-{% endhint %}
-
-{% hint style="info" %}
-To change what these produce, supply your own `ErrorCodeFactory` to the global
-`MonadOptions` and override `FromException`. See
-[Configuration](../using-the-library/configuration.md).
-{% endhint %}
+Both types convert from an exception you already hold, for when you are at a
+boundary and want a `Result` rather than a rethrow. That lives on the other page,
+next to the exceptions themselves — see
+[From an exception you caught](exceptions.md#turning-an-exception-into-an-error).
 
 ## Where to go next
 

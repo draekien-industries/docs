@@ -108,6 +108,57 @@ Two things to know about that:
   of your work, so it is not turned into an `Err`. See
   [Configuration](../using-the-library/configuration.md#cancellation).
 
+## Turning an exception into an Error
+
+The other direction. You caught something at a boundary, and you want it as a
+`Result` rather than a rethrow. Both [error types](errors.md) convert.
+
+```csharp
+try
+{
+    // do work
+}
+catch (ScryingFailedException e)
+{
+    Error error = Error.FromException(e);
+    //    ^? Code: "ScryingFailed", Message: e.Message
+}
+```
+
+The code is the exception's type name with a trailing `Exception` removed. There
+is no prefix, the suffix match ignores case, and the exception's message is never
+read — so nothing from its text reaches the code.
+
+| Exception type | Resulting code |
+| --- | --- |
+| `SqlException` | `Sql` |
+| `InvalidOperationException` | `InvalidOperation` |
+| `ScryingFailedException` | `ScryingFailed` |
+| `TimeoutException` | `Timeout` |
+| `Exception` | `Exception` |
+
+`Exception` itself is the one special case. It keeps its whole name rather than
+reducing to an empty code.
+
+`ErrorCode.FromException` does the same job when you want only the code:
+
+```csharp
+ErrorCode code = ErrorCode.FromException(e); // "ScryingFailed"
+```
+
+{% hint style="warning" %}
+**This is a fallback, not a strategy.** Codes derived from exception types drift
+out of step with the codes you define by hand, and they do not help at all for
+failures that were never exceptions. Reach for it at a boundary you do not
+control, not throughout your domain.
+{% endhint %}
+
+{% hint style="info" %}
+To change what these produce, supply your own `ErrorCodeFactory` to the global
+`MonadOptions` and override `FromException`. See
+[Configuration](../using-the-library/configuration.md).
+{% endhint %}
+
 ## Exceptions from the constructors
 
 One more, and it is not from this library's own hierarchy.
