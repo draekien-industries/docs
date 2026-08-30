@@ -4,8 +4,32 @@
 **This page describes a historical upgrade.** Its replacement code was correct for
 `2.x`, and later majors have removed some of the API it names. Land on `2.x` first if you
 are following these steps, then read the pages after this one in order.
-[Deprecations](deprecations.md) lists what has gone since.
+[Deprecations](../deprecations.md) lists what has gone since.
 {% endhint %}
+
+<details>
+
+<summary>Upgrade with an agent — copy this prompt</summary>
+
+Pointed at your solution, in Claude Code or a similar tool.
+
+```text
+Upgrade this solution from Waystone.Monads v1 to v2. Report what you changed.
+
+1. Rename every Option.Bind and Result.Bind factory call to Try. Parameters and
+   behaviour are otherwise unchanged.
+
+2. Delete the exception-handling callback from every Option.Try call. Option.Try no
+   longer takes one. Result.Try still does — leave those.
+
+3. Add one MonadsGlobalConfig.UseExceptionLogger call at start-up, pointed at the
+   solution's existing logger, so the exceptions the library handles are still
+   reported. Show me where you put it.
+
+4. Build and report anything left.
+```
+
+</details>
 
 ## Renamed `Bind` to `Try`
 

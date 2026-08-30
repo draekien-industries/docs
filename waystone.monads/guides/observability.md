@@ -340,4 +340,4 @@ log line, a hand-written subscription. To subscribe, use the event tokens instea
 they name the event for you and fix the payload type at the same time.
 
 We will not rename these names outside a major release, and we will tell you in
-[Deprecations](../upgrading-and-deprecations/deprecations.md) when we do.
+[Deprecations](../upgrading/deprecations.md) when we do.

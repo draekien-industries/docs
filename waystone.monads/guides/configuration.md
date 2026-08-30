@@ -81,7 +81,7 @@ Three things do change:
   the old class needs updating. A normal extension call on the callback's parameter, the
   usual shape, needs nothing.
 
-The [6.x to 7.0.0 upgrade page](../upgrading-and-deprecations/v6-to-v7.md) covers this
+The [6.x to 7.0.0 upgrade page](../upgrading/v7/from-v6.md) covers this
 with the compiler diagnostics you will see.
 
 ## Logging
@@ -112,7 +112,7 @@ To count these exceptions instead, install nothing at all. Read
 took a delegate you wrote yourself and held only one, so a second integration silently
 replaced the first. Install the package and call one of the three methods above
 instead. See
-[Deprecations](../upgrading-and-deprecations/deprecations.md#seeing-handled-exceptions-through-a-hand-written-delegate).
+[Deprecations](../upgrading/deprecations.md#seeing-handled-exceptions-through-a-hand-written-delegate).
 {% endhint %}
 
 {% hint style="info" %}

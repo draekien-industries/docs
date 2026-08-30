@@ -38,7 +38,7 @@ as constants when you build.
 {% hint style="warning" %}
 `ErrorCode.FromEnum` was obsolete from 6.2.0 and 7.0.0 removes it, so this group
 describes the only supported way to get an error code from an enum. See
-[deprecations.md](../upgrading-and-deprecations/deprecations.md "mention") for the migration.
+[deprecations.md](../upgrading/deprecations.md "mention") for the migration.
 {% endhint %}
 
 ## Marking an enum

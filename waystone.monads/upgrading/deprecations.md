@@ -6,18 +6,6 @@ description: >-
 
 # Deprecations
 
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
 ## What this page is for
 
 We deprecate before we delete. Anything on its way out is marked `[Obsolete]`
@@ -32,7 +20,7 @@ Packages in the Waystone family share one version number, so a v6.0.0 of
 `Waystone.Monads` means a v6.0.0 of every package.
 {% endhint %}
 
-**Nothing is pending removal today.** `7.0.0-beta.x` carries no `[Obsolete]` member at
+**Nothing is pending removal today.** `7.0.0` carries no `[Obsolete]` member at
 all — everything that was marked in 6.x has now gone, and nothing new has been marked
 for 8.0.0. The next thing to appear on this page will be marked in a 7.x minor.
 
@@ -287,7 +275,7 @@ two names for one idea. Rust, which both types follow, calls it `and_then`.
 **Removing these does not break your build, and that is the problem.** Your call
 site rebinds to the synchronous overload, keeps compiling, and stops catching
 exceptions. Read
-[Silent change 1](v5-to-v6.md#silent-change-1-try-with-an-async-factory)
+[Silent change 1](older/v5-to-v6.md#silent-change-1-try-with-an-async-factory)
 before you upgrade, and turn on
 [`WM1011`](../analyzers/runtime-bugs.md#wm1011) — it finds every affected call.
 {% endhint %}
@@ -340,11 +328,11 @@ There was nothing to migrate.
 v6 also closed the `Option<T>` and `Result<TOk, TErr>` hierarchies, which removes
 the ability to derive from them. That was never marked `[Obsolete]`, because there
 is no way to obsolete "inheriting from this type". See
-[v5.x to v6.x](v5-to-v6.md#loud-change-you-can-no-longer-derive-from-option-or-result).
+[v5.x to v6.x](older/v5-to-v6.md#loud-change-you-can-no-longer-derive-from-option-or-result).
 
 See [Async](../guides/async.md) for the full async surface, and
 [Upgrading](README.md) for the upgrades that have already shipped.
 
-For 7.0.0 specifically, [Every v7 break](v7-breaks.md) lists all of the above plus the
+For 7.0.0 specifically, [Every v7 break](v7/breaking-changes.md) lists all of the above plus the
 changes that were never public API in the first place, each with the compiler diagnostic
 it produces.
