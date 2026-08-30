@@ -58,7 +58,7 @@ problem.
 | `Error.FromEnum` removed | `[ErrorCodeCatalog]` and the generated `{Enum}Catalog.Errors.{Member}(message)` | `CS0117` | No |
 | `ErrorCodeFactory.FromEnum` virtual removed | `[ErrorCodeCatalog]`; enum codes are settled at compile time now | `CS0115` | No |
 | `Result.Err<TOk>(Enum, string)` overload removed | `Result.Err(code.ToError(message))` | `CS1501` | No |
-| An async chaining step's delegate returns `Task` | Return `ValueTask`, or wrap it in an async lambda | `CS0411`, plus [`WM2022`](../using-the-library/analyzer-rules.md#wm2022) | **Yes**, the wrap |
+| An async chaining step's delegate returns `Task` | Return `ValueTask`, or wrap it in an async lambda | `CS0411`, plus [`WM2022`](../analyzers/idioms.md#wm2022) | **Yes**, the wrap |
 | `TryAsync` and `CollectAsync` return `ValueTask` | `Task<Option<T>> t = Option.TryAsync(f);` → add `.AsTask()`, or keep the `await` | `CS0029`, or `CS1503` passing it to `Task.WhenAll` | No |
 
 The four `FromEnum`-family removals and `UseExceptionLogger` were all obsolete in 6.x

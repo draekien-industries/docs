@@ -144,7 +144,7 @@ Option<Option<int>> after = JsonSerializer.Deserialize<Option<Option<int>>>(json
 
 The converter accepts this rather than throwing. Throwing on a shape the type
 system allows is worse than losing a distinction you should not be relying on.
-The [`WM2009` analyzer rule](../using-the-library/analyzer-rules.md) already
+The [`WM2009` analyzer rule](../analyzers/README.md) already
 reports the declaration, which is the better place to catch it.
 
 ## `Result<TOk, TErr>` names its case

@@ -89,7 +89,7 @@ Rust's `Option<T>` is a value type. It cannot be uninitialised.
 
 Here, `Option<T>` and `Result<TOk, TErr>` are reference types. `default(Option<T>)` is null, and calling anything on it throws a `NullReferenceException`. Your Rust instincts will not warn you about this, because the state does not exist there.
 
-The analyzer covers it. `WM1003` reports `default` on either type, and `WM1002` reports null assigned to one. See [analyzer-rules.md](analyzer-rules.md "mention").
+The analyzer covers it. `WM1003` reports `default` on either type, and `WM1002` reports null assigned to one. See [Analyzers](../analyzers/README.md).
 
 ### Null is rejected at run time, not compile time
 

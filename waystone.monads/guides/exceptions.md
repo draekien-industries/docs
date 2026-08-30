@@ -102,11 +102,11 @@ Option<int> parsed = Option.Try(() => int.Parse(text));
 Two things to know about that:
 
 * **The exception is not lost.** It goes to your configured exception logger. See
-  [Configuration](../using-the-library/configuration.md) and
-  [Observability](../using-the-library/observability.md).
+  [Configuration](configuration.md) and
+  [Observability](observability.md).
 * **`OperationCanceledException` is let through.** Cancellation is not a failure
   of your work, so it is not turned into an `Err`. See
-  [Configuration](../using-the-library/configuration.md#cancellation).
+  [Configuration](configuration.md#cancellation).
 
 ## Turning an exception into an Error
 
@@ -156,7 +156,7 @@ control, not throughout your domain.
 {% hint style="info" %}
 To change what these produce, supply your own `ErrorCodeFactory` to the global
 `MonadOptions` and override `FromException`. See
-[Configuration](../using-the-library/configuration.md).
+[Configuration](configuration.md).
 {% endhint %}
 
 ## Exceptions from the constructors
@@ -178,4 +178,4 @@ It is `null` specifically that is rejected. See
 
 * [Errors](errors.md) — building the failure value you return.
 * [Option\<T>](option.md) and [Result\<T, E>](result.md) — the safe ways out of a monad.
-* [Analyzer rules](../using-the-library/analyzer-rules.md) — what flags an `Unwrap` you should not have written.
+* [Analyzer rules](../analyzers/README.md) — what flags an `Unwrap` you should not have written.

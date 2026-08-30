@@ -1,245 +1,11 @@
 ---
 description: >-
-  The diagnostics that ship inside Waystone.Monads, what each one means, and
-  how to turn them up or off.
+  The WM2xxx rules. Your code works; each rule points at a clearer way to write
+  it.
+icon: wand-magic-sparkles
 ---
 
-# Analyzer rules
-
-{% hint style="warning" %}
-**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
-
-```
-dotnet add package Waystone.Monads --prerelease
-```
-
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
-
-The API can still change before `7.0.0` is stable.
-{% endhint %}
-
-## What this page is for
-
-`Waystone.Monads` ships a Roslyn analyzer inside the package. Install or upgrade to
-7.0.0 and you get these rules. You add no reference and configure nothing.
-
-Every rule has an ID like `WM1002`. The first digit tells you how much it matters:
-
-| Rules | Severity | What they report |
-| --- | --- | --- |
-| `WM1xxx` | Warning | Code that throws or quietly does the wrong thing at run time |
-| `WM2xxx` | Suggestion | Working code that reads better another way |
-| `WM3xxx` | Off | Migration aids you turn on while you adopt the library |
-
-Warnings show up in your build. Suggestions show up in your IDE only, so they never
-break a build that passes today. The `WM3xxx` rules stay off until you enable them.
-
-A separate set of diagnostics uses a `WMG` prefix. Those come from the source
-generator rather than the analyzer, they are all errors, and they only fire on an
-enum you marked with `[ErrorCodeCatalog]`. They are on
-[generated-error-codes.md](generated-error-codes.md "mention") instead of this page.
-
-A third set uses a `WMS` prefix. Those ship in the `Waystone.Monads.Shouldly`
-package, which you install in test projects only. They are at
-[Assertion rules](#assertion-rules) further down this page.
-
-{% hint style="info" %}
-This page lists the `WM` rules as at the version it was written for. For the set
-that ships in the version you installed, read
-[`Rules.cs`](https://github.com/draekien-industries/waystone-dotnet/blob/main/src/Waystone.Monads.Analyzers/Rules.cs)
-in the repository — every descriptor is declared there in one file.
-{% endhint %}
-
-{% hint style="warning" %}
-Do you build with `TreatWarningsAsErrors`? Then a `WM1xxx` rule that fires breaks
-your build after you upgrade. We chose that on purpose. Every one of these rules
-marks code that throws or returns the wrong value at run time. Read the rule before
-you suppress it.
-{% endhint %}
-
-## Runtime bugs
-
-These rules are warnings. Each one marks code that compiles and then misbehaves.
-
-### WM1001
-
-**`Some` cannot hold null.** `Option.Some(x)` throws `ArgumentNullException`
-when `x` is null, so `Option.Some(default(string)!)` always throws.
-
-```diff
--Option<string> option = Option.Some(default(string)!);
-+Option<string> option = Option.None<string>();
-```
-
-The rule fires only when it can prove the value is null without running your
-program — a `null` literal, or `default(T)` where `T` is a reference type. Use
-`Option.FromNullable` when the value merely might be null; `WM1005` covers that
-case.
-
-A `Some` may hold `0`, `false` and any other value-type default from 6.0.0
-onwards. Null is the only value it rejects.
-
-**Quick fix:** use `Option.None<T>()`.
-
-### WM1002
-
-**Null where an `Option` or `Result` belongs.** Both types are records, so the
-compiler lets you write `null` anywhere one is expected. Your next member access
-then throws `NullReferenceException`.
-
-```diff
--Option<int> option = null;
-+Option<int> option = Option.None<int>();
-```
-
-The rule covers assignment, `return` and arguments you pass to a method. It also
-catches a null you wrote as `null!`:
-
-```diff
--Accept(null!);
-+Accept(Option.None<int>());
-```
-
-Annotating the target `Option<int>?` stops this rule, because the annotation says you
-meant to allow null. It starts `WM1008` instead, which asks you to drop the
-annotation. An `Option` already has an empty case, so a nullable one gives you two
-ways to say the same thing. This holds wherever you write the annotation — a
-parameter, a return type, or a tuple or array element.
-
-**Quick fix for `Option<T>`:** use `Option.None<T>()`. `Result<TOk, TErr>` gets no
-quick fix, because nothing in your code says whether you meant `Ok` or `Err`.
-
-### WM1003
-
-**The default of an `Option` or `Result` is null.** `default(Option<int>)` gives you
-no empty option. It gives you `null`, for the reason `WM1002` explains.
-
-```diff
--Result<int, string> result = default;
-+Result<int, string> result = Result.Err<int, string>("not set");
-```
-
-**Quick fix for `Option<T>`:** use `Option.None<T>()`.
-
-### WM1005
-
-**You passed a possibly null value to `Some`.** `Some` rejects null. Pass a value
-the compiler treats as maybe-null and the call throws whenever that value is
-null.
-
-```diff
--Option<string> option = Option.Some(value);
-+Option<string> option = Option.FromNullable(value);
-```
-
-This rule reads the compiler's nullable flow state, so it says nothing in a project
-that has nullable reference types turned off. That project faces the bug most. Turn
-nullable on.
-
-**Quick fix:** use `Option.FromNullable`.
-
-### WM1006
-
-**You discarded a `Result`.** A `Result` used as a statement throws nothing and
-reports nothing, so the failure vanishes:
-
-```csharp
-Save();   // returns Result<int, Error>, and you just lost the Err case
-```
-
-Handle it, or return it to a caller who will:
-
-```csharp
-return Save().Match(value => value, error => 0);
-```
-
-The rule follows an `await`, including one you wrote with `.ConfigureAwait(false)`,
-so it catches a discarded `Task<Result<TOk, TErr>>` as well.
-
-Rust marks `Result` as `#[must_use]` for the same reason. C# has no attribute that
-forces you to consume a return value, so this rule stands in for one.
-
-**No quick fix.** Only you can decide what the failure should do.
-
-### WM1008
-
-**An `Option` or `Result` is declared nullable.** Both are records, so the compiler
-accepts `Option<int>?`. That gives you three states where two mean anything: a value,
-an empty option, and null. `None` is already the empty case you are reaching for.
-
-```diff
--Option<int>? option = Find(id);
-+Option<int> option = Find(id);
-```
-
-The rule reads the annotation itself rather than the compiler's nullable state, so it
-fires whether or not you build with nullable reference types on.
-
-It also finds the annotation when the type is nested inside another one. A tuple
-element, an array element and a type argument all count, and the element can sit in
-any position of the tuple:
-
-```diff
--(Option<int>? a, int b) Make() => (null, 1);
-+(Option<int> a, int b) Make() => (Option.None<int>(), 1);
-```
-
-`Result` behaves the same way. There the rule points you to `Err` rather than `None`.
-
-**Quick fix:** drop the `?`.
-
-### WM1011
-
-**Your delegate returns a task and the method does not await it.** A synchronous
-method calls your delegate and stores whatever comes back. Give it one that
-returns a task and the monad holds the task, not the result.
-
-```diff
--var result = Option.Try(() => FetchCountAsync());
-+var result = await Option.TryAsync(() => FetchCountAsync());
-
--Option<Task<int>> doubled = option.Map(x => DoubleAsync(x));
-+Option<int> doubled = await option.MapAsync(x => DoubleAsync(x));
-```
-
-Both calls compile. Neither awaits anything, so the work has not finished when
-the monad is handed back, and anything it throws goes unobserved. For `Try` the
-damage is worse: **your exception handling is gone entirely** — a throw escapes
-to your caller instead of becoming a `None` or an `Err`, and your configured
-exception logger never sees it.
-
-Use the `Async` sibling of whatever you called. It awaits the delegate and holds
-the result.
-
-#### What it does and does not report
-
-The rule asks **where the task ends up**, not whether a delegate produced one.
-
-| Call | Produces | Reported |
-| --- | --- | --- |
-| `Option.Try(() => FetchAsync())` | `Option<Task<int>>` | Yes |
-| `option.Map(x => FetchAsync(x))` | `Option<Task<int>>` | Yes |
-| `result.MapErr(e => FormatAsync(e))` | `Result<int, Task<string>>` | Yes |
-| `option.Match(x => FetchAsync(x), () => ZeroAsync())` | `Task<int>` | No |
-| `option.MapOr(zeroTask, x => FetchAsync(x))` | `Task<int>` | No |
-| `Option.Some(FetchAsync())` | `Option<Task<int>>` | No |
-
-`Match` and `MapOr` hand the task straight back, so you can await it and nothing
-is lost. `Option.Some(FetchAsync())` takes a value rather than a delegate, so you
-built that task on purpose.
-
-Only a task trapped **inside** an `Option` or a `Result` is a defect — you cannot
-await it without unwrapping first, and most callers never do.
-
-This is a warning rather than a suggestion because it fires on code that runs and
-does the wrong thing. It is also the only protection you have against the v6
-removal of the async `Try` overloads, which rebinds those call sites silently. See
-[Silent change 1](../upgrading-and-deprecations/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
-
-**No quick fix, deliberately.** Renaming to the `Async` sibling leaves you with an
-unawaited task, and no fixer can decide where your `await` belongs.
-
-## Idioms
+# Idioms
 
 These rules are suggestions. Your code works. The rule points at a clearer way to
 write it. You see them in your IDE, and they stay out of your build.
@@ -268,6 +34,10 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | None |
 | [`WM2022`](#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` | Wrap it in an async lambda |
 
+There is no `WM2014`. It shipped in 5.4.0 as a `FlatMap` rename aid and was
+removed in 6.0.0. `WM2010` is listed above because build output from 6.x still
+links to it; nothing in 7.0.0 reports it.
+
 `WM2008` owns every null comparison and null pattern, so `WM1002` leaves those
 alone. You get one diagnostic per site, not two.
 
@@ -279,13 +49,13 @@ Take the second one where the difference matters to you. Applying the `WM2007` q
 fix on a value type reports `WM2015` on the result, for the same reason. The same pair
 applies to the quick fixes `WM2001` and `WM2002` offer.
 
-`WM2003` ignores the same throws as `WM3002`, listed below.
+`WM2003` ignores the same throws as [`WM3002`](migration-aids.md#wm3002).
 
 We split `WM2001` and `WM2002` on purpose. `Expect` states an invariant and names it
 in the message, which is fair where the invariant is real. So you can keep `WM2002`
 on and turn `WM2001` off, or the reverse.
 
-### WM2001
+## WM2001
 
 **`Unwrap` throws when there is nothing to unwrap.** It converts an absence you had
 already captured in the type back into an unhandled exception.
@@ -301,7 +71,7 @@ given above.
 
 **Quick fix:** `UnwrapOrDefault()`.
 
-### WM2002
+## WM2002
 
 **`Expect` throws too, and names the invariant on the way out.** That is defensible
 where the invariant is genuine, which is why this is a separate rule from `WM2001` —
@@ -314,7 +84,7 @@ you can keep one on and turn the other off.
 
 **Quick fix:** `UnwrapOrDefault()`.
 
-### WM2003
+## WM2003
 
 **A `throw` inside a member returning `Result` goes around its own signature.** The
 signature promises failures arrive as values, so a caller who handled `Err` still has
@@ -327,7 +97,7 @@ to wrap the call in `try` to be safe.
 
 Ignores the same throws `WM3002` does, listed under Migration aids.
 
-### WM2004
+## WM2004
 
 **An `IsSome` check with an `Unwrap` inside it asks the same question twice.** Nothing
 enforces that the two answers agree; whoever reads the code has to notice.
@@ -339,7 +109,7 @@ enforces that the two answers agree; whoever reads the code has to notice.
 
 Use `Match` where both branches do work, `Inspect` where only the present one does.
 
-### WM2005
+## WM2005
 
 **`Map` followed by `Flatten` is `AndThen`.** Mapping with a function that itself
 returns an `Option` builds an `Option<Option<T>>`, and the flatten then takes apart
@@ -352,7 +122,7 @@ what the map just built.
 
 **Quick fix:** `AndThen`.
 
-### WM2006
+## WM2006
 
 **A state check combined with an unwrap of the same value already has a name.**
 `IsSomeAnd`, `IsNoneOr`, `IsOkAnd` and `IsErrAnd` take the predicate and supply the
@@ -366,7 +136,7 @@ value to it.
 Distinct from `WM2004`: that one is a guard around a block, this one is a single
 boolean expression.
 
-### WM2007
+## WM2007
 
 **`UnwrapOr` given the default of the type is `UnwrapOrDefault`.** The same result
 without naming the type's default yourself.
@@ -381,7 +151,7 @@ explained above.
 
 **Quick fix:** `UnwrapOrDefault()`.
 
-### WM2008
+## WM2008
 
 **Comparing an `Option` or `Result` to `null` reads as an absence check and is not
 one.** Neither type is ever null in correct use, so the comparison is always false and
@@ -398,7 +168,7 @@ site, not two.
 
 **Quick fix:** the matching state check.
 
-### WM2009
+## WM2009
 
 **`Option<Option<T>>` has three states and two meanings.** An absent outer and an
 absent inner are different values that almost no caller acts on differently.
@@ -410,7 +180,7 @@ absent inner are different values that almost no caller acts on differently.
 
 It usually means a `Map` wanted to be an `AndThen`, which is `WM2005`.
 
-### WM2010
+## WM2010
 
 **Retired in 7.0.0. This rule no longer ships.** The anchor stays because build output
 from earlier versions links here.
@@ -426,7 +196,7 @@ report. A `Result<T, T>` is still worth avoiding for the second reason.
 +Result<string, Error> Parse(string input);
 ```
 
-### WM2011
+## WM2011
 
 **`Some`, `None`, `Ok` and `Err` are the cases, not the type.** A field declared
 `Some<int>` can never be `None`, which is the entire point of `Option`.
@@ -438,7 +208,7 @@ report. A `Result<T, T>` is still worth avoiding for the second reason.
 
 **Quick fix:** the base type.
 
-### WM2012
+## WM2012
 
 **A nullable member beside `Option` members gives one type two ways to say
 "absent".** Callers then have to remember which convention applies to which member.
@@ -451,7 +221,7 @@ report. A `Result<T, T>` is still worth avoiding for the second reason.
 Fires only on a type that already uses `Option` or `Result` somewhere. `WM3001` is the
 version for a codebase that has not adopted the library at all.
 
-### WM2013
+## WM2013
 
 **A discarded `Option` is a question nobody read the answer to.** Less harmful than
 discarding a `Result`, which `WM1006` reports as a bug, but usually still a mistake.
@@ -461,7 +231,7 @@ discarding a `Result`, which `WM1006` reports as a bug, but usually still a mist
 +Option<User> active = option.Filter(IsActive);
 ```
 
-### WM2015
+## WM2015
 
 **On a value type, `UnwrapOrDefault` hands back `0` for the absent case.** `T?` on a
 type parameter constrained only to `notnull` is an annotation, not a `Nullable<T>`, so
@@ -479,7 +249,7 @@ than warns. `MapOrDefault` and `MapOrNull` work the same way.
 
 **Quick fix:** `UnwrapOrNull()` or `MapOrNull()`.
 
-### WM2016
+## WM2016
 
 **An eager argument runs even when it is thrown away.** `And`, `Or`, `UnwrapOr`,
 `MapOr` and `OkOr` evaluate their argument before they check whether the receiver
@@ -528,7 +298,7 @@ declared a property would be worse than one that skips them all.
 
 **Quick fix:** wrap the argument in a lambda and call the `Else` sibling.
 
-### WM2017
+## WM2017
 
 **Your delegate captures, and there is an overload that would not.** A lambda that
 reads a local or a parameter from the enclosing method allocates a display class
@@ -569,7 +339,7 @@ It stays quiet when:
 parameter, which shadows the enclosing local. That is fine from C# 8 but is
 `CS0136` on C# 7.3, and this analyzer reaches consumers on every language version.
 
-### WM2018
+## WM2018
 
 **Two enums generate the same error code.** An `[ErrorCodeCatalog]` enum builds each
 code from a format, and by default that format is the enum's name and the member's name,
@@ -603,10 +373,10 @@ reported; two enums sharing a name with different formats do not collide and are
 **No quick fix.** The fix is a rename or a different format, and which of the two enums
 should keep the code is not something the analyzer can work out.
 
-See [generated-error-codes.md](generated-error-codes.md "mention") for what the
+See [generated-error-codes.md](../using-the-library/generated-error-codes.md "mention") for what the
 attribute generates.
 
-### WM2019
+## WM2019
 
 **A generated error code is missing from the registry.** A project that commits an
 `ErrorCodes.txt` has opted into reviewing its error codes as a list, so a code that is
@@ -628,9 +398,9 @@ Reported on the member, because that is the thing you can act on.
 block kept. One invocation is enough however many diagnostics there are.
 
 A project with no `ErrorCodes.txt` never sees this rule. See
-[#reviewing-your-codes-as-a-list](generated-error-codes.md#reviewing-your-codes-as-a-list "mention").
+[#reviewing-your-codes-as-a-list](../using-the-library/generated-error-codes.md#reviewing-your-codes-as-a-list "mention").
 
-### WM2020
+## WM2020
 
 **The registry lists a code nothing generates.** The other direction: an entry left
 behind by a rename or a deletion, claiming a code the project no longer produces.
@@ -653,10 +423,10 @@ divergence.
 {% hint style="warning" %}
 This rule's severity cannot be set from a path-matched `.editorconfig` section, not even
 `[*]`. It needs a global analyzer config — see
-[#making-a-divergence-fail-the-build](generated-error-codes.md#making-a-divergence-fail-the-build "mention").
+[#making-a-divergence-fail-the-build](../using-the-library/generated-error-codes.md#making-a-divergence-fail-the-build "mention").
 {% endhint %}
 
-### WM2021
+## WM2021
 
 **A property pattern is a state check the other rules cannot see.**
 `option is { IsSome: true }` asks exactly what `option.IsSome` asks. It reads as
@@ -701,7 +471,7 @@ expression becomes a property read, a negated one becomes a negated read, and a
 first would leave the two shapes most worth correcting untouched, while implying
 the rule had been dealt with.
 
-### WM2022
+## WM2022
 
 **`CS0411` here is not a generics problem.** `AndThenAsync` and `OrElseAsync` take a
 step that returns `ValueTask<Option<T>>` or `ValueTask<Result<TOk, TErr>>`. Hand one a
@@ -736,7 +506,7 @@ does not convert — and it changes a signature every other caller of that membe
 A fix reading one call site cannot judge either, so the message states both and leaves
 the choice to you.
 
-#### What it does and does not report
+## What it does and does not report
 
 The rule fires on `AndThenAsync` and `OrElseAsync` only, on both `Option` and
 `Result`, and on both the monad and the awaited-receiver extensions.
@@ -754,211 +524,3 @@ The quick fix declines on an **overloaded** method group. The lambda's parameter
 comes from the method's own, and there is no reason to prefer one overload's spelling
 of it over another's.
 
-## Migration aids
-
-These two rules ship **off**. They report on code that has not adopted the library
-yet, so in most codebases they fire everywhere. Turn them on while you convert, then
-turn them off again.
-
-| ID | What it reports |
-| --- | --- |
-| [`WM3001`](#wm3001) | A member that returns a nullable type, where `Option<T>` would make the absent case impossible to ignore |
-| [`WM3002`](#wm3002) | A `throw`, where returning `Result<TOk, Error>` would state the failure in the signature |
-
-Enable one in your `.editorconfig`:
-
-```ini
-[*.cs]
-dotnet_diagnostic.WM3001.severity = suggestion
-dotnet_diagnostic.WM3002.severity = suggestion
-```
-
-`WM3002` ignores the throws a `Result` would not improve: `ArgumentException` and
-its subtypes, `NotImplementedException`, `NotSupportedException`,
-`ObjectDisposedException`, a bare `throw;` rethrow, and any throw inside a lambda
-you pass to `Option.Try` or `Result.Try`.
-
-### WM3001
-
-**A nullable return leaves the absent case easy to ignore.** `Option<T>` makes the
-caller acknowledge it. Off by default, because in a codebase that has not adopted the
-library this fires on nearly every member.
-
-```diff
--User? FindUser(int id);
-+Option<User> FindUser(int id);
-```
-
-`WM2012` is the narrower, on-by-default version, for a type that already uses `Option`
-elsewhere.
-
-### WM3002
-
-**A `throw` states a failure nowhere in the signature.** Returning
-`Result<TOk, Error>` puts it there, where a caller cannot miss it. Off by default,
-because it fires on every throw in a codebase that has not adopted `Result`.
-
-```diff
--if (!found) throw new InvalidOperationException("no such user");
-+if (!found) return new Error("NoSuchUser", "no such user");
-```
-
-It skips the throws listed above, which a `Result` would not improve. `WM2003` is the
-on-by-default version, for a member that already returns `Result`.
-
-## Assertion rules
-
-These rules ship in `Waystone.Monads.Shouldly`, not in the core package. Add that
-package to a test project and you get them:
-
-```
-dotnet add package Waystone.Monads.Shouldly --prerelease
-```
-
-Their ids start with `WMS`, a second namespace beside `WM`. `WM` ids are validated
-against the core analyzer assembly, so a rule shipped from another package cannot take
-one. The `2` means what it means everywhere else on this page: working code that reads
-better another way, reported as a suggestion, on by default. There is no `WMS1` tier and
-there should not be one — every rule here fires on a test that already passes.
-
-| ID | What it reports | Quick fix |
-| --- | --- | --- |
-| [`WMS2001`](#wms2001) | An assertion on `IsSome`, `IsOk` or `Unwrap` instead of on the monad | The matching monad assertion |
-| [`WMS2002`](#wms2002) | An `await` wrapped in parentheses so a synchronous assertion can run | The `Async` assertion |
-
-Both fixes are batch-fixable, so **Fix all occurrences in Project** clears a test suite
-in one pass. Run it more than once. `WMS2001` rewrites `(await task).IsSome.ShouldBeTrue()`
-into `(await task).ShouldBeSome()`, which is then `WMS2002`'s input, and a batch fixer
-lands only non-overlapping fixes per pass.
-
-### WMS2001
-
-**Assert on the monad, not on a piece of it.** `IsSome` and `IsOk` yield a `bool`, and
-`Unwrap` yields the contained value. Either way the assertion that follows never sees
-the monad, so a failing test cannot tell you what it found.
-
-```diff
--option.IsSome.ShouldBeTrue();
-+option.ShouldBeSome();
-```
-
-The `IsSome` version fails with "expected True, was False". The `ShouldBeSome` version
-names the `None`. The `Unwrap` version is worse: `Unwrap` throws before the assertion
-runs, so the test fails on a panic rather than on an assertion, and the message is about
-`Unwrap` rather than about your expectation.
-
-```diff
--option.Unwrap().ShouldBe(42);
-+option.ShouldBeSomeValue(42);
-```
-
-The rule reads both halves of the pair, so `ShouldBeFalse` picks the opposite
-assertion:
-
-| You wrote | The fix writes |
-| --- | --- |
-| `option.IsSome.ShouldBeTrue()` or `option.IsNone.ShouldBeFalse()` | `option.ShouldBeSome()` |
-| `option.IsNone.ShouldBeTrue()` or `option.IsSome.ShouldBeFalse()` | `option.ShouldBeNone()` |
-| `result.IsOk.ShouldBeTrue()` or `result.IsErr.ShouldBeFalse()` | `result.ShouldBeOk()` |
-| `result.IsErr.ShouldBeTrue()` or `result.IsOk.ShouldBeFalse()` | `result.ShouldBeErr()` |
-| `option.Unwrap().ShouldBe(x)` | `option.ShouldBeSomeValue(x)` |
-| `result.Unwrap().ShouldBe(x)` | `result.ShouldBeOkValue(x)` |
-| `result.UnwrapErr().ShouldBe(x)` | `result.ShouldBeErrValue(x)` |
-
-`UnwrapErr` on an `Option` is not in that table because it does not compile — an
-`Option` has no error half.
-
-#### What it does not report
-
-**`ShouldBeOfType<Some<T>>()` never reports.** Those sites are usually testing the
-closed hierarchy itself, and nothing in the syntax separates that from an incidental
-type check, so rewriting them would delete the only coverage of it. This is excluded by
-design, not by omission.
-
-**A comparison overload carrying its own options never reports.** That covers
-`ShouldBe(expected, tolerance)`, the comparer overload, and the ignore-order overload.
-Those arguments describe how to compare a bare value, and they have no counterpart on an
-assertion that takes the monad. `ShouldBeTrue` and `ShouldBeFalse` need no equivalent
-exclusion — a `bool` has nothing to configure.
-
-{% hint style="info" %}
-**Two diagnostics on the `Unwrap` line is one problem.** `WMS2001` overlaps `WM2001`
-there on purpose. The spans differ: `WM2001` reports the panicking call, this rule the
-whole assertion. Applying the `WMS2001` fix resolves both, because the rewrite is
-what removes the `Unwrap`. Suppressing either to silence the pair would leave a consumer
-who does not use this package with no signal at all.
-{% endhint %}
-
-The reported span is the whole assertion, and it is **not** faded in your IDE the way
-most `WM2` rules with a fix are. Fading it would read as "this line can go", and the fix
-replaces your assertion rather than removing it.
-
-### WMS2002
-
-**Drop the parentheses around the `await`.** Member access binds tighter than `await`,
-so asserting on a task's result forces you to parenthesise it. Every assertion in this
-package is also declared on `Task` and `ValueTask` receivers, so you do not have to.
-
-```diff
--(await LoadAsync()).ShouldBeSome();
-+await LoadAsync().ShouldBeSomeAsync();
-```
-
-The fix appends `Async` to the assertion and moves the `await` outward.
-
-#### What it does not report
-
-**`(await task.ConfigureAwait(false)).ShouldBeSome()` never reports.** Read this one
-before you conclude the rule is broken — `ConfigureAwait` is what this library's own
-documented style produces everywhere, so this is the shape you are most likely to have
-written. `ConfigureAwait` returns an awaitable that is not a task, and this package
-declares no assertion on it, so moving the `await` outward would leave the rewrite with
-no receiver.
-
-**A chained assertion never reports.** In `(await task).ShouldBeSome().Name`, something
-else reads the assertion's result. Moving the `await` outward would bind `.Name` to the
-assertion's task rather than to its value, so the rewrite would change what the test
-does.
-
-The rule is scoped to an `await` of `Task<T>` or `ValueTask<T>` written directly, and to
-an assertion whose result nothing else reads. Both exclusions exist for the same reason:
-outside them, moving the `await` changes what is awaited.
-
-## Changing a rule
-
-You configure every rule through `.editorconfig`, the standard way. Raise one:
-
-```ini
-[*.cs]
-dotnet_diagnostic.WM2001.severity = warning
-```
-
-Silence one:
-
-```ini
-[*.cs]
-dotnet_diagnostic.WM1005.severity = none
-```
-
-Silence one at a single line:
-
-```csharp
-#pragma warning disable WM1001
-Option<int> option = Option.Some(0);
-#pragma warning restore WM1001
-```
-
-Put an `.editorconfig` in a subdirectory to scope a rule to part of your solution.
-Test projects are the common case. `WM2001` earns its keep less in a test, where an
-unwrap that throws fails the test anyway.
-
-You cannot drop the analyzer and keep the library, because both ship in one package.
-`.editorconfig` is how you turn rules off.
-
-To raise a whole tier rather than a rule at a time, see
-[Severity presets](severity-presets.md). One MSBuild property covers the set.
-
-The `WMS` rules configure the same way, through `dotnet_diagnostic.WMS2001.severity`
-and the like. You can drop those entirely by removing the `Waystone.Monads.Shouldly`
-package reference, since the analyzer ships with it — which you cannot do for the `WM`
-rules, because they ship inside the library.

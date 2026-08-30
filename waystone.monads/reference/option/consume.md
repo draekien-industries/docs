@@ -164,7 +164,7 @@ statements in a lambda that returns nothing.
 **A positional pattern does not trip `WM2021`.** That rule reports a *property*
 pattern reading `IsSome`, `IsNone`, `IsOk` or `IsErr` — a state check written so
 nothing recognises it as one. A positional pattern reads none of those
-properties. See [`WM2021`](../../using-the-library/analyzer-rules.md#wm2021).
+properties. See [`WM2021`](../../analyzers/idioms.md#wm2021).
 {% endhint %}
 
 ## Unwrap

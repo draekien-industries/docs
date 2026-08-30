@@ -123,7 +123,7 @@ Where the allocation matters, `await` the task first and call the synchronous
 overload on the result.
 
 {% hint style="info" %}
-[`WM2017`](../using-the-library/analyzer-rules.md#wm2017) reports a delegate that
+[`WM2017`](../analyzers/idioms.md#wm2017) reports a delegate that
 captures where one of these overloads exists, so you do not have to find them by
 hand.
 {% endhint %}

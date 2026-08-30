@@ -87,7 +87,7 @@ The skill and the analyzer solve two halves of one problem, and you want both.
 
 An agent following the skill still produces code the analyzer reports, and a
 clean build is the bar. See
-[analyzer-rules.md](../using-the-library/analyzer-rules.md "mention") for what
+[Analyzers](../analyzers/README.md) for what
 each rule means.
 
 {% hint style="info" %}

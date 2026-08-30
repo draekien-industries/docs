@@ -563,3 +563,44 @@ decision. Neither gets an ADR.
 Nothing blocking. One call was made here rather than deferred: the group keeps
 the name `Companion packages` rather than shortening to `Packages`, for the
 reason given at the top of this file.
+
+## Analyzer anchor mapping
+
+DRA-170 split `using-the-library/analyzer-rules.md` into five pages. Every anchor
+below was a live URL, and analyzer build output in 6.x links to some of them.
+DRA-174 turns this into `.gitbook.yaml` redirects, and DRA-177 uses the same
+right-hand column to set `helpLinkUri` on each descriptor for the first time.
+
+| Old URL | New URL |
+| --- | --- |
+| `using-the-library/analyzer-rules` | `analyzers` |
+| `using-the-library/analyzer-rules#what-this-page-is-for` | `analyzers#what-this-page-is-for` |
+| `using-the-library/analyzer-rules#changing-a-rule` | `analyzers#changing-a-rule` |
+| `using-the-library/analyzer-rules#runtime-bugs` | `analyzers/runtime-bugs` |
+| `using-the-library/analyzer-rules#wm1001` … `#wm1011` | `analyzers/runtime-bugs#wm1001` … `#wm1011` |
+| `using-the-library/analyzer-rules#idioms` | `analyzers/idioms` |
+| `using-the-library/analyzer-rules#wm2001` … `#wm2022` | `analyzers/idioms#wm2001` … `#wm2022` |
+| `using-the-library/analyzer-rules#migration-aids` | `analyzers/migration-aids` |
+| `using-the-library/analyzer-rules#wm3001`, `#wm3002` | `analyzers/migration-aids#wm3001`, `#wm3002` |
+| `using-the-library/analyzer-rules#assertion-rules` | `analyzers/assertion-rules` |
+| `using-the-library/analyzer-rules#wms2001`, `#wms2002` | `analyzers/assertion-rules#wms2001`, `#wms2002` |
+| `using-the-library/severity-presets` | `analyzers/severity-presets` |
+
+A redirect carries no fragment, so GitBook drops the `#wmXXXX` part. One redirect
+per rule id is therefore not possible from `.gitbook.yaml` alone — the four
+tier-level redirects above are what DRA-174 can write, and a reader following an
+old rule link lands on the right page rather than the right heading. DRA-177 fixes
+that properly by pointing `helpLinkUri` at the full new URL, so 7.x build output
+never uses an old anchor.
+
+### Rule ids that do not exist
+
+Checked against `src/Waystone.Monads.Analyzers/Rules.cs` and
+`AnalyzerReleases.Shipped.md` on the v7 branch, not assumed:
+
+* `WM1004`, `WM1007`, `WM1009`, `WM1010`, `WM2014` — shipped in 5.x, removed in 6.0.0.
+* `WM2010` — shipped in 5.3.0, removed in 7.0.0. Its anchor is kept on
+  `analyzers/idioms` because 6.x build output links to it.
+
+`WMG0001`–`WMG0006` stay with DRA-171. They are generator diagnostics, not
+analyzer rules, and they belong on the Source generation group's pages.

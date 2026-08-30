@@ -125,7 +125,7 @@ anything, and the test goes green. This is why they carry an `Async` suffix inst
 being overloads of the same name — the compiler warns you about an unawaited call, and
 it can only do that if the call is distinguishable.
 
-`WMS2002` finds these rewrites for you. See [Assertion rules](../using-the-library/analyzer-rules.md#assertion-rules).
+`WMS2002` finds these rewrites for you. See [Assertion rules](../analyzers/assertion-rules.md).
 {% endhint %}
 
 ## Custom messages
@@ -160,4 +160,4 @@ on by default, and both are batch-fixable — **Fix all occurrences in Project**
 a suite in one pass.
 
 They are documented with the rest of the rules, on
-[Assertion rules](../using-the-library/analyzer-rules.md#assertion-rules).
+[Assertion rules](../analyzers/assertion-rules.md).

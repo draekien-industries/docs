@@ -39,8 +39,15 @@
 ## Using the Library
 
 * [Generated error codes](using-the-library/generated-error-codes.md)
-* [Analyzer rules](using-the-library/analyzer-rules.md)
-* [Severity presets](using-the-library/severity-presets.md)
+
+## Analyzers
+
+* [Overview](analyzers/README.md)
+* [Runtime bugs](analyzers/runtime-bugs.md)
+* [Idioms](analyzers/idioms.md)
+* [Migration aids](analyzers/migration-aids.md)
+* [Assertion rules](analyzers/assertion-rules.md)
+* [Severity presets](analyzers/severity-presets.md)
 
 ## Companion Packages
 

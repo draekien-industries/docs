@@ -109,7 +109,7 @@ Option<Character> maybeCharacter = await Option.TryAsync(
 ```
 
 If the factory throws, the exception is caught and sent to your
-[configured exception logger](../using-the-library/configuration.md), and you get
+[configured exception logger](configuration.md), and you get
 back a `None<Character>`.
 
 You also get a `None<Character>` if the task completes with `null`, because a
@@ -140,7 +140,7 @@ an `ArgumentNullException` that names the `asyncFactory` argument.
 **Never pass an async factory to `Try`.** The overloads that accepted one were
 removed in 6.0.0, and the call still compiles — it binds to the synchronous
 overload, gives you an `Option<Task<T>>`, and catches nothing.
-[`WM1011`](../using-the-library/analyzer-rules.md#wm1011) reports every
+[`WM1011`](../analyzers/runtime-bugs.md#wm1011) reports every
 occurrence. See
 [Silent change 1](../upgrading-and-deprecations/v5-to-v6.md#silent-change-1-try-with-an-async-factory).
 {% endhint %}
@@ -148,7 +148,7 @@ occurrence. See
 {% hint style="warning" %}
 `TryAsync` lets an `OperationCanceledException` through rather than turning it
 into a `None` or an `Err`. See
-[Configuration](../using-the-library/configuration.md#cancellation).
+[Configuration](configuration.md#cancellation).
 {% endhint %}
 
 ## Matching with an async branch

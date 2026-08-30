@@ -132,7 +132,7 @@ Call `TryAsync` and `await` where you were already awaiting:
 
 ### The analyzer finds these for you
 
-[`WM1011`](../using-the-library/analyzer-rules.md#wm1011) is a **warning**, not a suggestion,
+[`WM1011`](../analyzers/runtime-bugs.md#wm1011) is a **warning**, not a suggestion,
 because it fires on code that runs. It reports any call that traps a task inside
 an `Option` or a `Result` — `Try` with an async factory, but also
 `option.Map(x => FetchAsync(x))` and anything else with an `Async` sibling it
@@ -286,7 +286,7 @@ int? absent = Option.None<int>().UnwrapOrNull();  // null
 int? present = Option.Some(0).UnwrapOrNull();     // 0
 ```
 
-[`WM2015`](../using-the-library/analyzer-rules.md#wm2015) points you at them.
+[`WM2015`](../analyzers/idioms.md#wm2015) points you at them.
 
 ## Loud change: async extensions all return ValueTask
 
@@ -454,7 +454,7 @@ The closure costs exactly 88 bytes at every call site: 24 for the display class,
 See [State overloads](../reference/state-overloads.md) for the detail,
 including why the `static` keyword matters.
 
-[`WM2017`](../using-the-library/analyzer-rules.md#wm2017) points you at these when it sees a
+[`WM2017`](../analyzers/idioms.md#wm2017) points you at these when it sees a
 delegate that captures.
 
 ## Analyzer rules that changed
@@ -476,9 +476,9 @@ the entry.
 
 | Rule | Severity | What it reports |
 | --- | --- | --- |
-| [`WM1011`](../using-the-library/analyzer-rules.md#wm1011) | Warning | An async delegate passed to a synchronous method |
-| [`WM2016`](../using-the-library/analyzer-rules.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
-| [`WM2017`](../using-the-library/analyzer-rules.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
+| [`WM1011`](../analyzers/runtime-bugs.md#wm1011) | Warning | An async delegate passed to a synchronous method |
+| [`WM2016`](../analyzers/idioms.md#wm2016) | Suggestion | An eager argument that is not free to evaluate |
+| [`WM2017`](../analyzers/idioms.md#wm2017) | Suggestion | A delegate that captures where a state overload exists |
 
 ### Reworded
 
