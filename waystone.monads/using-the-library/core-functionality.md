@@ -196,7 +196,7 @@ Result<int, string> lengthResult =  nameResult.Map(name => name.Length);
 
 There are more transform methods specific to the `Option<T>` and `Result<T, E>` types.&#x20;
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="../guides/option.md#transform-it">#transform-it</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#transform">#transform</a></td></tr></tbody></table>
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Option Transforms</strong></td><td>Learn about the transform methods specific to the <code>Option&#x3C;T></code> monad.</td><td><a href="../guides/option.md#transform-it">#transform-it</a></td></tr><tr><td><strong>Result Transforms</strong></td><td>Learn about the transform methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../guides/result.md#work-on-the-error-side">#work-on-the-error-side</a></td></tr></tbody></table>
 
 ## State overloads
 
@@ -658,7 +658,7 @@ An `UnmetExpectationException` carrying the message you gave is thrown when the 
 
 There are consume methods specific to a `Result<T, E>`.
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Consumes</strong></td><td>Learn about the consume methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#consume">#consume</a></td></tr></tbody></table>
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Consumes</strong></td><td>Learn about the consume methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../guides/result.md#unwraperr-and-expecterr">#unwraperr-and-expecterr</a></td></tr></tbody></table>
 
 ## Transform and Consume
 
@@ -791,7 +791,7 @@ nameResult.Inspect(name => Console.WriteLine(name.Length));
 
 There are side-effects specific to a `Result<T, E>`.
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Side-Effects</strong></td><td>Learn about the side-effect methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="result-of-t-and-e.md#consume">#consume</a></td></tr></tbody></table>
+<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Result Side-Effects</strong></td><td>Learn about the side-effect methods specific to the <code>Result&#x3C;T, E></code> monad.</td><td><a href="../guides/result.md#inspecterr">#inspecterr</a></td></tr></tbody></table>
 
 ## Nesting
 

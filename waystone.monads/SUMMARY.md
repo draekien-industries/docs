@@ -10,10 +10,7 @@
 ## Guides
 
 * [Option\<T>](guides/option.md)
-
-## Core Concepts
-
-* [Results](core-concepts/results.md)
+* [Result\<T, E>](guides/result.md)
 
 ## Using the Library
 
@@ -22,7 +19,7 @@
 * [Core Functionality](using-the-library/core-functionality.md)
 * [Async](using-the-library/async.md)
 * [Option\<T> collections](using-the-library/option-of-t/README.md)
-* [Result\<T, E>](using-the-library/result-of-t-and-e.md)
+* [Result\<T, E> collections](using-the-library/result-of-t-and-e.md)
 * [Errors and Exceptions](using-the-library/errors-and-exceptions.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)

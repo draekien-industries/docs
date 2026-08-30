@@ -162,4 +162,4 @@ string display = patron.Match(
 
 * [Quickstart](quickstart.md) — install the package and run both types yourself.
 * [Option\<T>](../guides/option.md) — absence, in depth.
-* [Results](../core-concepts/results.md) — failure, in depth.
+* [Result\<T, E>](../guides/result.md) — failure, in depth.
