@@ -292,7 +292,7 @@ Result.Err<int, string>("overflow").OrElse(Recover);  // Err("overflow"), still 
 A sequence of `Result` has its own helpers — `Collect`, `Partition`, `Flatten`,
 `FlattenErr` and `AsEnumerable`. They live in
 `Waystone.Monads.Results.Extensions`, and are covered on the
-[Result\<T, E> reference](../using-the-library/result-of-t-and-e.md#collections).
+[Result\<T, E> collections reference](../reference/result/collections.md).
 
 The short version:
 
@@ -335,4 +335,4 @@ Reach for [`Option<T>`](option.md) instead when you do not care about the reason
 * [Errors](errors.md) — the `Error` type, error codes, and building one from an exception.
 * [Exceptions](exceptions.md) — what the library throws, and when.
 * [Async](async.md) — keeping a chain intact across an `await`.
-* [Result\<T, E> reference](../using-the-library/result-of-t-and-e.md) — every overload, when you need one this page did not show.
+* [Result\<T, E> API](../reference/result/README.md) — every overload, when you need one this page did not show.

@@ -261,7 +261,7 @@ value is a default, so it covers none of the six expressions in the table above.
 `Option.Some(null!)` throws in v6, as it did in v5. The exception type changes
 from `InvalidOperationException` to `ArgumentNullException`.
 
-Use [`Option.FromNullable`](../using-the-library/core-functionality.md) when the value may be null.
+Use [`Option.FromNullable`](../reference/option/creation.md#optionfromnullable) when the value may be null.
 
 `FromNullable<T>(T?) where T : struct` no longer rejects the default either, so it
 now behaves the same way as its reference-type sibling.
@@ -445,13 +445,13 @@ Covered methods, as at 6.0:
 - `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync`
 
 Later 6.x releases added more. See
-[Where you can use it](../using-the-library/core-functionality.md#where-you-can-use-it) for the
+[Where you can use it](../reference/state-overloads.md#where-you-can-use-it) for the
 current set.
 
 The closure costs exactly 88 bytes at every call site: 24 for the display class,
 64 for the delegate. The state overload removes all of it.
 
-See [Core Functionality](../using-the-library/core-functionality.md#state-overloads) for the detail,
+See [State overloads](../reference/state-overloads.md) for the detail,
 including why the `static` keyword matters.
 
 [`WM2017`](../using-the-library/analyzer-rules.md#wm2017) points you at these when it sees a

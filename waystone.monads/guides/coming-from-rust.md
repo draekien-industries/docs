@@ -127,7 +127,7 @@ From 7.0.0 the case types deconstruct, so the closest thing to Rust's `if let` i
 | `if let Err(e) = result` | `if (result is Err<TOk, TErr>(var e))` |
 | `if let None = option` | `if (option is None<T>)` — no parentheses; there is nothing to bind |
 
-Reach for these in statement position, where Rust would use `if let`. Reach for `Match` where Rust would use `match`. See [Pattern matching with Deconstruct](../using-the-library/core-functionality.md#pattern-matching-with-deconstruct).
+Reach for these in statement position, where Rust would use `if let`. Reach for `Match` where Rust would use `match`. See [Pattern matching with Deconstruct](../reference/option/consume.md#pattern-matching-with-deconstruct).
 
 Do not name a case type in a declaration either. A variable, parameter or return typed as `Some<T>` can hold only one of the two states, which defeats the point. `WM2011` reports it and points you at the base type.
 
