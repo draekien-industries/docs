@@ -6,6 +6,20 @@ Public documentation for the Waystone family of .NET libraries (`waystone.monads
 
 A space is not one per NuGet package. `waystone.monads` documents the core library and every companion package that ships alongside it, under *Companion Packages*. `waystone.monads.fluentvalidation` had a space of its own until 7.0.0 and no longer does — see [ADR 0004](docs/adr/0004-companion-packages-live-in-the-core-space.md).
 
+## Setup
+
+Run this once per clone, or the hook below never fires:
+
+```
+git config core.hooksPath .githooks
+```
+
+`pre-push` checks that no generated code block has drifted from the source it quotes.
+It needs a checkout of
+[draekien-industries/waystone-dotnet](https://github.com/draekien-industries/waystone-dotnet)
+and the .NET SDK; missing either is a warning rather than a failed push, because this
+repository holds no code and a writer may have neither.
+
 ## Conventions
 
 - Each top-level directory is exactly one GitBook space, always. Never nest multiple spaces under one directory, and never create a new top-level directory as a way to create a new space — the space must exist in GitBook first (see Gotchas).
@@ -15,6 +29,33 @@ A space is not one per NuGet package. `waystone.monads` documents the core libra
 - Use the `output-styles:plain-language` skill when writing or editing documentation content in this repo.
 - Compile code samples rather than reading them. Both samples on the Waystone.Monads configuration page failed against 6.x — one used a delegate arity that never existed, the other assigned internal properties — and neither was visible to inspection. A scratch file under `waystone-dotnet/sample/` proves it in seconds.
 - Commit messages follow `docs(<scope>): <subject>`, e.g. `docs(waystone-monads-28): fix links`. The scope is the identifier of the content unit being changed, not a free-form area name. Commits with `No subject` were authored from the GitBook UI editor, not typed by hand — that's expected, not a defect to fix.
+
+## Generated code blocks
+
+Some code blocks are not written here. They are read out of the sample projects in
+`waystone-dotnet` that compile them, so a sample exists once rather than twice.
+
+A generated block looks like this, and **everything between the two comments is
+overwritten**:
+
+```
+<!-- snippet: configuration-the-usual-call -->
+<!-- source: sample/Waystone.Monads.Docs/... -->
+<code block>
+<!-- endSnippet -->
+```
+
+To change one, edit the `#region configuration-the-usual-call` block in the file the
+`source` comment names, then run
+`dotnet run --project tools/Waystone.DocSnippets` in that repository. Editing the page
+instead looks like it worked and is undone by the next run.
+
+A slot inside a fenced code block is left alone, which is why the example above is not
+itself filled in.
+
+`guides/configuration.md` is the only page converted so far. The rest still hold hand-
+written copies, and each moves across as it is next edited. See
+[docs/explorations/2026-08-31-single-sourcing-code-samples.md](docs/explorations/2026-08-31-single-sourcing-code-samples.md).
 
 ## Gotchas
 

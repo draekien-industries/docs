@@ -1,0 +1,61 @@
+#!/bin/sh
+# Runs before a push. The code blocks on some pages are generated from #region
+# blocks in draekien-industries/waystone-dotnet, and nothing else here would
+# notice a page edited by hand where the source was not: the next run of the
+# tool would simply overwrite it.
+#
+# This repository holds no code, so a contributor may not have that checkout or
+# even the .NET SDK. Missing either is a warning, not a failed push.
+
+set -e
+
+deletions_only=1
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+    case "$local_sha" in
+        0000000000000000000000000000000000000000) ;;
+        *) deletions_only=0 ;;
+    esac
+done
+[ "$deletions_only" = 1 ] && exit 0
+
+root=$(git rev-parse --show-toplevel)
+
+find_waystone() {
+    if [ -d "$WAYSTONE_DOTNET_PATH/tools/Waystone.DocSnippets" ]; then
+        printf '%s' "$WAYSTONE_DOTNET_PATH"
+        return
+    fi
+
+    configured=$(git config --get waystone.dotnet-path || true)
+    if [ -d "$configured/tools/Waystone.DocSnippets" ]; then
+        printf '%s' "$configured"
+        return
+    fi
+
+    for candidate in "$root"/../*; do
+        if [ -d "$candidate/tools/Waystone.DocSnippets" ]; then
+            printf '%s' "$candidate"
+            return
+        fi
+    done
+}
+
+waystone=$(find_waystone)
+
+if [ -z "$waystone" ]; then
+    echo "pre-push: no waystone-dotnet checkout found, so the generated code blocks" >&2
+    echo "  were not checked. Clone it beside this one, or run" >&2
+    echo "  'git config waystone.dotnet-path <path>'." >&2
+    exit 0
+fi
+
+if ! command -v dotnet >/dev/null 2>&1; then
+    echo "pre-push: dotnet is not installed, so the generated code blocks were not" >&2
+    echo "  checked. Install the SDK pinned in $waystone/global.json to enable this." >&2
+    exit 0
+fi
+
+echo "pre-push: checking that the generated code blocks match their sources..."
+
+dotnet run --project "$waystone/tools/Waystone.DocSnippets" --verbosity quiet -- \
+    --check --repo "$waystone" --docs "$root"

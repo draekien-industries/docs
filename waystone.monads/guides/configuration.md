@@ -17,11 +17,14 @@ a small console application. Reach for a [scope](#scoped-configuration) when one
 of code needs different settings. Every `Use…` method below is the same one on all
 three routes.
 
+<!-- snippet: configuration-the-usual-call -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 MonadOptions.Configure(options => options
     .UseFallbackErrorCode("Unknown")
     .UseFallbackErrorMessage("Something went wrong."));
 ```
+<!-- endSnippet -->
 
 ## How configuration works
 
@@ -48,12 +51,15 @@ place, so a concurrent reader could see one setting applied and the next not.
 make on it after your callback has returned are discarded — no exception, no warning,
 nothing takes effect.
 
+<!-- snippet: configuration-do-not-keep-the-builder -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 // Wrong. The second call does nothing.
 MonadOptionsBuilder? stashed = null;
 MonadOptions.Configure(options => stashed = options.UseFallbackErrorCode("A"));
 stashed!.UseFallbackErrorMessage("B");
 ```
+<!-- endSnippet -->
 
 Put every `Use…` call inside the callback.
 {% endhint %}
@@ -62,9 +68,12 @@ Put every `Use…` call inside the callback.
 
 The common call shape is unchanged, because the lambda parameter's type is inferred:
 
+<!-- snippet: configuration-call-shape-unchanged -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 MonadOptions.Configure(options => options.UseFallbackErrorCode("Unknown"));
 ```
+<!-- endSnippet -->
 
 That compiled against 6.x and it compiles against 7.0.0. You do not have to touch call
 sites that already build.
@@ -139,9 +148,12 @@ propagates too.
 
 If you need the pre-6.0.0 behaviour, opt back in:
 
+<!-- snippet: configuration-cancellation-as-failure -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 MonadOptions.Configure(options => options.UseCancellationAsFailure());
 ```
+<!-- endSnippet -->
 
 A cancellation is then caught, counted and logged like any other handled
 exception, and becomes a `None` or an `Err` as it did before.
@@ -149,9 +161,12 @@ exception, and becomes a `None` or an `Err` as it did before.
 `UseCancellationAsFailure` takes an optional `bool`, which defaults to `true`, so the
 call above turns the behaviour on. Pass `false` to put it back:
 
+<!-- snippet: configuration-cancellation-as-failure-off -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 MonadOptions.Configure(options => options.UseCancellationAsFailure(false));
 ```
+<!-- endSnippet -->
 
 You need that only when something earlier already turned it on and you want to undo it
 — a container registration from a library, or a `Configure` call elsewhere in start-up.
@@ -169,17 +184,26 @@ it.
 
 There are a few factory methods included in the library for generating `ErrorCode` instances from `Enum` and from `Exception` instances. To customise how these error codes are generated, create a class inheriting from `ErrorCodeFactory` and override the methods you wish to customise. Then create an instance and pass it into the `MonadOptions` instance via the `UseErrorCodeFactory`.
 
+<!-- snippet: configuration-error-code-factory -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
-public class MyErrorCodeFactory : ErrorCodeFactory
+internal sealed class ShoutingErrorCodeFactory : ErrorCodeFactory
 {
-    public override ErrorCode FromException(Exception exception)
-    {
-        // your implementation
-    }
+    public override ErrorCode FromException(Exception exception) =>
+        new(exception.GetType().Name.ToUpperInvariant());
 }
-
-MonadOptions.Configure(options => options.UseErrorCodeFactory(new MyErrorCodeFactory()));
 ```
+<!-- endSnippet -->
+
+Register your instance once, at start-up:
+
+<!-- snippet: configuration-use-error-code-factory -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
+```csharp
+MonadOptions.Configure(
+    options => options.UseErrorCodeFactory(new ShoutingErrorCodeFactory()));
+```
+<!-- endSnippet -->
 
 {% hint style="warning" %}
 **`FromEnum` is no longer one of the methods to override.** It is obsolete from 6.2.0
@@ -194,11 +218,14 @@ for `FromException`, which is unaffected.
 
 There may be exception circumstances which cause the `string` used to create the `ErrorCode` or the message of the `Error` classes to be null or white-space. In these situations, a set of fallbacks are used. These fallbacks can be configured.
 
+<!-- snippet: configuration-fallbacks -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 MonadOptions.Configure(options => options
-    .UseFallbackErrorCode("unknown")            // default: Unspecified
-    .UseFallbackErrorMessage("Something went wrong!")); // default: An unexpected error occurred.
+    .UseFallbackErrorCode("unknown")                     // default: Unspecified
+    .UseFallbackErrorMessage("Something went wrong!"));  // default: An unexpected error occurred.
 ```
+<!-- endSnippet -->
 
 **The substitution is silent.** `new ErrorCode(code)` and `new Error(code, message)`
 trim what you pass, and swap in the fallback when the result is empty. Neither throws,
@@ -218,26 +245,34 @@ Use `MonadOptions.BeginScope` when you want different options for one region of
 code — a single request, a test, or a block you are debugging. The scope applies
 until you dispose it, and your global configuration is untouched.
 
+<!-- snippet: configuration-a-scope -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 using (MonadOptions.BeginScope(options => options.UseFallbackErrorCode("Debug")))
 {
     Result<int, Error> result = Result.Try<int>(() => int.Parse(input));
+
+    _ = result;
 }
 
 // out here, your global configuration applies again
 ```
+<!-- endSnippet -->
 
 A scope accepts the same configuration methods as `Configure`, so it can override
 any option:
 
+<!-- snippet: configuration-scope-overrides -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->
 ```csharp
 using (MonadOptions.BeginScope(options => options
-    .UseErrorCodeFactory(new MyErrorCodeFactory())
-    .UseFallbackErrorMessage("Something went wrong while debugging.")))
+           .UseErrorCodeFactory(new ShoutingErrorCodeFactory())
+           .UseFallbackErrorMessage("Something went wrong while debugging.")))
 {
     // ...
 }
 ```
+<!-- endSnippet -->
 
 ### What a scope does
 
