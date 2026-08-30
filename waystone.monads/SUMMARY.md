@@ -11,16 +11,17 @@
 
 * [Option\<T>](guides/option.md)
 * [Result\<T, E>](guides/result.md)
+* [Errors](guides/errors.md)
+* [Exceptions](guides/exceptions.md)
+* [Async](guides/async.md)
 
 ## Using the Library
 
 * [Configuration](using-the-library/configuration.md)
 * [Observability](using-the-library/observability.md)
 * [Core Functionality](using-the-library/core-functionality.md)
-* [Async](using-the-library/async.md)
 * [Option\<T> collections](using-the-library/option-of-t/README.md)
 * [Result\<T, E> collections](using-the-library/result-of-t-and-e.md)
-* [Errors and Exceptions](using-the-library/errors-and-exceptions.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
 * [Analyzer rules](using-the-library/analyzer-rules.md)
 * [Severity presets](using-the-library/severity-presets.md)

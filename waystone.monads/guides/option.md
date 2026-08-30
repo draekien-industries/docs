@@ -334,5 +334,5 @@ Reach for something else when:
 ## Where to go next
 
 * [Result\<T, E>](result.md) — the same idea, for failure.
-* [Async](../using-the-library/async.md) — keeping a chain intact across an `await`.
+* [Async](async.md) — keeping a chain intact across an `await`.
 * [Option\<T> reference](../using-the-library/option-of-t/README.md) — every overload, when you need one this page did not show.

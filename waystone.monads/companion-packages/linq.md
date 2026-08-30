@@ -116,7 +116,7 @@ There is no LINQ name for projecting the error half. `MapErr` is the only spelli
 
 Query expressions cannot await, so there is no `SelectAsync` and no
 `SelectManyAsync`. Async chaining is already covered by `MapAsync` and `AndThenAsync`
-in the core package — see [Async](../using-the-library/async.md).
+in the core package — see [Async](../guides/async.md).
 
 ## This is not `AsEnumerable`
 

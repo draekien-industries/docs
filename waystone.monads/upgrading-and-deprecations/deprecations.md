@@ -342,7 +342,7 @@ the ability to derive from them. That was never marked `[Obsolete]`, because the
 is no way to obsolete "inheriting from this type". See
 [v5.x to v6.x](v5-to-v6.md#loud-change-you-can-no-longer-derive-from-option-or-result).
 
-See [Async](../using-the-library/async.md) for the full async surface, and
+See [Async](../guides/async.md) for the full async surface, and
 [Upgrading](README.md) for the upgrades that have already shipped.
 
 For 7.0.0 specifically, [Every v7 break](v7-breaks.md) lists all of the above plus the
