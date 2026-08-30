@@ -167,6 +167,11 @@ Rebuild and re-count either way.
   that package before reading this; if it does not, skip the whole bullet. If it does,
   the package was rewritten in 7.0.0 rather than deprecated, so nothing warned in 6.x and
   no code fix exists. Every call site needs a hand edit.
+  - The namespaces shadow FluentValidation's own (CS0246, CS0234). Delete every using of
+    Waystone.Monads.FluentValidation.Results.Extensions, .Results and .Configs, and use
+    FluentValidation.Extensions, FluentValidation and FluentValidation.Configs. A file
+    that already has using FluentValidation; needs nothing back for ValidationError. The
+    package and assembly names are unchanged, so leave the PackageReference alone.
   - ValidationErr is gone (CS0246). ValidationError replaces it and derives from Error,
     so a failed validation now joins a chain without a MapErr at the seam.
   - Validate and ValidateAsync err with Error, not ValidationErr (CS0029). Change the
