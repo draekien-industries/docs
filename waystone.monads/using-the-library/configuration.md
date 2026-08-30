@@ -90,8 +90,8 @@ Three things do change:
   move the `Use…` calls into one rather than passing options around.
 * In the satellite packages, **`MonadOptionsExtensions` is now
   `MonadOptionsBuilderExtensions`**. A `using static` or a qualified static call naming
-  the old class needs updating. A normal extension call on the callback's parameter — the
-  usual shape — needs nothing.
+  the old class needs updating. A normal extension call on the callback's parameter, the
+  usual shape, needs nothing.
 
 The [6.x to 7.0.0 upgrade page](../upgrading-and-deprecations/v6-to-v7.md) covers this
 with the compiler diagnostics you will see.
@@ -283,8 +283,8 @@ paths:
 
 | What it finds | What it does |
 | --- | --- |
-| The options this scope installed — so this scope is the innermost one | Restores what came before it |
-| The options this scope restored to — so it has already been disposed | Nothing, silently |
+| The options this scope installed, so this scope is the innermost one | Restores what came before it |
+| The options this scope restored to, so it has already been disposed | Nothing, silently |
 | Anything else | Nothing, and writes a `ScopeDisposedOutOfOrder` diagnostic event |
 
 It never throws, on any path.
@@ -302,7 +302,7 @@ Two more cases take the third path, both worth knowing:
   your global configuration; now it reports like any other out-of-order disposal.
 
 **Repeated disposal on the third path reports every time.** A scope that has already
-declined cannot remember that it did — it is a readonly struct — so each further
+declined cannot remember that it did, because it is a readonly struct, so each further
 `Dispose` writes the event again. Deduplicate in your subscriber if that matters. The
 "harmless twice" promise covers the restoring path only.
 

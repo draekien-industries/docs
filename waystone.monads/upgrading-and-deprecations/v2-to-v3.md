@@ -3,7 +3,7 @@
 {% hint style="info" %}
 **This page describes a historical upgrade.** Its replacement code was correct for
 `3.x`, and later majors have removed some of the API it names. Land on `3.x` first if you
-are following it literally, then read the pages after this one in order.
+are following these steps, then read the pages after this one in order.
 [Deprecations](deprecations.md) lists what has gone since.
 {% endhint %}
 

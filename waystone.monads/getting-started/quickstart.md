@@ -15,15 +15,23 @@ layout:
 
 # Quickstart
 
-Ready to eliminate `null` checks and stop catching exceptions? Here's how to get up and running with Waystone.Monads.
+{% hint style="warning" %}
+**This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release, and this page uses API that only exists in `7.0.0`.
+
+The API can still change before `7.0.0` is stable.
+{% endhint %}
+
+Ready to remove `null` checks and stop catching exceptions? Here's how to get up and running with Waystone.Monads.
 
 ## Installation
 
 Install via the dotnet CLI:
 
 ```sh
-dotnet add package Waystone.Monads
+dotnet add package Waystone.Monads --prerelease
 ```
+
+Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
 
 ## Adding the usings
 
@@ -63,7 +71,7 @@ in. See [generated-error-codes.md](../using-the-library/generated-error-codes.md
 
 ## Using Option\<T>
 
-The `Option<T>` type represents a value that may or may not be present. It eliminates the ambiguity and risks of `null` , and provides a way to mark a value as intentionally absent.
+The `Option<T>` type represents a value that may or may not be present. It removes the ambiguity and risk of `null`, and gives you a way to mark a value as intentionally absent.
 
 ```csharp
 Option<string> name = Option.Some("Liam O'Brian");
@@ -83,7 +91,7 @@ Use [#map](../using-the-library/core-functionality.md#map "mention"), [#inspect]
 
 ## Using Result\<T, E>
 
-The `Result<T, E>` type represents a success or failure as a value instead of throwing exceptions. It allows you to reserve exceptions for exceptional scenarios, and provides a framework for handling success and failure outcomes explicitly. Use it instead of throwing exceptions for recoverable failures.
+The `Result<T, E>` type represents a success or failure as a value instead of throwing exceptions. It lets you reserve exceptions for exceptional cases, and gives you a way to handle success and failure explicitly. Use it instead of throwing exceptions for recoverable failures.
 
 ```csharp
 Result<int, string> ParseInt(string input)

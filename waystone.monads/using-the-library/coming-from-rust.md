@@ -65,8 +65,8 @@ Most members keep their meaning and change only their casing.
 | `is_err` | `IsErr` | A property, not a method |
 | `is_ok_and` | `IsOkAnd` |  |
 | `is_err_and` | `IsErrAnd` |  |
-| `ok` | `GetOk` | Renamed — `Ok` is the case type |
-| `err` | `GetErr` | Renamed — `Err` is the case type |
+| `ok` | `GetOk` | Renamed, since `Ok` is the case type |
+| `err` | `GetErr` | Renamed, since `Err` is the case type |
 | `expect` | `Expect` |  |
 | `expect_err` | `ExpectErr` |  |
 | `unwrap` | `Unwrap` |  |

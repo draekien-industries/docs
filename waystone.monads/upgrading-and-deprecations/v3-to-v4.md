@@ -5,7 +5,7 @@
 `4.x`, and later majors have removed some of the API it names — `UseExceptionLogger`,
 `ErrorCode.FromEnum` and the `ErrorCodeFactory.FromEnum` override are all gone in
 `7.0.0`. `UseErrorCodeFactory` itself remains, but it can no longer shape enum codes.
-Land on `4.x` first if you are following it literally, then read the pages in order.
+Land on `4.x` first if you are following these steps, then read the pages in order.
 [Deprecations](deprecations.md) lists what has gone since.
 {% endhint %}
 

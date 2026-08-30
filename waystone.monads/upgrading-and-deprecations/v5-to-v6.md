@@ -275,8 +275,8 @@ Option.None<int>().UnwrapOrDefault();  // 0, because there is no value
 Option.Some(0).UnwrapOrDefault();      // 0, because the value is 0
 ```
 
-You cannot tell them apart. This is not new in kind — `Result` has always been in
-this position — but it now applies to every `Option` over a value type.
+You cannot tell them apart. This is not new in kind, since `Result` has always been in
+this position, but it now applies to every `Option` over a value type.
 
 Use `UnwrapOrNull` and `MapOrNull`, shipped in 5.4.0, when you need to
 distinguish:
@@ -325,7 +325,7 @@ If you simply `await` the result, nothing changes at all.
 ### Where this costs you
 
 `Task.WhenAll` needs `Task` arguments, so fan-out code now has to call `.AsTask()`
-on each one — which allocates the very `Task` the change avoids:
+on each one — which allocates the exact `Task` the change avoids:
 
 ```csharp
 await Task.WhenAll(
@@ -448,8 +448,8 @@ Later 6.x releases added more. See
 [Where you can use it](../using-the-library/core-functionality.md#where-you-can-use-it) for the
 current set.
 
-The closure costs exactly 88 bytes at every call site — 24 for the display class,
-64 for the delegate — and the state overload removes all of it.
+The closure costs exactly 88 bytes at every call site: 24 for the display class,
+64 for the delegate. The state overload removes all of it.
 
 See [Core Functionality](../using-the-library/core-functionality.md#state-overloads) for the detail,
 including why the `static` keyword matters.

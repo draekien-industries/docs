@@ -90,7 +90,7 @@ Refer to the [#transform](core-functionality.md#transform "mention")section on t
 
 ### MapErr
 
-The counterpart to [#map](core-functionality.md#map "mention"), use `MapErr` when you need to transform the contained value if it is an `Err`. It is useful when you need to transform the `Err` type in order to continue chaining monadic operations.
+The counterpart to [#map](core-functionality.md#map "mention"), use `MapErr` when you need to transform the contained value if it is an `Err`. It is useful when you need to transform the `Err` type to continue chaining monadic operations.
 
 ```csharp
 Result<string, string> GenerateName();
@@ -121,7 +121,7 @@ Refer to the [#consume](core-functionality.md#consume "mention") section on the 
 
 ### ExpectErr
 
-The counterpart to [#inspect](core-functionality.md#inspect "mention"), use `ExpectErr` when you want to consume the monadic wrapper and fail loudly when the `Result` is an `Ok`. It allows you to provide a meaningful exception message to explain why the error is expected.
+The counterpart to [#inspect](core-functionality.md#inspect "mention"), use `ExpectErr` when you want to consume the monadic wrapper and fail loudly when the `Result` is an `Ok`. It lets you give a meaningful exception message to explain why the error is expected.
 
 ```csharp
 Result<int, string> result = Result.Ok<int, string>(10);
@@ -129,7 +129,7 @@ result.ExpectErr("Must be error"); // throws UnmetExpectationException with mess
 ```
 
 {% hint style="warning" %}
-An `UnmetExpectationException` with your provided message will be thrown when the value is a success.
+An `UnmetExpectationException` carrying the message you gave is thrown when the value is a success.
 {% endhint %}
 
 Use `ExpectErrAsync` to do the same on a `Task<Result<T, E>>` without awaiting it first. See [async.md](async.md "mention").
@@ -139,7 +139,7 @@ Use `ExpectErrAsync` to do the same on a `Task<Result<T, E>>` without awaiting i
 The counterpart to [#unwrap](core-functionality.md#unwrap "mention"), use `UnwrapErr` when you are certain the `Result` is an `Err` and you want to fail loudly if it is an `Ok`.
 
 {% hint style="info" %}
-Avoid `UnwrapErr` unless you've validated the presence of an `Err` upstream. It's an intentional point of failure, like `First` on an empty sequence. In most cases, you should reach for [#match](result-of-t-and-e.md#match "mention") or [#map](result-of-t-and-e.md#map "mention").
+Avoid `UnwrapErr` unless you've validated the presence of an `Err` upstream. It's an intentional point of failure, like `First` on an empty sequence. In most cases, you should reach for [#match](core-functionality.md#match "mention") or [#map](core-functionality.md#map "mention").
 {% endhint %}
 
 ```csharp
@@ -164,10 +164,10 @@ Refer to the [#side-effect](core-functionality.md#side-effect "mention")section 
 
 ### InspectErr
 
-The counterpart to [#inspect](core-functionality.md#inspect "mention"), use `InspectErr` when you want to run a side effect against an `Err` without modifying the underlying value. The most common use case for `InspectErr` is to log an error in the event of a failure.
+The counterpart to [#inspect](core-functionality.md#inspect "mention"), use `InspectErr` when you want to run a side effect against an `Err` without changing the underlying value. The most common use case for `InspectErr` is to log an error if there is a failure.
 
 {% hint style="info" %}
-Reach for [#maperr](result-of-t-and-e.md#maperr "mention")if you want to transform the value of an `Err`
+Reach for [#maperr](result-of-t-and-e.md#maperr "mention") if you want to transform the value of an `Err`
 {% endhint %}
 
 ```csharp
@@ -298,7 +298,7 @@ Debug.Assert(overflow.OrElse(Recover) == overflow);
 
 ## Collections
 
-Working with a `List<Result<TOk, TErr>>` — the results of validating a batch, or of calling something once per item — comes up often enough to have its own methods.
+Working with a `List<Result<TOk, TErr>>` (the results of validating a batch, or of calling something once per item) comes up often enough to have its own methods.
 
 ### Flatten
 
@@ -407,7 +407,7 @@ It stops pulling from the stream at the first `Err`, so the work behind the late
 
 Use `AsEnumerable` on a single `Result` to treat it as a sequence of nothing or one, which is what lets the methods above compose out of LINQ. It discards the error on the way — an `Err` becomes an empty sequence.
 
-To write a query that stays a `Result` and keeps the error, see [Waystone.Monads.Linq](../../companion-packages/linq.md).
+To write a query that stays a `Result` and keeps the error, see [Waystone.Monads.Linq](../companion-packages/linq.md).
 
 ```csharp
 Result<int, string> result = Result.Ok<int, string>(1);

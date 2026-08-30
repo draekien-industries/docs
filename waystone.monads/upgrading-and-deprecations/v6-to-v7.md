@@ -205,8 +205,8 @@ an error. Full model on
 
 ## Loud change: the extension classes collapsed
 
-The per-family extension classes — `AndThenExtensions`, `MapExtensions`,
-`IsSomeAndExtensions` and the rest — are now one class per monad: `OptionExtensions` and
+The per-family extension classes (`AndThenExtensions`, `MapExtensions`,
+`IsSomeAndExtensions` and the rest) are now one class per monad: `OptionExtensions` and
 `ResultExtensions`.
 
 ```diff
@@ -216,7 +216,7 @@ The per-family extension classes — `AndThenExtensions`, `MapExtensions`,
 +Option<Order> order = await option.AndThenAsync(Load);
 ```
 
-Called as extensions — the normal way — nothing changes. Only a `using static` or a
+Called as extensions, the normal way, nothing changes. Only a `using static` or a
 qualified static call breaks, as `CS0234` or `CS0103`.
 
 These could not overlap for a version either: two static classes declaring the same

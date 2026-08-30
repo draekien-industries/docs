@@ -14,7 +14,7 @@ The API can still change before `7.0.0` is stable.
 
 ## Built in Error Types
 
-Waystone.Monads provides a set of built in error types for convenience in the case you do not wish to write your own.
+Waystone.Monads gives you a set of built in error types, for when you do not want to write your own.
 
 ```csharp
 public record ErrorCode
@@ -57,7 +57,7 @@ public static class ErrorCodes
 
 #### Error Code from Enum
 
-You may want to use enums to define and organise your error codes, and then create `ErrorCode` instances during runtime from these enums. A factory method has been provided to facilitate this approach.
+You may want to use enums to define and organise your error codes, and then create `ErrorCode` instances during runtime from these enums. A factory method does this for you.
 
 ```csharp
 [ErrorCodeCatalog]
@@ -90,7 +90,7 @@ replaces a factory override. `FromException` is unaffected.
 
 #### Error Code from Exception
 
-You may want to use the exception type itself as the source of your error codes when they are caught during runtime. A factory method has been provided to facilitate this approach.
+You may want to use the exception type itself as the source of your error codes when they are caught during runtime. A factory method does this for you.
 
 The code is the exception's type name with a trailing `Exception` removed. There is
 no prefix. The suffix match ignores case, and the exception's message is never
@@ -122,12 +122,12 @@ catch (SqlException e)
 ```
 
 {% hint style="info" %}
-If you want to customise the error code that is generated from the `Exception`, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromException` method.
+If you want to customise the error code that is generated from the `Exception`, you can supply your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromException` method.
 {% endhint %}
 
 ### Error
 
-The `Error` type captures an instance of an error associated with a specific `ErrorCode`. Use it to provide human-readable information about the error instance that occurred during runtime.
+The `Error` type captures an instance of an error associated with a specific `ErrorCode`. Use it to give human-readable information about the error instance that occurred during runtime.
 
 {% hint style="info" %}
 You must define an `ErrorCode` before creating an `Error`
@@ -186,7 +186,7 @@ removed in 7.0.0. See [#creation](core-functionality.md#creation "mention").
 
 #### Error from Exception
 
-You may want to create errors on the fly when catching exceptions without having to first define your error code. A factory method has been provided to facilitate this approach. It uses [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") under the hood to generate the `ErrorCode`.
+You may want to create errors on the fly when catching exceptions without having to first define your error code. A factory method does this for you. It uses [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") under the hood to generate the `ErrorCode`.
 
 {% hint style="warning" %}
 This approach may introduce inconsistencies in your error codes. It also does not work well if you are raising errors that are not caused by exceptions elsewhere in your application.
@@ -204,7 +204,7 @@ catch (SqlException e)
 }
 ```
 
-If you want to customise the error code that is generated from the `Exception`, you can provide your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromException` method. See [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") for an example.
+If you want to customise the error code that is generated from the `Exception`, you can supply your own instance of `ErrorCodeFactory` to the global `MonadOptions` and override the `FromException` method. See [#error-code-from-exception](errors-and-exceptions.md#error-code-from-exception "mention") for an example.
 
 ## Custom Exceptions
 
@@ -212,7 +212,7 @@ This library contains some custom exceptions that describe certain scenarios.
 
 ### UnwrapException
 
-An exception that is thrown when attempting to [#unwrap](core-functionality.md#unwrap "mention") an `Option<T>` or a `Result<T, E>` when they are in their `None` or `Err` states, or when attempting to [#unwraperr](result-of-t-and-e.md#unwraperr "mention") on a `Result<T, E>` when it is in it's `Ok` state.
+An exception that is thrown when you try to [#unwrap](core-functionality.md#unwrap "mention") an `Option<T>` or a `Result<T, E>` when they are in their `None` or `Err` states, or when you try to [#unwraperr](result-of-t-and-e.md#unwraperr "mention") on a `Result<T, E>` when it is in it's `Ok` state.
 
 {% hint style="info" %}
 Always check the monad's state before performing an `Unwrap` or `UnwrapErr`  to avoid encountering this exception.

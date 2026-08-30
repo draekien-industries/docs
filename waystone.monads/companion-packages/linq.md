@@ -136,7 +136,7 @@ and the error survives.
 
 ## It costs no more than the method it forwards to
 
-The three-argument `SelectMany` — the one a multi-clause `from` binds to — threads both
+The three-argument `SelectMany` (the one a multi-clause `from` binds to) threads both
 of your delegates through the core state-passing overloads using `static` lambdas, so it
 captures nothing. A query does not allocate a closure that the equivalent `AndThen`
 chain would avoid.
@@ -144,6 +144,6 @@ chain would avoid.
 ## One naming wrinkle
 
 If you call these as methods with named arguments, note that the factory parameters
-follow this library's chain-step naming — `optionFactory` and `resultFactory` — while
+follow this library's chain-step naming (`optionFactory` and `resultFactory`) while
 `resultSelector` keeps the name LINQ gives it. Positional calls and query syntax are
 unaffected.

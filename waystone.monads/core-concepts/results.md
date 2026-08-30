@@ -21,7 +21,7 @@ In traditional object-oriented code, exceptions are your go-to mechanism for err
 * Hard to compose
 * Catastrophic in chains
 
-They're basically control flow with a bomb strapped to it. If a method throws, anything down the chain is at risk, and you can't tell which methods do or don't throw unless you read the source or the documentation.
+They're control flow with a bomb strapped to it. If a method throws, anything down the chain is at risk, and you can't tell which methods do or don't throw unless you read the source or the documentation.
 
 {% hint style="success" %}
 `Result<T, E>` bakes error handling into the type system
@@ -59,7 +59,7 @@ Unlike [`Option<T>`](options.md), which represents uncertainty, `Result<T, E>` r
 Result<User, Error> TryCreateUser(string input);
 ```
 
-This makes it ideal for parsing, validation, and domain logic. You're not just opting out of exceptions - you're describing your domain more accurately.
+This makes it ideal for parsing, validation, and domain logic. You're describing your domain more accurately, not just opting out of exceptions.
 
 {% hint style="info" %}
 If you're writing `try/catch` just to return a fallback value or log an error, you probably want `Result<T, E>` instead

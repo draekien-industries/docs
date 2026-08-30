@@ -10,10 +10,10 @@ description: >-
 **This page describes `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
 
 ```
-dotnet add package Waystone.Monads --prerelease
+dotnet add package Waystone.Monads.Extensions.DependencyInjection --prerelease
 ```
 
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+Or set the version yourself: `<PackageReference Include="Waystone.Monads.Extensions.DependencyInjection" Version="7.0.0-beta.*" />`.
 
 The API can still change before `7.0.0` is stable.
 {% endhint %}
@@ -236,4 +236,4 @@ binder, because the settings have no public setters to bind to.
 Both services are resolved through `IServiceProvider.GetService` rather than any
 container-specific API, so `UseWaystoneMonads` works on a provider produced by any
 conforming container. `AddWaystoneMonads` needs an `IServiceCollection`; a
-container that populates itself from one — which most do — is enough.
+container that populates itself from one (which most do) is enough.
