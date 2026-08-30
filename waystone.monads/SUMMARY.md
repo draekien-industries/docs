@@ -1,14 +1,14 @@
 # Table of contents
 
-## Getting Started
+## Start here
 
 * [Welcome](README.md)
-* [Quickstart](getting-started/quickstart.md)
-* [Agent skills](getting-started/agent-skills.md)
+* [Quickstart](start-here/quickstart.md)
+* [Why monads](start-here/why-monads.md)
+* [Agent skills](start-here/agent-skills.md)
 
 ## Core Concepts
 
-* [Monads](core-concepts/monads.md)
 * [Options](core-concepts/options.md)
 * [Results](core-concepts/results.md)
 

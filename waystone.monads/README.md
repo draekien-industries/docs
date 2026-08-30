@@ -21,60 +21,51 @@ layout:
 
 # Welcome
 
-{% hint style="warning" %}
-**These docs describe `7.0.0-beta.x`, a pre-release.** NuGet gives you `6.x` unless you ask for a pre-release:
+Waystone.Monads gives C# two types that say what your code actually means.
 
-```
-dotnet add package Waystone.Monads --prerelease
-```
+* `Option<T>` — the value might not be there.
+* `Result<T, E>` — the work might fail.
 
-Or set the version yourself: `<PackageReference Include="Waystone.Monads" Version="7.0.0-beta.*" />`.
+Both are ordinary C# types. There is no framework to adopt and nothing to wire
+up. You add a package, you change a return type, and the compiler starts telling
+you about the cases you used to find at runtime.
 
-The API can still change before `7.0.0` is stable.
-{% endhint %}
+## Who this is for
 
-Waystone.Monads is a lightweight, idiomatic C# library that gives you two fundamental functional types: `Option<T>` and `Result<T, E>`. It is inspired by Rust's `std::option` and `std::result` types and brings them into C#.
+You are writing C# and you are tired of two things: `null` reaching places it
+should not, and exceptions being used for outcomes that are not exceptional.
 
-## Why this library exists
+The library replaces both with values you can return, pass around, and compose.
+Absence and failure stop being surprises hidden inside a method body, and start
+being part of the signature you already read.
 
-Most C# codebases default to `null` and exceptions for absence and failure. That's fine, until it isn't.
+If you have used `Option` and `Result` in Rust or F#, you already know the shape.
+If you have not, [Why monads](start-here/why-monads.md) walks through it with no
+prior knowledge assumed.
 
-{% hint style="warning" %}
-`null` and exceptions result in guard clauses everywhere, unpredictable runtime crashes, and unclear API intent.
-{% endhint %}
+## Where to go next
 
-Waystone.Monads replaces that with explicit types that make the intent clear at the type level:
+| If you want to | Go to |
+| --- | --- |
+| Install the package and see both types work | [Quickstart](start-here/quickstart.md) |
+| Understand why this beats `null` and `try`/`catch` | [Why monads](start-here/why-monads.md) |
+| Teach your coding agent to write it properly | [Agent skills](start-here/agent-skills.md) |
 
-* `Option<T>` means a value might be there.
-* `Result<T, E>` means a computation might fail.
+## What comes in the box
 
-## Who should use this
-
-You should use this library if:
-
-* You want to remove `null` and exceptions from business logic
-* You want your exceptions to be exceptional
-* You prefer expressive, explicit code over defensive boilerplate
-* You appreciate functional patterns but still want to write C#
-
-{% hint style="success" %}
-If you've ever used `Option` and `Result` in Rust or F#, you'll feel right at home. If you haven't, you'll pick it up quickly - and wonder how you ever lived without it.
-{% endhint %}
-
-## What else ships
-
-The `Waystone.Monads` package carries a Roslyn analyzer and a source generator. You
-install nothing extra and configure nothing to get them. See
-[Analyzer rules](using-the-library/analyzer-rules.md) and
+Installing `Waystone.Monads` gets you the two types, a Roslyn analyzer, and a
+source generator. You configure none of it. The analyzer flags the mistakes
+people make with these types, and the generator turns an enum into a set of
+error codes. See [Analyzer rules](using-the-library/analyzer-rules.md) and
 [Generated error codes](using-the-library/generated-error-codes.md).
 
-Five optional packages sit beside the library. None is required, and none changes how
-`Waystone.Monads` behaves — see [Companion Packages](companion-packages/README.md) for
-what each one adds.
+Optional packages sit beside the library — Shouldly assertions, LINQ query
+syntax, JSON converters, and more. None is required, and none changes how
+`Waystone.Monads` behaves. See
+[Companion packages](companion-packages/README.md).
 
 ## Links
 
 * [Source on GitHub](https://github.com/draekien-industries/waystone-dotnet) — the `Waystone.Monads` package lives in `src/Waystone.Monads`
 * [Waystone.Monads on NuGet](https://www.nuget.org/packages/Waystone.Monads)
-* [Waystone.Monads.Extensions.Logging on NuGet](https://www.nuget.org/packages/Waystone.Monads.Extensions.Logging) — sends the exceptions the library catches to your `ILogger`
 * [Report an issue](https://github.com/draekien-industries/waystone-dotnet/issues) — for the library or for these docs
