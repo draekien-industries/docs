@@ -419,23 +419,38 @@ entry never appears.
 | # | Issue | Layer |
 | --- | --- | --- |
 | 1 | DRA-162 | This plan. Nothing moves. |
-| 2 | DRA-163 | A sample project that compiles every code sample in the space. |
-| 3 | DRA-164 | Start here. |
-| 4 | DRA-165 | The `Option<T>` guide, merging three sources. |
-| 5 | DRA-166 | The `Result<T, E>` guide, merging three sources. |
-| 6 | DRA-167 | Async into Guides; Errors and exceptions split in two. |
-| 7 | DRA-168 | Configuration, Observability and Coming from Rust into Guides. |
-| 8 | DRA-169 | `core-functionality.md` split into the nested Reference. |
-| 9 | DRA-170 | The Analyzers group. |
-| 10 | DRA-171 | The Source generation group. |
-| 11 | DRA-172 | Companion packages. |
-| 12 | DRA-173 | Upgrading. |
-| 13 | DRA-174 | Redirects and the final link audit. |
+| 2 | DRA-164 | Start here. |
+| 3 | DRA-165 | The `Option<T>` guide, merging three sources. |
+| 4 | DRA-166 | The `Result<T, E>` guide, merging three sources. |
+| 5 | DRA-167 | Async into Guides; Errors and exceptions split in two. |
+| 6 | DRA-168 | Configuration, Observability and Coming from Rust into Guides. |
+| 7 | DRA-169 | `core-functionality.md` split into the nested Reference. |
+| 8 | DRA-170 | The Analyzers group. |
+| 9 | DRA-171 | The Source generation group. |
+| 10 | DRA-172 | Companion packages. |
+| 11 | DRA-173 | Upgrading. |
+| 12 | DRA-174 | Redirects and the final link audit. |
 
-The sample project comes second on purpose. Every layer above it rewrites code
-samples, and both samples on the configuration page failed against 6.x — one
+### The sample projects are not a layer
+
+DRA-163 is not in the table, because its deliverable cannot live in this
+repository. This repo holds no code — only the markdown GitBook renders — and a
+new top-level directory here is an attempt to create a GitBook space, not a
+place to put a `.csproj`.
+
+The samples belong in `waystone-dotnet/sample/`, where the pattern already
+exists: `Waystone.Monads.Configuration.Sample` and
+`Waystone.Monads.Observability.Sample` are each one project for one doc page,
+referencing `src/` by `ProjectReference` rather than by `PackageReference`. A
+project reference is the better choice anyway — it compiles the samples against
+exactly what shipped, with no wait for a NuGet index to catch up.
+
+So DRA-163 is a standalone pull request in `waystone-dotnet`, and it lands
+before this stack does. Every layer here then has something to compile against.
+That matters: both samples on the configuration page failed against 6.x — one
 used a delegate arity that never existed, the other assigned internal
-properties. Neither failure was visible to inspection.
+properties — and neither failure was visible to inspection. A full rewrite
+touches every sample in the space, and checking them by eye will not hold.
 
 Two layers share a file and have to land in the same stack.
 `packages/logging.md` is **written** by DRA-172 and **removed from the
