@@ -1,0 +1,64 @@
+root: ./
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md
+
+# Every path here was a live URL before the DRA-161 rewrite. The old-to-new
+# tables in docs/plans/2026-08-30-rewrite-the-monads-space.md are the source.
+#
+# A GitBook redirect carries no fragment, so a page that split across several
+# children lands the reader on the parent that lists them. Each such case is
+# marked below.
+redirects:
+  # Start here
+  getting-started/quickstart: start-here/quickstart.md
+  getting-started/agent-skills: start-here/agent-skills.md
+
+  # Core concepts, dissolved into Start here and Guides
+  core-concepts/monads: start-here/why-monads.md
+  core-concepts/options: guides/option.md
+  core-concepts/results: guides/result.md
+
+  # Using the library, dissolved into Guides, Analyzers and Source generation
+  using-the-library/option-of-t: guides/option.md
+  using-the-library/result-of-t-and-e: guides/result.md
+  using-the-library/async: guides/async.md
+  using-the-library/errors-and-exceptions: guides/errors.md
+  using-the-library/configuration: guides/configuration.md
+  using-the-library/observability: guides/observability.md
+  using-the-library/coming-from-rust: guides/coming-from-rust.md
+  # Split across reference/option/* and reference/result/*. Lands on the Option
+  # reference, which links to the Result one.
+  using-the-library/core-functionality: reference/option/README.md
+  # Split by tier. Lands on the overview, whose table links every rule id.
+  using-the-library/analyzer-rules: analyzers/README.md
+  using-the-library/severity-presets: analyzers/severity-presets.md
+  # Split across five pages. Lands on the overview's chooser table.
+  using-the-library/generated-error-codes: source-generation/README.md
+
+  # Companion packages, shortened to packages/
+  companion-packages: packages/README.md
+  companion-packages/shouldly: packages/shouldly.md
+  companion-packages/linq: packages/linq.md
+  companion-packages/dependency-injection: packages/dependency-injection.md
+  companion-packages/hosting: packages/hosting.md
+  companion-packages/logging: packages/logging.md
+  companion-packages/fluentvalidation: packages/fluent-validation.md
+  companion-packages/systemtextjson: packages/system-text-json.md
+  companion-packages/newtonsoftjson: packages/newtonsoft-json.md
+
+  # Upgrading
+  upgrading-and-deprecations: upgrading/README.md
+  upgrading-and-deprecations/deprecations: upgrading/deprecations.md
+  upgrading-and-deprecations/v6-to-v7: upgrading/v7/from-v6.md
+  upgrading-and-deprecations/v5-to-v7: upgrading/v7/from-v5.md
+  upgrading-and-deprecations/v7-breaks: upgrading/v7/breaking-changes.md
+  # Deleted as a page. Its prompt is now collapsed at the top of both v7 pages
+  # and its general material is on the group overview.
+  upgrading-and-deprecations/v7-agent-prompt: upgrading/README.md
+  upgrading-and-deprecations/v5-to-v6: upgrading/older/v5-to-v6.md
+  upgrading-and-deprecations/v4-to-v5: upgrading/older/v4-to-v5.md
+  upgrading-and-deprecations/v3-to-v4: upgrading/older/v3-to-v4.md
+  upgrading-and-deprecations/v2-to-v3: upgrading/older/v2-to-v3.md
+  upgrading-and-deprecations/v1-to-v2: upgrading/older/v1-to-v2.md
