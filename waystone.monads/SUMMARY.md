@@ -7,9 +7,12 @@
 * [Why monads](start-here/why-monads.md)
 * [Agent skills](start-here/agent-skills.md)
 
+## Guides
+
+* [Option\<T>](guides/option.md)
+
 ## Core Concepts
 
-* [Options](core-concepts/options.md)
 * [Results](core-concepts/results.md)
 
 ## Using the Library
@@ -18,7 +21,7 @@
 * [Observability](using-the-library/observability.md)
 * [Core Functionality](using-the-library/core-functionality.md)
 * [Async](using-the-library/async.md)
-* [Option\<T>](using-the-library/option-of-t/README.md)
+* [Option\<T> collections](using-the-library/option-of-t/README.md)
 * [Result\<T, E>](using-the-library/result-of-t-and-e.md)
 * [Errors and Exceptions](using-the-library/errors-and-exceptions.md)
 * [Generated error codes](using-the-library/generated-error-codes.md)
