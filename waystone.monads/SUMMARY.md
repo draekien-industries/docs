@@ -13,6 +13,7 @@
 * [Result\<T, E>](guides/result.md)
 * [Errors](guides/errors.md)
 * [Exceptions](guides/exceptions.md)
+* [Schemas](guides/schemas.md)
 * [Async](guides/async.md)
 * [Configuration](guides/configuration.md)
 * [Observability](guides/observability.md)

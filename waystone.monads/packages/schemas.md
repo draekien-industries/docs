@@ -9,6 +9,11 @@ icon: shield-check
 
 `Waystone.Monads.Schemas` — a parser that hands back a `Result`.
 
+{% hint style="info" %}
+New to this? Start with the [Schemas guide](../guides/schemas.md). It walks through
+one worked example end to end. This page is the reference.
+{% endhint %}
+
 ## What it adds
 
 A schema takes one type in and gives another type out. The type it gives out is one
