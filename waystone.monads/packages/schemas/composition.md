@@ -146,9 +146,8 @@ public static readonly Schema<string, string> Contact = Schema.Any(
 ```
 <!-- endSnippet -->
 
-When no branch accepts, one violation is reported at the union's own path, carrying
-the branch failures beneath it. It is not flattened — a flat list of every branch's
-complaints is something a reader cannot attribute to anything.
+When no branch accepts, you get one violation at the `Schema.Any` schema's own path,
+with each branch's failures nested beneath it.
 
 ## Messages
 
@@ -244,10 +243,9 @@ public static readonly Schema<string, string> Secret =
 
 Three things about it are worth knowing.
 
-* **Marking the outermost schema is enough.** A message is rendered when it is first
-  read, not when the violation is created, so a nested schema that already reported
-  still renders redacted once the outer schema is known to be sensitive. Marking an
-  inner one as well changes nothing.
+* **Mark the outermost schema and stop.** Everything nested inside it is redacted
+  too, including a nested schema that reported before the outer one ran. Marking an
+  inner schema as well changes nothing.
 * **`{Expected}` is not redacted.** It renders a bound your schema's author wrote, not
   anything that arrived from outside.
 * **The raw value cannot be read back.** A `Violation` exposes its path, its code and

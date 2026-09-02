@@ -155,10 +155,8 @@ cannot bind to it.
 Three fields in `Schema.Fields` and `.Into((a, b) => …)` is a mismatch. Give the lambda
 one parameter per field, in the order the fields are listed.
 
-The compiler already rejects this, as a delegate conversion failure against a generated
-type you never wrote and cannot open. That message names neither the field count nor
-the file that decided it, which is why this rule exists — to say the thing you need
-rather than to catch something new.
+The compiler rejects this too, but as a delegate conversion failure against a
+generated file you cannot open, naming neither the field count nor what decided it.
 
 The diagnostic reports at the `Into` call, not at the field list. The field list is
 what you meant; the lambda is what disagrees with it.
@@ -203,13 +201,9 @@ The schema holding it is fine, and so is every other rule in the chain.
 
 ### WMSC0007
 
-**`Schema.Fields` is the member being generated**, so it binds to nothing while the
-generator is deciding whether to emit it. The receiver therefore has to be recognised
-as written rather than resolved.
-
-An alias, a renamed import, or a call with no receiver at all carries nothing to
-recognise, so nothing is generated. Write the receiver as `Schema`, qualified by the
-type that contains it if you need to.
+**Write the receiver as `Schema`.** An alias, a renamed import, or a call with no
+receiver at all leaves the generator nothing to match, so it generates nothing.
+Qualify `Schema` with its containing type if you need to.
 
 **A known false positive.** The generator matches the receiver by name, so this fires
 on *any* unbound call to a member named `Fields` — including one that has nothing to do

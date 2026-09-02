@@ -24,6 +24,18 @@ That is the difference from a validator. A validator says yes or no about an obj
 you already built. A schema builds the object, and only builds it when the input was
 good.
 
+## When to reach for it
+
+Reach for it at the edge — a request body, a message off a queue, a row from a file.
+Anywhere input arrives from somewhere you do not control and has to become a domain
+type.
+
+Skip it inside your domain, where the types already say what is true.
+
+If you are already writing FluentValidation validators and only want a `Result` back
+from them, [FluentValidation](fluent-validation.md) is the smaller change. It checks
+the object you built; this one builds it.
+
 ## Write the checks once
 
 A schema is a value. Declare it once, name it, and use it everywhere that shape of
@@ -48,8 +60,54 @@ public static class Guild
 
 ## Put them together
 
-Derive from `SchemaConfig<TIn, TOut>`, mark the class `partial`, and list the fields.
-The generator writes the rest.
+Two types are involved. The input is whatever arrived — every field nullable, nothing
+checked. The output is the type you actually wanted.
+
+<!-- snippet: schemas-the-two-types -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Cast.cs -->
+```csharp
+public sealed record QuestDto(
+    string? Title,
+    string? PatronEmail,
+    decimal? GoldReward,
+    int? PartySize,
+    QuestRank? Rank,
+    string? Nickname);
+
+/// <summary>The thing a parse produces.</summary>
+public sealed class Quest
+{
+    internal Quest(
+        string title,
+        string patronEmail,
+        decimal goldReward,
+        Option<int> partySize)
+    {
+        Title = title;
+        PatronEmail = patronEmail;
+        GoldReward = goldReward;
+        PartySize = partySize;
+    }
+
+    public string Title { get; }
+
+    public string PatronEmail { get; }
+
+    public decimal GoldReward { get; }
+
+    public Option<int> PartySize { get; }
+}
+```
+<!-- endSnippet -->
+
+`Quest` has no public constructor, so the schema is the only way to get one. That is
+the part doing the work.
+
+`QuestDto` carries two fields this schema ignores, which is what a real payload looks
+like — you parse what you need and leave the rest.
+
+Now derive from `SchemaConfig<TIn, TOut>`, mark the class `partial`, and list the
+fields. The generator writes the rest.
 
 <!-- snippet: schemas-a-field-set -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Schemas.cs -->
@@ -147,28 +205,6 @@ There is one exception, and it is deliberate. A failed
 [`Transform`](schemas/composition.md#transform) produces no value, so the rules after
 it on *that* chain cannot run. Its siblings are unaffected and still report.
 
-## Where to go next
-
-| Page | Covers |
-| --- | --- |
-| [Primitives](schemas/primitives.md) | `Schema.Text`, `Schema.Number`, dates, enums, and the rules on each |
-| [Composition](schemas/composition.md) | `Check`, `Transform`, `Not`, `When`, `All`, `Any`, messages and codes |
-| [Structures](schemas/structures.md) | Lists, dictionaries, and the paths a violation carries |
-| [Field sets](schemas/field-sets.md) | `Required`, `Optional`, `Forbidden`, `Extend`, `Refine` |
-| [Asynchrony](schemas/asynchrony.md) | `CheckAsync`, `ParseAsync`, and where an async rule may not go |
-
-## When to reach for it
-
-Reach for it at the edge — a request body, a message off a queue, a row from a file.
-Anywhere input arrives from somewhere you do not control and has to become a domain
-type.
-
-Skip it inside your domain, where the types already say what is true.
-
-If you are already writing FluentValidation validators and only want a `Result` back
-from them, [FluentValidation](fluent-validation.md) is the smaller change. It checks
-the object you built; this one builds it.
-
 ## Install it
 
 ```
@@ -180,3 +216,13 @@ to wire up.
 
 The generator's own diagnostics use the `WMSC` prefix and are listed on
 [Generator diagnostics](../source-generation/diagnostics.md#wmsc-schemas).
+
+## Where to go next
+
+| Page | Covers |
+| --- | --- |
+| [Primitives](schemas/primitives.md) | `Schema.Text`, `Schema.Number`, dates, enums, and the rules on each |
+| [Composition](schemas/composition.md) | `Check`, `Transform`, `Not`, `When`, `All`, `Any`, messages and codes |
+| [Structures](schemas/structures.md) | Lists, dictionaries, and the paths a violation carries |
+| [Field sets](schemas/field-sets.md) | `Required`, `Optional`, `Forbidden`, `Extend`, `Refine` |
+| [Asynchrony](schemas/asynchrony.md) | `CheckAsync`, `ParseAsync`, and where an async rule may not go |

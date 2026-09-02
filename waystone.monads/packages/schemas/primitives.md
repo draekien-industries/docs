@@ -72,9 +72,11 @@ public static readonly Schema<string, string> Incantation =
 ```
 <!-- endSnippet -->
 
+{% hint style="warning" %}
 **Always give the expression a timeout.** The pattern is yours, but the value is
 not. An expression with no ceiling runs against a crafted input for as long as that
 input takes to defeat it.
+{% endhint %}
 
 ### Shapes with names
 
@@ -100,10 +102,12 @@ public static readonly Schema<string, string> Tagged =
 ```
 <!-- endSnippet -->
 
+{% hint style="warning" %}
 **`Url()` with no scheme accepts more than you think.** An absolute URL includes
 `javascript:`, `data:` and `file:`. Restrict the scheme whenever the value will be
 followed or rendered — which is nearly always. Passing an empty scheme list accepts
 nothing at all.
+{% endhint %}
 
 `StartsWith` and `EndsWith` take literals, not expressions. A dot or a bracket in one
 means itself.
