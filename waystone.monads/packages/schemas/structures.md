@@ -7,6 +7,13 @@ icon: list-tree
 
 # Structures
 
+<!-- prerelease:7.1.0 -->
+{% hint style="warning" %}
+**`Waystone.Monads.Schemas` is in pre-release.** The current version is
+`7.1.0-beta.1`, so installing it needs `--prerelease`. Everything on this page is
+what 7.1.0 is expected to ship, but the surface can still change before it does.
+{% endhint %}
+
 A list or a dictionary is parsed with a schema per part. The item schema can be any
 schema — including one you wrote.
 

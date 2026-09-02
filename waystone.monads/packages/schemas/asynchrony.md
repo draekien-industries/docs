@@ -7,6 +7,13 @@ icon: clock-rotate-left
 
 # Asynchrony
 
+<!-- prerelease:7.1.0 -->
+{% hint style="warning" %}
+**`Waystone.Monads.Schemas` is in pre-release.** The current version is
+`7.1.0-beta.1`, so installing it needs `--prerelease`. Everything on this page is
+what 7.1.0 is expected to ship, but the surface can still change before it does.
+{% endhint %}
+
 Most rules answer from the value alone. Some have to ask something else: is this title
 already taken, does this account exist. `CheckAsync` is for those.
 
