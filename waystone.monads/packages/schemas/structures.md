@@ -15,12 +15,7 @@ schema — including one you wrote.
 <!-- snippet: schema-structures-list -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Structures.cs -->
 ```csharp
-// Every item is parsed, so a bad item at index 3 does not hide a bad one at
-// index 7. Both are reported.
-//
-// MaxCount is the exception and counts before parsing anything, which is what
-// makes it a guard on untrusted input rather than a report afterwards. An
-// eleventh objective is rejected on its own, with nothing said about the ten.
+// At least one objective, at most ten, and each one trimmed and bounded.
 public static readonly Schema<IReadOnlyList<string>, IReadOnlyList<string>>
     Objectives = Schema.List(Schema.Text.Trim().NotEmpty().MaxLength(120))
                        .MinCount(1)
@@ -40,7 +35,6 @@ The item schema is just a schema, so nothing stops it being one of yours.
 <!-- snippet: schema-structures-list-of-objects -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Structures.cs -->
 ```csharp
-// The item schema can be a schema you wrote. Nothing about List cares which.
 public static readonly Schema<IReadOnlyList<LeaderDto>, IReadOnlyList<Leader>>
     Leaders = Schema.List(LeaderSchema.Instance).MinCount(1);
 ```
@@ -51,9 +45,7 @@ public static readonly Schema<IReadOnlyList<LeaderDto>, IReadOnlyList<Leader>>
 <!-- snippet: schema-structures-dictionary -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Structures.cs -->
 ```csharp
-// Keys are parsed too, so a malformed key is a violation rather than a silent
-// entry nobody looks up — provided the payload gets that far. MaxCount counts
-// first, so a fifty-first entry is rejected before any key is read.
+// A schema for the keys and a schema for the values.
 public static readonly
     Schema<IReadOnlyDictionary<string, int>, IReadOnlyDictionary<string, int>>
     Bounties = Schema.Dictionary(

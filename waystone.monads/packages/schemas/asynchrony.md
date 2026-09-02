@@ -15,9 +15,7 @@ already taken, does this account exist. `CheckAsync` is for those.
 <!-- snippet: schema-async-check -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Asynchrony.cs -->
 ```csharp
-// The rule is handed the value and the parse's own cancellation token. It runs
-// only when everything before it accepted, so it never sees a value the chain
-// could not produce.
+// The cheap rules first, then the round trip.
 public static Schema<string, string> UniqueTitle(IQuestBoard board) =>
     Schema.Text.Trim()
           .NotEmpty()

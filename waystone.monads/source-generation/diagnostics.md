@@ -143,7 +143,8 @@ the same name whatever its arity, so `class FieldSet<T>` collides with the gener
 The compiler reports this collision too, but against the generated file — which is not
 a file anyone can edit.
 
-`Schema` and `FieldSet` are only checked where a ladder is actually being emitted. A
+`Schema` and `FieldSet` are only checked where the generator is actually writing those
+members. A
 schema that never calls `Schema.Fields` may keep a member of either name.
 
 ### WMSC0004
@@ -207,7 +208,7 @@ generator is deciding whether to emit it. The receiver therefore has to be recog
 as written rather than resolved.
 
 An alias, a renamed import, or a call with no receiver at all carries nothing to
-recognise, so no ladder is generated. Write the receiver as `Schema`, qualified by the
+recognise, so nothing is generated. Write the receiver as `Schema`, qualified by the
 type that contains it if you need to.
 
 **A known false positive.** The generator matches the receiver by name, so this fires
