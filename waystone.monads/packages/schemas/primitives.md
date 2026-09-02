@@ -80,8 +80,8 @@ input takes to defeat it.
 
 ### Shapes with names
 
-Some shapes are common enough to have their own rule, and each one is checked by a
-scan rather than by an expression — so there is no pattern to get subtly wrong.
+Some shapes are common enough to have their own rule. Each one is checked by a scan
+rather than an expression, so there is no pattern to get subtly wrong.
 
 <!-- snippet: schema-primitives-text-shapes -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Primitives.cs -->

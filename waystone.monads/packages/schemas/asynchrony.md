@@ -90,5 +90,3 @@ public static ValueTask<Result<Quest, SchemaViolation>> ParseAgainstTheBoard(
 The field set stays synchronous. The round trip happens once, after every cheap rule
 has already had its say — so a payload with three malformed fields never reaches your
 database at all.
-
-That ordering is not a workaround. It is the shape you would have chosen anyway.

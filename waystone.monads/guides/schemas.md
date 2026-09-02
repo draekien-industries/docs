@@ -12,7 +12,6 @@ There is a bug that almost every codebase has a version of. It looks like this.
 <!-- snippet: schemas-guide-the-usual-way -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Guide.cs -->
 ```csharp
-// Nothing here is wrong on its own, and this is how most of us write it.
 public static Registration? Register(
     RegistrationDto dto,
     List<string> problems)
@@ -37,9 +36,6 @@ public static Registration? Register(
         return null;
     }
 
-    // Look at the null-forgiving operators. The compiler has no idea those
-    // checks ran, so nothing stops this line moving above them, or being
-    // written against a field nobody checked.
     return new Registration(
         dto.Email!,
         dto.DisplayName!,
@@ -50,7 +46,7 @@ public static Registration? Register(
 
 Nothing in there is wrong. It is how most of us write it.
 
-But look at the null-forgiving operators on the last line. They are the tell. The
+But look at the null-forgiving operators in that final `return`. They are the tell. The
 compiler has no idea those checks ran, so nothing stops that line moving above them,
 and nothing stops it being written against a field nobody checked. The checks and the
 construction are two separate things that happen to be next to each other.
@@ -74,8 +70,6 @@ Give your domain type a constructor nobody outside can call.
 <!-- snippet: schemas-guide-the-type -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Guide.cs -->
 ```csharp
-// The constructor is not public, so the only way to hold a Registration is to
-// have passed the schema that builds one.
 public sealed class Registration
 {
     internal Registration(string email, string displayName, Option<int> age)
@@ -109,7 +103,6 @@ turns up.
 <!-- snippet: schemas-guide-the-checks -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Guide.cs -->
 ```csharp
-// Each one is a value. Name it, and reuse it wherever that shape turns up.
 public static class Registrations
 {
     public static readonly Schema<string, string> Email =
@@ -121,8 +114,7 @@ public static class Registrations
     public static readonly Schema<int, int> Age =
         Schema.Number.Int32.Between(13, 130);
 
-    // A rule over the whole subject, because accepting the terms gates the
-    // registration without contributing anything to it.
+    // A rule over the whole subject rather than over one field.
     public static readonly Schema<RegistrationDto, RegistrationDto> Terms =
         Schema.For<RegistrationDto>()
               .Check(
@@ -175,8 +167,6 @@ Three things are happening there.
 <!-- snippet: schemas-guide-at-the-edge -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Guide.cs -->
 ```csharp
-// One call. Either you are holding a Registration, or you are holding
-// every reason you are not.
 return RegistrationSchema.Instance
                          .Parse(body)
                          .Match<IResponse>(
@@ -200,8 +190,8 @@ Two properties of that are worth knowing up front.
 payload with a bad email, a short display name and no terms gives you three violations,
 so whoever sent it fixes their request once instead of three times.
 
-**Paths nest.** A violation inside a list reads `objectives[1]`; one inside a nested
-schema reads `leader.email`. `ToDictionary()` turns the whole set into the
+**Paths nest.** A violation inside a list reads `roles[1]`. One inside a nested schema
+reads `address.postcode`. `ToDictionary()` turns the whole set into the
 path-to-messages shape most APIs already return.
 
 ## Where this belongs

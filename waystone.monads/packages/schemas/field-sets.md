@@ -73,7 +73,7 @@ Field<Checked> legacy =
 ```
 <!-- endSnippet -->
 
-Reject a value at a path where you permit none.
+Reject a value at a path where you allow none.
 
 This is the first of the two fields that yield **`Checked`**. `Checked` means "this
 rule passed, and it has nothing to hand you" — the field gates the parse without

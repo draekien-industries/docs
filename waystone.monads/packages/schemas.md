@@ -10,8 +10,8 @@ icon: shield-check
 `Waystone.Monads.Schemas` — a parser that hands back a `Result`.
 
 {% hint style="info" %}
-New to this? Start with the [Schemas guide](../guides/schemas.md). It walks through
-one worked example end to end. This page is the reference.
+**New to this? Start with the [Schemas guide](../guides/schemas.md).** It builds one
+schema end to end and explains why you would want to. This page is the reference.
 {% endhint %}
 
 ## What it adds
@@ -20,26 +20,15 @@ A schema takes one type in and gives another type out. The type it gives out is 
 your caller could not have constructed by hand, so holding it *is* the proof that the
 input passed.
 
-That is the difference from a validator. A validator says yes or no about an object
-you already built. A schema builds the object, and only builds it when the input was
-good.
-
-## When to reach for it
-
 Reach for it at the edge — a request body, a message off a queue, a row from a file.
-Anywhere input arrives from somewhere you do not control and has to become a domain
-type.
-
 Skip it inside your domain, where the types already say what is true.
 
-If you are already writing FluentValidation validators and only want a `Result` back
-from them, [FluentValidation](fluent-validation.md) is the smaller change. It checks
-the object you built; this one builds it.
+Comparing it against [FluentValidation](fluent-validation.md)? That one checks the
+object you built. This one builds it.
 
 ## Write the checks once
 
-A schema is a value. Declare it once, name it, and use it everywhere that shape of
-input turns up.
+A schema is a value. Declare it, name it, and reuse it.
 
 <!-- snippet: schemas-a-reusable-check -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Schemas.cs -->

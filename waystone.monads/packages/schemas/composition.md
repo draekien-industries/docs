@@ -167,9 +167,9 @@ public static readonly Schema<string, string> Slug =
 ```
 <!-- endSnippet -->
 
-Reach for it when the rules are an implementation detail and the reader only needs to
-know what shape was expected. Skip it when the individual messages are what makes the
-failure actionable.
+Reach for it when the rules are an implementation detail and you only need to say what
+shape you expected. Skip it when the individual messages are what makes the failure
+useful.
 
 ## Codes
 
