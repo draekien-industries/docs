@@ -79,7 +79,8 @@ This applies to C# only. `diff`, `ini`, `jsonc`, `xml` and shell blocks stay
 hand-written, and so do the `upgrading/` pages, whose samples are older majors that
 no longer compile against the current source.
 
-Converted so far: `guides/configuration.md`. See
+Converted so far: `guides/configuration.md`. The six `packages/schemas*` pages were
+generated from the start rather than converted. See
 [docs/explorations/2026-08-31-single-sourcing-code-samples.md](docs/explorations/2026-08-31-single-sourcing-code-samples.md).
 
 ## Gotchas

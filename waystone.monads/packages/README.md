@@ -20,6 +20,7 @@ not because an upgrade made you.
 | Configure the library from a container | `Waystone.Monads.Extensions.DependencyInjection` | [Dependency injection](dependency-injection.md) |
 | Do that, on `Microsoft.Extensions.Hosting` | `Waystone.Monads.Extensions.Hosting` | [Hosting](hosting.md) |
 | See the exceptions the library swallows | `Waystone.Monads.Extensions.Logging` | [Logging](logging.md) |
+| Parse untrusted input into a domain type | `Waystone.Monads.Schemas` | [Schemas](schemas.md) |
 | Get a `Result` back from a validator | `Waystone.Monads.FluentValidation` | [FluentValidation](fluent-validation.md) |
 | Serialize either type with `System.Text.Json` | `Waystone.Monads.SystemTextJson` | [System.Text.Json](system-text-json.md) |
 | Serialize either type with Json.NET | `Waystone.Monads.NewtonsoftJson` | [Newtonsoft.Json](newtonsoft-json.md) |
@@ -44,7 +45,7 @@ dependency injection package alone.
 
 No package here changes the behaviour of anything in `Waystone.Monads`.
 
-* Three add vocabulary. Remove one and the code that used it stops compiling, and
+* Four add vocabulary. Remove one and the code that used it stops compiling, and
   nothing else moves.
 * Three change only *who writes* your configuration, not what the settings mean.
   You can write the same settings by hand with `MonadOptions.Configure`.
