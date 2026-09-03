@@ -160,12 +160,41 @@ just longer to read.
 <!-- snippet: schema-primitives-identifiers -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Primitives.cs -->
 ```csharp
-public static readonly Schema<Guid, Guid> QuestId = Schema.Id.NotEmpty();
+public static readonly Schema<Guid, Guid> QuestId = Schema.Uuid.NotEmpty();
+
+public static readonly Schema<Guid, Guid> PatronId = Schema.Uuid.IsVersion4();
 ```
 <!-- endSnippet -->
 
-`Schema.Id` accepts a `Guid`. `NotEmpty()` rejects `Guid.Empty`, which is what an
+`Schema.Uuid` accepts a `Guid`. `NotEmpty()` rejects `Guid.Empty`, which is what an
 uninitialised field deserializes to and is almost never a value you meant to receive.
+
+It is named for the standard rather than the role, because its rules are about the
+UUID layout. An identifier that is not a UUID starts at `Schema.For<T>()`.
+
+### Checking the version
+
+`IsVersion4()` requires the value to have been generated at random, which is what
+`Guid.NewGuid()` produces. Use it where the identifier must carry nothing a reader
+can mine — no creation time, and no ordering someone could walk.
+
+`IsVersion7()` requires the other way round: version 7 leads with a millisecond
+timestamp, so a run of them sorts by creation order. That is what makes it a good
+database key and a bad choice where the creation time is a secret.
+
+Both read the version digits and nothing else. A value with them set to 4 passes even
+if the rest was not random — nothing in a UUID records how it was really made. Both
+also reject `Guid.Empty`, whose version digits are zero, so adding `NotEmpty()`
+alongside one of them says nothing new.
+
+{% hint style="info" %}
+`IsVersion7()` is on .NET 9 and later only, which is where `Guid.CreateVersion7()`
+arrived. A consumer on an earlier framework cannot produce one, so the package does
+not offer to check for one.
+
+No other version has a rule, for the same reason: version 4 and version 7 are the
+only ones .NET creates.
+{% endhint %}
 
 ## Dates and times
 

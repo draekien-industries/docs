@@ -88,9 +88,10 @@ Include `{member}`.
 These eight rules ship with it.
 {% endhint %}
 
-Eight diagnostics from the schemas generator. Five are errors — the schema cannot be
+Nine diagnostics from the schemas package. Five are errors — the schema cannot be
 generated, or the code cannot work. Three warn about code that compiles and runs and
-is probably not what you meant.
+is probably not what you meant. One suggests a better spelling for code with nothing
+wrong with it, and only an IDE ever shows it.
 
 See [Schemas](../packages/schemas.md) for the package itself.
 
@@ -104,6 +105,7 @@ See [Schemas](../packages/schemas.md) for the package itself.
 | [`WMSC0006`](#wmsc0006) | Error | An asynchronous rule reached from a field set |
 | [`WMSC0007`](#wmsc0007) | Warning | A field-set call the generator did not recognise |
 | [`WMSC0008`](#wmsc0008) | Warning | A field path taken from an expression, not a name |
+| [`WMSC0009`](#wmsc0009) | Suggestion | `Schema.For<T>()` where a named schema exists |
 
 ### WMSC0001
 
@@ -237,3 +239,36 @@ Add `.Named("total")` to report it under a name a caller can act on.
 **A known false positive.** The derived path is only *usually* wrong. If you are not
 showing violations to anybody outside your own process, you may not care what the
 expression reduces to. That is why this warns rather than fails.
+
+### WMSC0009
+
+**A named schema and `Schema.For<T>()` are the same object.** Every named one is a
+`Schema.For<T>()` behind the property, and the result is cached per type, so neither
+spelling checks anything the other does not.
+
+Only one of them is where the rules for that type are documented. `Schema.For<int>()`
+tells a reader nothing; `Schema.Number.Int32` leads them to `AtLeast`, `AtMost` and
+the rest.
+
+Nine types have a named spelling:
+
+| Type | Write |
+| --- | --- |
+| `string` | `Schema.Text` |
+| `bool` | `Schema.Bool` |
+| `Guid` | `Schema.Uuid` |
+| `DateTimeOffset` | `Schema.Timestamp` |
+| `DateOnly` | `Schema.Date` |
+| `int`, `long`, `decimal`, `double` | `Schema.Number.Int32` and siblings |
+
+**This suggests rather than warns**, so a build never mentions it and an IDE offers it
+as a refactoring. Nothing about `Schema.For<string>()` is wrong; it is only harder to
+find the rules for.
+
+Nothing is reported for a type with no named spelling. `Schema.For<T>()` over a domain
+type is the documented way to start your own rules, and an enum has `Schema.Enum<T>()`,
+which checks membership rather than aliasing `For`.
+
+This one comes from an analyzer rather than from the generator, because a schema is
+usually declared in a shared static field and a generator only ever sees a `Configure`
+body. It ships in the same package.
