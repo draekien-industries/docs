@@ -37,7 +37,56 @@ public static readonly Schema<string, string> Title =
 
 A rule takes three things: the predicate, a code a caller can branch on, and a
 message a human reads. The message is a template — `{Path}`, `{Received}`,
-`{Expected}` and `{Code}` are filled in for you.
+`{Predicate}` and `{Code}` are filled in for you.
+
+### Naming the condition in the message
+
+Writing the rule out twice — once as the predicate, once as prose — is how those
+two drift apart. `{Predicate}` renders the rule's own source text, so you write
+the condition once.
+
+<!-- snippet: schema-composition-check-predicate -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Composition.cs -->
+```csharp
+// {Predicate} renders the rule's own source text, so the condition is
+// written once. A failure here reads: "Expected reward to satisfy
+// reward => reward % 10 == 0."
+public static readonly Schema<int, int> Reward =
+    Schema.Number.Int32.Positive()
+          .Check(
+               reward => reward % 10 == 0,
+               ViolationCode.Mismatched,
+               "Expected {Path} to satisfy {Predicate}.");
+```
+<!-- endSnippet -->
+
+You pass nothing to get this. The compiler captures the text for you.
+
+Where the lambda reads badly in the middle of a sentence, pass your own wording as
+a fourth argument.
+
+<!-- snippet: schema-composition-check-predicate-override -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Composition.cs -->
+```csharp
+// The fourth argument replaces that source text where the lambda reads
+// badly mid-sentence: "Expected reward to satisfy a multiple of ten."
+public static readonly Schema<int, int> RoundReward =
+    Schema.Number.Int32.Positive()
+          .Check(
+               reward => reward % 10 == 0,
+               ViolationCode.Mismatched,
+               "Expected {Path} to satisfy {Predicate}.",
+               "a multiple of ten");
+```
+<!-- endSnippet -->
+
+{% hint style="info" %}
+`{Expected}` is the one token `Check` cannot fill. It renders a bound, and `Check`
+has nowhere for you to put one, so it reaches your caller as those exact
+characters. The rules that ship with the package — `AtLeast`, `MaxLength` and the
+rest — supply their own bound and do fill it. In a message you write, either
+interpolate the bound yourself or reach for `{Predicate}`.
+{% endhint %}
 
 ## Transform
 
@@ -178,6 +227,10 @@ Reach for it when the rules are an implementation detail and you only need to sa
 shape you expected. Skip it when the individual messages are what makes the failure
 useful.
 
+`{Expected}` and `{Predicate}` reach your caller as those exact characters here. One
+message now stands for four rules, so there is no single bound or predicate left to
+name. Say it in the text instead.
+
 ## Codes
 
 `WithCode` sets a domain code, so a caller can branch on the failure without matching
@@ -253,8 +306,9 @@ Three things about it are worth knowing.
 * **Mark the outermost schema and stop.** Everything nested inside it is redacted
   too, including a nested schema that reported before the outer one ran. Marking an
   inner schema as well changes nothing.
-* **`{Expected}` is not redacted.** It renders a bound your schema's author wrote, not
-  anything that arrived from outside.
+* **`{Expected}` and `{Predicate}` are not redacted.** One renders a bound your
+  schema's author wrote and the other their rule's source text. Neither is anything
+  that arrived from outside.
 * **The raw value cannot be read back.** A `Violation` exposes its path, its code and
   its rendered message, and nothing else. There is no way to recover the value the
   redaction exists to withhold.
