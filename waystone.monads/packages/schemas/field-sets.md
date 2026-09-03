@@ -82,7 +82,7 @@ Field<Checked> legacy =
 
 Reject a value at a path where you allow none.
 
-This is the first of the two fields that yield **`Checked`**. `Checked` means "this
+This is the first of the three fields that yield **`Checked`**. `Checked` means "this
 rule passed, and it has nothing to hand you" — the field gates the parse without
 contributing to the object. Fields like that go to `Refine` and take no slot in the
 `Into` lambda.
@@ -96,8 +96,34 @@ Field<Checked> chronology = Schema.Extend(subject, Chronology);
 ```
 <!-- endSnippet -->
 
-Runs a schema over the whole subject. The other `Checked` field, so it goes to
-`Refine` too.
+Runs a schema over the whole subject. Another `Checked` field, so it goes to `Refine`
+too.
+
+### Checked
+
+The other two `Checked` fields are built that way from the start. This one is made
+from a field that does parse a value, when you want the rules but not the value.
+
+<!-- snippet: schema-field-sets-as-checked -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/FieldSets.cs -->
+```csharp
+Field<Checked> confirmation =
+    Schema.Required(subject.ConfirmEmail, Schema.Text.Email())
+          .AsChecked();
+```
+<!-- endSnippet -->
+
+Reach for it when the caller has to send a field correctly but your type has no place
+for it — part of a wire contract another system reads, or an address you check and
+never store.
+
+The value goes. Everything else stays: the rules still run, and a failure is still
+reported at that field's own path, so a caller is told which field was wrong.
+
+`Schema.Forbidden` is not the same thing. It says the field must be **absent**, and
+these fields are allowed. `Schema.Extend` is not either — it reports at the subject's
+path rather than the field's, so a caller reading the violations by field name finds
+nothing under the name they sent.
 
 ## A rule that spans two fields
 
@@ -157,6 +183,13 @@ discards.
 which drops the value side, so it will accept a field that parses something and then
 throw that something away. [`WMSC0005`](../../source-generation/diagnostics.md#wmsc0005)
 warns when you do.
+
+When you mean it, say so with `AsChecked` rather than listing the field in
+`Schema.Fields` and discarding it with a `_` in the lambda. Those discards are
+positional: add, remove or reorder a field and the parameters you did want quietly
+bind to different fields whenever the types line up. `AsChecked` also keeps
+`WMSC0005` working on the fields you did not mean to discard, which turning the
+warning off would not.
 
 A nested schema is just a schema. Its violations arrive under the field's name, so a
 reader is told which one failed.
