@@ -179,10 +179,14 @@ parses something somebody expected to find on the result.
 `Refine(Schema.Required(subject.Email, Guild.Email))` checks the email and throws it
 away. List it in `Schema.Fields` instead, so it reaches the `Into` lambda.
 
-**A known false positive.** Gating on a value without keeping it is legitimate — a
+**Unless you meant it.** Gating on a value without keeping it is legitimate — a
 confirmation field that has to be a well-formed email but is never stored is the
-obvious case. That is why this warns rather than fails. Suppress it at the call site
-if that is what you meant.
+obvious case. That is why this warns rather than fails.
+
+Say so with [`AsChecked`](../packages/schemas/field-sets.md#checked), which hands
+`Refine` the same field with its value dropped and its path kept. The warning stops,
+because the field now yields `Checked` like the other two. Suppressing the warning
+instead would also hide the next field you discard by accident.
 
 ### WMSC0006
 
