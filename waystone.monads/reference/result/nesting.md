@@ -1,5 +1,6 @@
 ---
 description: Remove a level of nesting, or convert to an Option.
+icon: code-branch
 ---
 
 # Nesting and conversion

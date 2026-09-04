@@ -1,5 +1,6 @@
 ---
 description: Remove a level of nesting, or convert to a Result.
+icon: code-branch
 ---
 
 # Nesting and conversion

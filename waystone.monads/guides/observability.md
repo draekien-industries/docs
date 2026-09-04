@@ -1,6 +1,7 @@
 ---
 description: >-
   See the exceptions the library swallows, with nothing extra installed.
+icon: chart-line
 ---
 
 # Observability

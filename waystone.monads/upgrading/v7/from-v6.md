@@ -2,6 +2,7 @@
 description: >-
   Three changes that keep compiling and change what your code does, and eight
   that break the build.
+icon: six
 ---
 
 # v6.x to v7.0.0

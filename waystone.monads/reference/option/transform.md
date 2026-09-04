@@ -1,5 +1,6 @@
 ---
 description: Methods that take an Option<T> and give you back an Option.
+icon: shuffle
 ---
 
 # Transform

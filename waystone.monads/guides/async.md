@@ -2,6 +2,7 @@
 description: >-
   Chain asynchronous work through Option and Result without awaiting every
   step.
+icon: hourglass-half
 ---
 
 # Async

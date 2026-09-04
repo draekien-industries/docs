@@ -1,3 +1,7 @@
+---
+icon: five
+---
+
 # v4.x to v5.x
 
 {% hint style="info" %}

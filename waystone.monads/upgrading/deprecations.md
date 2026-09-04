@@ -2,6 +2,7 @@
 description: >-
   API that has been removed, the version that removed it, and what to use
   instead.
+icon: ban
 ---
 
 # Deprecations

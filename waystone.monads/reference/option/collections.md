@@ -1,5 +1,6 @@
 ---
 description: Methods for working with a sequence of Option<T>.
+icon: list
 ---
 
 # Collections

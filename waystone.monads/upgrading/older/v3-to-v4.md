@@ -1,3 +1,7 @@
+---
+icon: four
+---
+
 # v3.x to v4.x
 
 {% hint style="info" %}

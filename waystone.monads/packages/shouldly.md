@@ -2,6 +2,7 @@
 description: >-
   Shouldly assertions that take an Option or a Result, so a failing test names
   the state it found.
+icon: flask
 ---
 
 # Shouldly

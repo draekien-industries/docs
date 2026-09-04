@@ -1,5 +1,6 @@
 ---
 description: C# query syntax over Option and Result, with no change in behaviour.
+icon: filter
 ---
 
 # LINQ

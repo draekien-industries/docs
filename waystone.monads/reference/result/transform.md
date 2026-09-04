@@ -1,5 +1,6 @@
 ---
 description: Methods that take a Result and give you back a Result.
+icon: shuffle
 ---
 
 # Transform

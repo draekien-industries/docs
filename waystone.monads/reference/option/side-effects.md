@@ -1,5 +1,6 @@
 ---
 description: Run something against the value without changing it.
+icon: bolt
 ---
 
 # Side effects

@@ -1,3 +1,7 @@
+---
+icon: signs-post
+---
+
 # Coming from Rust
 
 Waystone.Monads ports Rust's `std::option::Option` and `std::result::Result`. If you already know those types, most of what you know carries over. This page covers the parts that do not.

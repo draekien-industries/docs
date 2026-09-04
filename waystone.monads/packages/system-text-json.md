@@ -1,5 +1,6 @@
 ---
 description: Serialize Option and Result with System.Text.Json, in a format a consumer already agreed to.
+icon: file-code
 ---
 
 # System.Text.Json

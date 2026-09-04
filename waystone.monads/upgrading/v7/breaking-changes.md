@@ -2,6 +2,7 @@
 description: >-
   Every break in 7.0.0, the compiler diagnostic it produces, and whether a code
   fix handles it.
+icon: circle-exclamation
 ---
 
 # Every v7 break

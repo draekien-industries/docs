@@ -1,5 +1,6 @@
 ---
 description: Run something against either side without changing it.
+icon: bolt
 ---
 
 # Side effects

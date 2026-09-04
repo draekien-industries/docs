@@ -1,3 +1,7 @@
+---
+icon: two
+---
+
 # v1.x to v2.x
 
 {% hint style="info" %}

@@ -2,6 +2,7 @@
 description: >-
   Lets a container write the library's configuration, so start-up code no longer
   calls MonadOptions.Configure by hand.
+icon: syringe
 ---
 
 # Dependency injection

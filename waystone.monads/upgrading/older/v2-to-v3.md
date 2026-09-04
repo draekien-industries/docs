@@ -1,3 +1,7 @@
+---
+icon: three
+---
+
 # v2.x to v3.x
 
 {% hint style="info" %}

@@ -1,5 +1,6 @@
 ---
 description: The factory methods that build an Option<T>.
+icon: plus
 ---
 
 # Creation

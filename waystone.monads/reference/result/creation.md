@@ -1,5 +1,6 @@
 ---
 description: The factory methods that build a Result<TOk, TErr>.
+icon: plus
 ---
 
 # Creation

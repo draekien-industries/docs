@@ -1,5 +1,6 @@
 ---
 description: Methods that end the chain and hand you a plain value.
+icon: box-open
 ---
 
 # Consume

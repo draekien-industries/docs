@@ -1,3 +1,7 @@
+---
+icon: gear
+---
+
 # Configuration
 
 This library has a few configurable behaviours. You set them through

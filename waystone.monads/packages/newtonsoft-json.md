@@ -1,5 +1,6 @@
 ---
 description: Serialize Option and Result with Newtonsoft.Json, in the same format the System.Text.Json package writes.
+icon: code
 ---
 
 # Newtonsoft.Json

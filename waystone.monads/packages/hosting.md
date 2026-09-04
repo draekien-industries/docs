@@ -2,6 +2,7 @@
 description: >-
   Installs the container-registered configuration from the host's own start-up
   sequence, so there is no second call to forget.
+icon: server
 ---
 
 # Hosting

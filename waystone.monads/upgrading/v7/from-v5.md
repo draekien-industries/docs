@@ -2,6 +2,7 @@
 description: >-
   Skipping v6 means every v6 change and every v7 change land together. This is
   the order to do them in.
+icon: five
 ---
 
 # v5.x to v7.0.0

@@ -1,5 +1,6 @@
 ---
 description: Methods for working with a sequence of Result<TOk, TErr>.
+icon: list
 ---
 
 # Collections

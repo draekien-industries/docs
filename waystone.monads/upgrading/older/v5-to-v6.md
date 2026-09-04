@@ -2,6 +2,7 @@
 description: >-
   Three changes in v6 keep compiling and change what your code does. Read this
   page before you upgrade, and start with the two silent ones.
+icon: six
 ---
 
 # v5.x to v6.x

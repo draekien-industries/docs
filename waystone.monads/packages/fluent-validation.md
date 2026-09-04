@@ -1,5 +1,6 @@
 ---
 description: Run a FluentValidation validator and get a Result back, with the failures attached to the error.
+icon: clipboard-check
 ---
 
 # FluentValidation
