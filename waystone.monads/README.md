@@ -61,8 +61,9 @@ error codes. See [Analyzer rules](analyzers/README.md) and
 
 Optional packages sit beside the library — Shouldly assertions, LINQ query
 syntax, JSON converters, and more. None is required, and none changes how
-`Waystone.Monads` behaves. See
-[Companion packages](packages/README.md).
+`Waystone.Monads` behaves. [Add-ons](packages/README.md) extend the library
+itself. [Integrations](packages/integrations.md) connect it to a library you
+already use.
 
 ## Links
 
