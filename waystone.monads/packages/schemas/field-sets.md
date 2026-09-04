@@ -113,6 +113,32 @@ never store.
 The value goes. Everything else stays: the rules still run, and a failure is still
 reported at that field's own path, so a caller is told which field was wrong.
 
+Hand the result to `Refine`. Both kinds of field go there the same way — `Required`
+when the caller has to send it, `Optional` when they may.
+
+<!-- snippet: schema-field-sets-as-checked-in-refine -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/FieldSets.cs -->
+```csharp
+public partial class RecruitSchema : SchemaConfig<RecruitDto, Recruit>
+{
+    protected override Result<Recruit, SchemaViolation> Configure(
+        RecruitDto subject) =>
+        Schema.Fields(
+                   Schema.Required(subject.Name, Schema.Text.Trim().NotEmpty()),
+                   Schema.Required(subject.Email, Guild.Email))
+
+              // Either kind reaches Refine the same way. Required still means the
+              // caller has to send it and Optional still means they may — AsChecked
+              // drops the value and nothing else.
+              .Refine(
+                   Schema.Required(subject.ConfirmEmail, Guild.Email).AsChecked(),
+                   Schema.Optional(subject.Referral, Schema.Text.Trim().NotEmpty())
+                         .AsChecked())
+              .Into((name, email) => new Recruit(name, email));
+}
+```
+<!-- endSnippet -->
+
 `Schema.Forbidden` is not the same thing. It says the field must be **absent**, and
 these fields are allowed. `Schema.Extend` is not either — it reports at the subject's
 path rather than the field's, so a caller reading the violations by field name finds
