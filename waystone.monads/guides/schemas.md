@@ -7,13 +7,6 @@ icon: shield-check
 
 # Schemas
 
-<!-- prerelease:7.1.0 -->
-{% hint style="warning" %}
-**`Waystone.Monads.Schemas` is in pre-release.** The current version is
-`7.1.0-beta.1`, so installing it needs `--prerelease`. Everything on this page is
-what 7.1.0 is expected to ship, but the surface can still change before it does.
-{% endhint %}
-
 There is a bug that almost every codebase has a version of. It looks like this.
 
 <!-- snippet: schemas-guide-the-usual-way -->

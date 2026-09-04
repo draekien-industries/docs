@@ -82,12 +82,6 @@ Include `{member}`.
 
 ## WMSC: schemas
 
-<!-- prerelease:7.1.0 -->
-{% hint style="warning" %}
-`Waystone.Monads.Schemas` is in pre-release — `7.1.0-beta.1` at the time of writing.
-These eight rules ship with it.
-{% endhint %}
-
 Nine diagnostics from the schemas package. Five are errors — the schema cannot be
 generated, or the code cannot work. Three warn about code that compiles and runs and
 is probably not what you meant. One suggests a better spelling for code with nothing

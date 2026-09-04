@@ -7,13 +7,6 @@ icon: table-columns
 
 # Field sets
 
-<!-- prerelease:7.1.0 -->
-{% hint style="warning" %}
-**`Waystone.Monads.Schemas` is in pre-release.** The current version is
-`7.1.0-beta.1`, so installing it needs `--prerelease`. Everything on this page is
-what 7.1.0 is expected to ship, but the surface can still change before it does.
-{% endhint %}
-
 A field set is how several schemas become one object. You list the fields; the
 generator writes the code that assembles them.
 

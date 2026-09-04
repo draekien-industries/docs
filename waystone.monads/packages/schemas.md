@@ -7,13 +7,6 @@ icon: shield-check
 
 # Schemas
 
-<!-- prerelease:7.1.0 -->
-{% hint style="warning" %}
-**`Waystone.Monads.Schemas` is in pre-release.** The current version is
-`7.1.0-beta.1`, so installing it needs `--prerelease`. Everything on this page is
-what 7.1.0 is expected to ship, but the surface can still change before it does.
-{% endhint %}
-
 `Waystone.Monads.Schemas` — a parser that hands back a `Result`.
 
 {% hint style="info" %}
@@ -203,12 +196,9 @@ it on *that* chain cannot run. Its siblings are unaffected and still report.
 
 ## Install it
 
-<!-- prerelease:7.1.0 -->
 ```
-dotnet add package Waystone.Monads.Schemas --prerelease
+dotnet add package Waystone.Monads.Schemas
 ```
-
-Drop `--prerelease` once 7.1.0 is released.
 
 The generator ships inside that package. There is nothing else to install and nothing
 to wire up.

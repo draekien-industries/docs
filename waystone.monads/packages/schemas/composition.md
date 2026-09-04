@@ -7,13 +7,6 @@ icon: layer-group
 
 # Composition
 
-<!-- prerelease:7.1.0 -->
-{% hint style="warning" %}
-**`Waystone.Monads.Schemas` is in pre-release.** The current version is
-`7.1.0-beta.1`, so installing it needs `--prerelease`. Everything on this page is
-what 7.1.0 is expected to ship, but the surface can still change before it does.
-{% endhint %}
-
 Every schema is built the same way: start at a primitive, and add. This page covers
 what you can add.
 
