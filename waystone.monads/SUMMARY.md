@@ -37,23 +37,6 @@
   * [Collections](reference/result/collections.md)
 * [State overloads](reference/state-overloads.md)
 
-## Source generation
-
-* [Overview](source-generation/README.md)
-* [Error code catalogs](source-generation/error-code-catalogs.md)
-* [Code format language](source-generation/code-format.md)
-* [Reviewing generated codes](source-generation/reviewing-codes.md)
-* [Generator diagnostics](source-generation/diagnostics.md)
-
-## Analyzers
-
-* [Overview](analyzers/README.md)
-* [Runtime bugs](analyzers/runtime-bugs.md)
-* [Idioms](analyzers/idioms.md)
-* [Migration aids](analyzers/migration-aids.md)
-* [Assertion rules](analyzers/assertion-rules.md)
-* [Severity presets](analyzers/severity-presets.md)
-
 ## Companion packages
 
 * [Overview](packages/README.md)
@@ -86,3 +69,20 @@
   * [v3.x to v4.x](upgrading/older/v3-to-v4.md)
   * [v2.x to v3.x](upgrading/older/v2-to-v3.md)
   * [v1.x to v2.x](upgrading/older/v1-to-v2.md)
+
+## Source generation
+
+* [Overview](source-generation/README.md)
+* [Error code catalogs](source-generation/error-code-catalogs.md)
+* [Code format language](source-generation/code-format.md)
+* [Reviewing generated codes](source-generation/reviewing-codes.md)
+* [Generator diagnostics](source-generation/diagnostics.md)
+
+## Analyzers
+
+* [Overview](analyzers/README.md)
+* [Runtime bugs](analyzers/runtime-bugs.md)
+* [Idioms](analyzers/idioms.md)
+* [Migration aids](analyzers/migration-aids.md)
+* [Assertion rules](analyzers/assertion-rules.md)
+* [Severity presets](analyzers/severity-presets.md)
