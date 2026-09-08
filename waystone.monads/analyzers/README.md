@@ -73,7 +73,7 @@ you suppress it.
 | [`WM2013`](idioms.md#wm2013) | A discarded `Option` | Suggestion |
 | [`WM2015`](idioms.md#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type | Suggestion |
 | [`WM2016`](idioms.md#wm2016) | An eager argument that is not free to evaluate | Suggestion |
-| [`WM2017`](idioms.md#wm2017) | A delegate that captures, where a state overload would avoid the closure | Suggestion |
+| [`WM2017`](idioms.md#wm2017) | A delegate that captures, where binding the data with `With` would avoid the closure | Suggestion |
 | [`WM2018`](idioms.md#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | Suggestion |
 | [`WM2019`](idioms.md#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Suggestion |
 | [`WM2020`](idioms.md#wm2020) | An `ErrorCodes.txt` entry no catalog generates | Suggestion |

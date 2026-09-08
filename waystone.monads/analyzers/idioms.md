@@ -27,7 +27,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2013`](#wm2013) | A discarded `Option`, as `WM1006` does for `Result` | None |
 | [`WM2015`](#wm2015) | `UnwrapOrDefault` or `MapOrDefault` producing a value type, where the default is indistinguishable from a real result | `UnwrapOrNull()` or `MapOrNull()` |
 | [`WM2016`](#wm2016) | An argument to `Or`, `And`, `UnwrapOr`, `MapOr` or `OkOr` that is not free to evaluate, so it runs even when it is discarded | The `Else` sibling |
-| [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where a state overload would avoid the closure | None |
+| [`WM2017`](#wm2017) | A delegate that captures a local or a parameter, where binding the data with `With` would avoid the closure | `With`, then the same method on the binder |
 | [`WM2018`](#wm2018) | Two `[ErrorCodeCatalog]` enums that generate the same error code | None |
 | [`WM2019`](#wm2019) | A generated error code that `ErrorCodes.txt` does not list | Update `ErrorCodes.txt` |
 | [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | None |
@@ -300,31 +300,48 @@ declared a property would be worse than one that skips them all.
 
 ## WM2017
 
-**Your delegate captures, and there is an overload that would not.** A lambda that
-reads a local or a parameter from the enclosing method allocates a display class
-every time the call site runs.
+**Your delegate captures, and `With` would let it stop.** A lambda that reads a
+local or a parameter from the enclosing method allocates a display class every
+time the call site runs.
 
-```diff
--option.Map(value => value + offset)
-+option.Map(offset, static (value, state) => value + state)
+<!-- snippet: idioms-wm2017-capture -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> share = reward.Map(gold => gold / partySize);
 ```
+<!-- endSnippet -->
 
-The state overload takes your data as its first argument and hands it to the
-delegate, so the delegate closes over nothing and the compiler caches it. The
-closure costs 88 bytes at every call — 24 for the display class, 64 for the
-delegate.
+Bind the data to the receiver instead. `With` hands it to the delegate as an
+argument, so the delegate closes over nothing and the compiler caches it.
 
-The rule covers every method that has a state overload, which is nearly every
-delegate-taking method on both types. See
-[Where you can use it](../reference/state-overloads.md#where-you-can-use-it) for the list.
+<!-- snippet: idioms-wm2017-bound -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> share = reward
+    .With(partySize)
+    .Map(static (gold, party) => gold / party);
+```
+<!-- endSnippet -->
 
-`Match` is the most expensive of them to call with a closure. Its two branches
-share one display class but need a delegate each, so the call costs 152 bytes
-rather than 88.
+The closure costs 88 bytes at every call — 24 for the display class, 64 for the
+delegate. `Match` is the most expensive of them to call with a closure. Its two
+branches share one display class but need a delegate each, so the call costs 152
+bytes rather than 88.
 
-It reads the list off the receiver's own type rather than matching names, so a
-delegate-taking method with no state overload (`ZipWith` and `Reduce`) never
-gets pointed at one that does not exist.
+The rule reads its list of methods off the binder that `With` returns, rather than
+matching names. Three things follow:
+
+- It covers nearly every delegate-taking method on both types. See
+  [Where you can use it](../reference/state-overloads.md#where-you-can-use-it).
+- It reaches the `…Async` methods.
+- A method the binder does not carry — `ZipWith` and `Reduce` — never gets pointed
+  at a rewrite that does not exist.
+
+Up to 7.1.0 the rule pointed at the
+[state overload](../reference/state-overloads.md#passing-the-data-as-the-first-argument)
+instead. We still support those overloads. The rule stopped naming them for two
+reasons: `With` reads in call order, and it covers async delegates, which no state
+overload does.
 
 It stays quiet when:
 
@@ -332,12 +349,32 @@ It stays quiet when:
   method on the same type. That allocates a delegate rather than a display class,
   a much smaller cost, and reporting it would fire on most ordinary code.
 - **The lambda captures nothing.** The compiler already caches it in a static
-  field, so the state overload would buy you nothing.
-- **You are already on the state overload.**
+  field, so binding would buy you nothing.
+- **You are already passing state**, either through `With` or through a state
+  overload.
 
-**No quick fix.** The obvious rewrite reuses the captured name as the new
-parameter, which shadows the enclosing local. That is fine from C# 8 but is
-`CS0136` on C# 7.3, and this analyzer reaches consumers on every language version.
+**Quick fix:** bind the state with `With`. The fix does five things at once,
+because the rewrite does not compile without all of them:
+
+- Inserts the `With` call on the receiver.
+- Adds the parameter to every delegate in the call and marks each one `static`.
+- Rewrites every use of the captured names inside the delegate bodies.
+- Packs two or more captures into a tuple.
+- Adds the extensions `using` when the file does not already have it.
+
+It names the new parameter around whatever is in scope — `state`, then `state1` —
+rather than reusing the captured name, which would shadow your local.
+
+It declines three cases rather than guess, so you will sometimes see the
+diagnostic with no lightbulb behind it. Rewrite these by hand:
+
+- **A method group argument.** It cannot grow the parameter the binder's delegate
+  needs.
+- **A capture one of the lambdas already declares**, as a parameter or as a local.
+  The rewrite would shadow it, and from C# 8 that is legal, so it would be silent.
+- **A capture that cannot name a tuple member** — one called `Rest`, or `ItemN`
+  anywhere but position N. Naming the members anything other than your variables
+  would put invented names in your source.
 
 ## WM2018
 
