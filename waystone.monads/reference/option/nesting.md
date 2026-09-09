@@ -88,13 +88,20 @@ Result<T, TErr> OkOrElse<TErr>(Func<TErr> errorFactory)
 
 The same, but the error is built only when the option is `None`.
 
+<!-- snippet: option-nesting-ok-or-else -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Reference/Option/Nesting.cs -->
 ```csharp
-Result<int, string> ok = some.OkOrElse(() => "Missing number");
-//                  ^? Ok(1)
+Result<int, string> ok = some.OkOrElse(() => DescribeMissingNumber());
+//                  ^? Ok(1), and DescribeMissingNumber never runs
 
-Result<int, string> err = none.OkOrElse(() => "Missing number");
-//                  ^? Err("Missing number")
+Result<int, string> err = none.OkOrElse(() => DescribeMissingNumber());
+//                  ^? Err("No number between 1 and 20")
 ```
+<!-- endSnippet -->
+
+Pass a factory only when there is something to defer. An error you already hold
+goes to [`OkOr`](#okor) — wrapping it in a lambda builds it just the same and
+allocates a delegate on top.
 
 ## Going the other way
 

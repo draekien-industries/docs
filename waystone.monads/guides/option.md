@@ -146,13 +146,20 @@ string patron = maybePatron.Match(
 
 ### Unwrap with a fallback
 
+<!-- snippet: option-guide-unwrapping-out -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Option.cs -->
 ```csharp
 string orFallback = maybePatron.UnwrapOr("[No patron]");
-string orComputed = maybePatron.UnwrapOrElse(() => "[No patron]");
+string orComputed = maybePatron.UnwrapOrElse(() => LoadHousePatron());
 ```
+<!-- endSnippet -->
 
 Use `UnwrapOr` when the fallback is already sitting there. Use `UnwrapOrElse`
 when producing it costs something — the function only runs on a `None`.
+
+Wrapping a value you already hold in a lambda gets you the worst of both. The
+fallback is built either way, and the call allocates a delegate to defer work
+that has already happened. If you can write it as an argument, pass it as one.
 
 {% hint style="danger" %}
 There is also a bare `Unwrap()`. It throws on a `None`. It exists for the cases
