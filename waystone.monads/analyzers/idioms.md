@@ -34,6 +34,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | None |
 | [`WM2022`](#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` | Wrap it in an async lambda |
 | [`WM2023`](#wm2023) | An `Option` bound as state by `With`, leaving the delegate to unwrap it and the absent case to be forgotten | None |
+| [`WM2024`](#wm2024) | A delegate whose body is already built, passed to `AndThen`, `OrElse`, `UnwrapOrElse`, `MapOrElse` or `OkOrElse`, so nothing is deferred | The eager sibling |
 
 There is no `WM2014`. It shipped in 5.4.0 as a `FlatMap` rename aid and was
 removed in 6.0.0. `WM2010` is listed above because build output from 6.x still
@@ -67,8 +68,9 @@ already captured in the type back into an unhandled exception.
 ```
 
 `UnwrapOrElse` defers the fallback until it is needed, and `Match` handles both
-branches explicitly. On a value type the quick fix reports `WM2015`, for the reason
-given above.
+branches explicitly. Reach for `UnwrapOrElse` only where producing the fallback
+costs something — hand it a value you already have and [`WM2024`](#wm2024) reports
+it. On a value type the quick fix reports `WM2015`, for the reason given above.
 
 **Quick fix:** `UnwrapOrDefault()`.
 
@@ -623,4 +625,77 @@ each one naming the other's fix.
 [`WM2017`](#wm2017) pushes you toward `With`. This rule pushes one case back off
 it. The overlap is deliberate: a monad is the one kind of state that buys you
 nothing, because the delegate still has to unwrap it.
+
+## WM2024
+
+**The `Else` members take a delegate so an expensive fallback runs only on the
+branch that needs it.** Hand one a value you already have and nothing is
+deferred — it was built before the delegate was.
+
+<!-- snippet: idioms-wm2024-deferred -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+int gold = reward.UnwrapOrElse(() => 100);
+```
+<!-- endSnippet -->
+
+The call allocates a delegate for no gain, and it tells whoever reads it that
+the fallback is costly when it is not. The eager sibling takes the value.
+
+<!-- snippet: idioms-wm2024-direct -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+int gold = reward.UnwrapOr(100);
+```
+<!-- endSnippet -->
+
+**Quick fix:** the eager sibling.
+
+### What counts as free
+
+The rule fires only where the delegate's body is provably free of work:
+
+* a literal
+* a constant
+* `nameof`
+* `default`
+* a bare local or parameter read
+
+Everything else is left alone — a method call, an object creation, an indexer,
+or an expression built out of parts.
+
+**A property read is left alone too**, and this is the one place the rule is
+deliberately narrower than [`WM2016`](#wm2016). That rule counts a property read
+as free, so it stays quiet on `UnwrapOr(x.Prop)`, which costs you a suggestion
+you never see. Counting it free here would tell you to run a getter that may
+compute, on every call, whether the fallback is needed or not. A suggestion you
+miss and a getter that runs when it should not are not the same size of mistake.
+
+### It is the inverse of WM2016
+
+[`WM2016`](#wm2016) says *prefer the lazy variant when the argument is not
+free*. This one says *prefer the eager variant when the delegate is*.
+
+They can never both fire on one call site. `WM2016` reads the non-delegate
+argument of an eager member; this reads the delegate argument of a lazy one, and
+the two sets of member names do not overlap.
+
+### Synchronous members only
+
+`AndThenAsync`, `OrElseAsync` and their siblings are not reported. A free body
+is barely reachable there — the value would have to be a task you already hold —
+and the rewrite would swap an async lambda for a task rather than unwrap an
+expression.
+
+### Where the fix declines
+
+Two shapes are reported and left alone, rather than rewritten into something
+that does not compile.
+
+**A state overload**, where the delegate is not the first argument. The eager
+sibling has nowhere to put the bound state. The message still names the member
+to move to, and `UnwrapOr(0)` is what you want there.
+
+**A block body**, where the expression sits inside a `return`. Lifting it out
+would drop any statement standing beside it.
 
