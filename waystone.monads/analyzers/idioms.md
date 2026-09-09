@@ -68,8 +68,9 @@ already captured in the type back into an unhandled exception.
 ```
 
 `UnwrapOrElse` defers the fallback until it is needed, and `Match` handles both
-branches explicitly. On a value type the quick fix reports `WM2015`, for the reason
-given above.
+branches explicitly. Reach for `UnwrapOrElse` only where producing the fallback
+costs something — hand it a value you already have and [`WM2024`](#wm2024) reports
+it. On a value type the quick fix reports `WM2015`, for the reason given above.
 
 **Quick fix:** `UnwrapOrDefault()`.
 
