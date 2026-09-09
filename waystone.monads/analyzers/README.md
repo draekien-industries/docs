@@ -79,6 +79,7 @@ you suppress it.
 | [`WM2020`](idioms.md#wm2020) | An `ErrorCodes.txt` entry no catalog generates | Suggestion |
 | [`WM2021`](idioms.md#wm2021) | A state check read through a property pattern | Suggestion |
 | [`WM2022`](idioms.md#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync` | Suggestion |
+| [`WM2023`](idioms.md#wm2023) | An `Option` bound as state by `With` instead of zipped | Suggestion |
 | [`WM3001`](migration-aids.md#wm3001) | A member that returns a nullable type, where `Option<T>` would fit | Off |
 | [`WM3002`](migration-aids.md#wm3002) | A `throw`, where returning `Result<TOk, Error>` would fit | Off |
 | [`WMS2001`](assertion-rules.md#wms2001) | An assertion on `IsSome`, `IsOk` or `Unwrap` instead of on the monad | Suggestion |

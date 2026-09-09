@@ -33,6 +33,7 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2020`](#wm2020) | An `ErrorCodes.txt` entry no catalog generates | None |
 | [`WM2021`](#wm2021) | `IsSome`, `IsNone`, `IsOk` or `IsErr` read through a property pattern, which hides the check from the rules that read it | None |
 | [`WM2022`](#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` | Wrap it in an async lambda |
+| [`WM2023`](#wm2023) | An `Option` bound as state by `With`, leaving the delegate to unwrap it and the absent case to be forgotten | None |
 
 There is no `WM2014`. It shipped in 5.4.0 as a `FlatMap` rename aid and was
 removed in 6.0.0. `WM2010` is listed above because build output from 6.x still
@@ -560,4 +561,66 @@ It reports **method groups**, not lambdas. An async lambda already infers a
 The quick fix declines on an **overloaded** method group. The lambda's parameter name
 comes from the method's own, and there is no reason to prefer one overload's spelling
 of it over another's.
+
+## WM2023
+
+**`With` binds anything, including another option.** Its type parameter is
+unconstrained, so the compiler takes an `Option<T>` as readily as an `int`, and
+nothing in the signature says the pairing is a mistake.
+
+<!-- snippet: idioms-wm2023-bound -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> haul = reward
+    .With(bonus)
+    .Map(static (gold, extra) => gold + extra.UnwrapOr(0));
+```
+<!-- endSnippet -->
+
+The binder hands the state to the delegate untouched. So the delegate runs
+whenever the receiver is `Some`, and the second option's absence is left for you
+to handle — above, a missing bonus quietly becomes zero.
+
+`Zip` and `ZipWith` are the members for this. Both give `None` when either side
+is absent, so the case cannot be forgotten.
+
+<!-- snippet: idioms-wm2023-zipped -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> haul = reward.ZipWith(
+    bonus,
+    static (gold, extra) => gold + extra);
+```
+<!-- endSnippet -->
+
+**Those two do not do the same thing, and that is the point.** The first treats a
+missing bonus as zero; the second reports it. If the fallback is what you meant,
+say so with `Reduce`, which keeps a single `Some` when the other side is absent.
+
+**There is no quick fix.** The rewrite lifts the second option out of the
+delegate's body and into the call, so it has to rewrite the body rather than the
+call alone — and which of `ZipWith` or `Reduce` you meant is not in the source to
+read.
+
+### Why Result is not reported
+
+`resultA.With(resultB)` is left alone, deliberately.
+
+`Result` has no `Zip` or `ZipWith`. Neither does Rust's, and the standard idiom
+there closes over the second result:
+
+```rust
+a.and_then(|x| b.map(|y| (x, y)))
+```
+
+In C# that capture allocates a display class, which is what [`WM2017`](#wm2017)
+exists to report. So binding the second result is the capture-free spelling on
+that side rather than a mistake. Reporting it would put the two rules in a loop,
+each one naming the other's fix.
+
+### It sits opposite WM2017
+
+[`WM2017`](#wm2017) pushes you toward `With`. This rule pushes one case back off
+it. The overlap is deliberate: a monad is the one kind of state that buys you
+nothing, because the delegate still has to unwrap it.
 
