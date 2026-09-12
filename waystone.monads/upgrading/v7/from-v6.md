@@ -34,10 +34,12 @@ bury them.
    dictionary lookup, an explicit return null. Each is a latent exception. Fix by
    projecting into an option instead: AndThen with Option.FromNullable.
 
-2. A factory returning a null monad now throws. AndThen and AndThenAsync used to accept
-   a null Option or Result back from your factory. They now throw
-   ArgumentNullException naming optionFactory or resultFactory. Return
-   Option.None<T>() or an Err rather than null.
+2. A factory returning a null monad now throws. AndThen, AndThenAsync, OrElse and
+   OrElseAsync used to accept a null Option or Result back from your factory. They now
+   throw ArgumentNullException naming optionFactory or resultFactory. Return
+   Option.None<T>() or an Err rather than null. A recovery step is held to the same
+   rule as a forward one: a None or an Err is how OrElse says the recovery found
+   nothing or failed again.
 
 3. Disposing an options scope out of order no longer restores. If the codebase disposes
    a MonadOptionsScope by hand rather than with using, or stores one in a field, the
