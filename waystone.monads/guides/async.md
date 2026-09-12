@@ -21,21 +21,27 @@ not on the monad itself. They extend `Task<Option<T>>`, `ValueTask<Option<T>>`,
 
 That is what lets you chain without awaiting each step:
 
+<!-- snippet: async-one-await-at-the-end -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 // no intermediate awaits, one await at the end
 Character character = await SummonCharacterAsync(id)
     .MapAsync(c => EnrichAsync(c))
     .UnwrapOrAsync(Commoner);
 ```
+<!-- endSnippet -->
 
 Without them, you would await into a local at every step:
 
+<!-- snippet: async-the-same-chain-step-by-step -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 Option<Character> fetched = await SummonCharacterAsync(id);
 Option<Character> enriched = await fetched.MapAsync(c => EnrichAsync(c));
 
 Character character = enriched.UnwrapOr(Commoner);
 ```
+<!-- endSnippet -->
 
 Two things about that first sample, because both catch people out:
 
@@ -69,11 +75,14 @@ factories. `Option.TryAsync`, `Result.TryAsync` and `CollectAsync` returned
 `Task` up to 6.7.0 — see
 [Loud change: TryAsync and CollectAsync return ValueTask](../upgrading/v7/from-v6.md#loud-change-tryasync-and-collectasync-return-valuetask).
 
+<!-- snippet: async-every-async-member-returns-valuetask -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 ValueTask<string> output = result.MatchAsync(
     async x => await RenderAsync(x),
     async e => await DescribeAsync(e));
 ```
+<!-- endSnippet -->
 
 You await a `ValueTask` the same way you await a `Task`, so this rarely changes
 your code. Two things to know:
@@ -81,11 +90,14 @@ your code. Two things to know:
 * **Await it once, and only once.** This matters if you store it before awaiting.
 * **Call `.AsTask()` when you need a `Task`** — most often for `Task.WhenAll`.
 
+<!-- snippet: async-as-task-for-when-all -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 await Task.WhenAll(
     a.MapAsync(FetchAsync).AsTask(),
     b.MapAsync(FetchAsync).AsTask());
 ```
+<!-- endSnippet -->
 
 Both `Task` and `ValueTask` work as receivers, so a chain that mixes them still
 composes.
@@ -104,10 +116,13 @@ for the numbers.
 
 {% tabs %}
 {% tab title="Option" %}
+<!-- snippet: async-option-try-async -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 Option<Character> maybeCharacter = await Option.TryAsync(
     () => SummonCharacterOrThrowAsync(id));
 ```
+<!-- endSnippet -->
 
 If the factory throws, the exception is caught and sent to your
 [configured exception logger](configuration.md), and you get
@@ -118,6 +133,8 @@ You also get a `None<Character>` if the task completes with `null`, because a
 {% endtab %}
 
 {% tab title="Result" %}
+<!-- snippet: async-result-try-async -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 // supply your own error type
 Result<Character, string> result = await Result.TryAsync(
@@ -128,6 +145,7 @@ Result<Character, string> result = await Result.TryAsync(
 Result<Character, Error> builtIn = await Result.TryAsync<Character>(
     () => SummonCharacterOrThrowAsync(id));
 ```
+<!-- endSnippet -->
 
 The single type parameter overload converts the exception with
 `Error.FromException`, so you do not pass an `onError` delegate.
@@ -157,6 +175,8 @@ into a `None` or an `Err`. See
 `MatchAsync` works on a monad you already hold, not only on a task that wraps
 one. Use it when one or both branches do async work.
 
+<!-- snippet: async-mixing-sync-and-async-branches -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 // both branches async
 string text = await option.MatchAsync(
@@ -173,12 +193,13 @@ string fromNone = await option.MatchAsync(
     x => x.ToString(),
     async () => await LoadDefaultAsync());
 ```
+<!-- endSnippet -->
 
 Pick the overload that matches your branches. A branch you write as a plain value
 stays a plain value instead of being wrapped in a completed task, and the branch
 that does not match never runs.
 
-The same three shapes work on `Task<Option<T>>` and `ValueTask<Option<T>>`
+The same shapes work on `Task<Option<T>>` and `ValueTask<Option<T>>`
 receivers, so a chain reaches them too.
 
 {% hint style="info" %}
@@ -187,29 +208,35 @@ existed only on the `Task` and `ValueTask` receivers, so matching an `Option<T>`
 you already held meant wrapping it in `Task.FromResult` first.
 {% endhint %}
 
-### Option and Result cover different combinations
+### Result covers the same combinations
 
-This catches people out, so check the table before you write the call:
+Both monads take the same six combinations: three that return a value and three
+that return nothing, each with the first branch async, the second async, or both.
 
-| Branches | `Option<T>` | `Result<T, E>` |
-| --- | --- | --- |
-| Both async, returning a value | Yes | Yes |
-| One async, returning a value | Yes | **No** |
-| Async, returning nothing | **No** | Yes |
-
-The middle row is the one that bites. This does not compile:
-
+<!-- snippet: async-mixing-branches-on-a-result -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
-// does not compile
-ValueTask<string> output = result.MatchAsync(
+// both branches async
+string text = await result.MatchAsync(
+    async x => await RenderAsync(x),
+    async e => await DescribeAsync(e));
+
+// only the Ok branch is async
+string fromOk = await result.MatchAsync(
     async x => await RenderAsync(x),
     e => e.ToString());
-```
 
-There is no `Result` overload taking one async branch and one plain branch that
-returns a value, so the call binds to the overload returning nothing. You get
-`CS0029` on the assignment, which points at the line but not at the cause. Make
-both branches async, or match on an `Option<T>`.
+// only the Err branch is async
+string fromErr = await result.MatchAsync(
+    x => x.Name,
+    async e => await DescribeAsync(e));
+```
+<!-- endSnippet -->
+
+Before 7.3.0 the two differed. `Option` had only the shapes that return a value,
+and `Result` only the ones that return nothing. Mixing a plain branch with an
+async one on a `Result` then bound to the overload returning nothing, and the
+assignment failed with `CS0029`.
 
 ## End a chain
 
@@ -218,15 +245,20 @@ without awaiting the monad first.
 
 {% tabs %}
 {% tab title="Option" %}
+<!-- snippet: async-consuming-an-option -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 Character character = await SummonCharacterAsync(id).UnwrapAsync();
 Character orCommoner = await SummonCharacterAsync(id).UnwrapOrAsync(Commoner);
 Character? orDefault = await SummonCharacterAsync(id).UnwrapOrDefaultAsync();
 Character expected = await SummonCharacterAsync(id).ExpectAsync("the character must exist");
 ```
+<!-- endSnippet -->
 {% endtab %}
 
 {% tab title="Result" %}
+<!-- snippet: async-consuming-a-result -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Async.cs -->
 ```csharp
 Character character = await LoadCharacterAsync(id).UnwrapAsync();
 Character orCommoner = await LoadCharacterAsync(id).UnwrapOrAsync(Commoner);
@@ -236,6 +268,7 @@ Character expected = await LoadCharacterAsync(id).ExpectAsync("the character mus
 Error error = await LoadCharacterAsync(id).UnwrapErrAsync();
 Error expectedErr = await LoadCharacterAsync(id).ExpectErrAsync("the load must fail");
 ```
+<!-- endSnippet -->
 {% endtab %}
 {% endtabs %}
 
@@ -257,8 +290,8 @@ Every method below behaves exactly like the synchronous version documented in
 that it accepts an async delegate, a task receiver, or both.
 
 {% hint style="info" %}
-Some of these take state, so the delegate does not have to capture. Not all of
-them do yet — see
+The ones that take a delegate also take state, so the delegate does not have to
+capture — see
 [On the async surface](../reference/state-overloads.md#on-the-async-surface).
 {% endhint %}
 
