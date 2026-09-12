@@ -19,13 +19,17 @@ looking for.
 | What changed | What happens now | Where to look |
 | --- | --- | --- |
 | A delegate passed to `Map`, `MapAsync`, `Reduce` or `ReduceAsync` on an `Option` returns null | Throws `ArgumentNullException`, naming the delegate parameter — `map` or `reduce`. In 6.x the null was carried into the `Some`. | Any projection returning a nullable reference, a `FirstOrDefault`, a dictionary lookup, or an explicit `return null` |
-| A factory passed to `AndThen` or `AndThenAsync` returns a null `Option` or `Result` | Throws `ArgumentNullException`, naming `optionFactory` or `resultFactory` | Factories that can return a null monad, usually from a field or a cache |
+| A factory passed to `AndThen`, `AndThenAsync`, `OrElse` or `OrElseAsync` returns a null `Option` or `Result` | Throws `ArgumentNullException`, naming `optionFactory` or `resultFactory` | Factories that can return a null monad, usually from a field or a cache |
 | A `MonadOptionsScope` is disposed when it is not the innermost open scope | Nothing is restored, and the library writes a `ScopeDisposedOutOfOrder` diagnostic event. In 6.x it restored the wrong options silently. | Any scope disposed by hand rather than with `using`, or held in a field |
 
 The first two throw where 6.x carried a null onward. That is the intended fix — the null
 was going to surface later as a `NullReferenceException` from code that had every right
 to assume a `Some` held a value. To map a null onto a `None`, use `AndThen` with
 `Option.FromNullable`.
+
+A recovery step is held to the same rule as a forward one. `OrElse` and `OrElseAsync`
+want a `None` or an `Err` when the recovery finds nothing or fails again, which is what
+the return type is for; null says nothing those cannot.
 
 The third has its own section on [Configuration](../../guides/configuration.md#what-happens-when-you-dispose-out-of-order),
 and the event is on [Observability](../../guides/observability.md#watching-for-a-scope-disposed-out-of-order).
