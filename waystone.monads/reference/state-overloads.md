@@ -174,13 +174,15 @@ build. Use it where you prefer it.
 
 | Type | Methods |
 | --- | --- |
-| `Option<T>` | `IsSomeAnd`, `IsNoneOr`, `Match`, `Map`, `MapOr`, `MapOrDefault`, `MapOrElse`, `AndThen`, `Filter`, `Inspect`, `UnwrapOrElse`, `OrElse`, `OkOrElse` |
-| `Result<T, E>` | `IsOkAnd`, `IsErrAnd`, `Match`, `Map`, `MapOr`, `MapOrDefault`, `MapOrElse`, `MapErr`, `AndThen`, `OrElse`, `UnwrapOrElse`, `Inspect`, `InspectErr` |
+| `Option<T>` | `IsSomeAnd`, `IsNoneOr`, `Match`, `Map`, `MapOr`, `MapOrDefault`, `MapOrNull`, `MapOrElse`, `AndThen`, `Filter`, `ZipWith`, `Reduce`, `Inspect`, `UnwrapOrElse`, `OrElse`, `OkOrElse` |
+| `Result<T, E>` | `IsOkAnd`, `IsErrAnd`, `Match`, `Map`, `MapOr`, `MapOrDefault`, `MapOrNull`, `MapOrElse`, `MapErr`, `AndThen`, `OrElse`, `UnwrapOrElse`, `Inspect`, `InspectErr` |
 | Factories | `Option.Try`, `Option.TryAsync`, `Result.Try`, `Result.TryAsync` |
 
-`ZipWith` and `Reduce` are the exceptions, and they are not getting one. Both
-already hand their delegate every value the call involves, so there is normally
-nothing left for it to capture. The binder does not carry them either.
+Every method that takes a delegate has one. `ZipWith` and `Reduce` were the
+exceptions until 7.3.0, because both hand their delegate every value the call
+involves. That covers the values and nothing else — a combiner still captures a
+comparer or a format — so they have a state overload now, and the binder carries
+them.
 
 ### What the delegate receives
 
@@ -252,17 +254,15 @@ choose between them. Do not "tidy" a future overload by reusing an existing slot
 
 ### On the async surface
 
-Only some of the `…Async` methods have a state overload.
+On a `Task` or `ValueTask` receiver, every `…Async` method that takes a delegate
+has a state overload. The rest take a value or nothing — `UnwrapAsync`,
+`FlattenAsync`, `ZipAsync` and the like — so there is no delegate to keep from
+capturing.
 
-| Type | Async methods that take state |
-| --- | --- |
-| `Option<T>` | `IsNoneOrAsync`, `InspectAsync`, `MapOrDefaultAsync` |
-| `Result<T, E>` | `IsOkAndAsync`, `IsErrAndAsync`, `MatchAsync`, `InspectAsync`, `InspectErrAsync`, `MapOrDefaultAsync` |
-
-Everywhere else on the
-[async surface](../guides/async.md#the-full-surface), use `With`. The binder has
-an `…Async` form for every method it carries, so there is no gap to work around.
-You never have to `await` the task early just to get at a synchronous overload.
+On a monad you already hold, no `…Async` method takes state, and none is coming.
+Use `With` instead, which is what it is for. The binder carries an `…Async` form
+of every shape the monad carries, so there is no gap to work around. You never
+have to `await` the task early just to get at a synchronous overload.
 
 {% hint style="info" %}
 [`WM2017`](../analyzers/idioms.md#wm2017) reports a delegate that captures where
