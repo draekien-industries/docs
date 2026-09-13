@@ -38,7 +38,7 @@ Upgrade this solution from Waystone.Monads v3 to v4. Report what you changed.
 
 </details>
 
-Replaced `MonadsGlobalConfig` with `MonadOptions` to enable better DX when configuring library behaviours.
+Replaced `MonadsGlobalConfig` with `MonadOptions`, which groups configuration behind one `Configure` call.
 
 ```diff
 -MonadsGlobalCongig.UseExceptionLogger(...);
@@ -50,7 +50,7 @@ Replaced `MonadsGlobalConfig` with `MonadOptions` to enable better DX when confi
 +});
 ```
 
-The `IErrorCodeFormatter<T>` interface has been removed in favour of `ErrorCodeFactory` so that it can be applied once during your app's life-cycle, instead of during each invocation of the error code creation methods. You can override the default formatting by inheriting `ErrorCodeFactory` and invoking `MonadOptions.UseErrorCodeFactory()`.
+`ErrorCodeFactory` replaces the `IErrorCodeFormatter<T>` interface, so formatting is set once for your app's life-cycle instead of on every call to an error code creation method. You can override the default formatting by inheriting `ErrorCodeFactory` and invoking `MonadOptions.UseErrorCodeFactory()`.
 
 ```diff
 -class MyErrorCodeFormatter<MyErrorCodeEnum> : IErrorCodeFormatter<MyErrorCodeEnum>;

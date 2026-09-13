@@ -45,7 +45,7 @@ Renamed async overloads for methods to have the `Async` suffix
 +await option.MapAsync(...);
 ```
 
-Fundamentally changed how async overloads are declared. They are now extension methods instead of existing in the Option/Result instance. This enables method chaining on `Task<Result<T, E>>` and `Task<Option<T>>`.
+Changed how async overloads are declared. They are now extension methods instead of existing in the Option/Result instance. This enables method chaining on `Task<Result<T, E>>` and `Task<Option<T>>`.
 
 ```diff
 -var a = await option.Map(...);

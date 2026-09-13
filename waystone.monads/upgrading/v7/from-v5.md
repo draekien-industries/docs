@@ -283,7 +283,8 @@ to 7.0.0.
    [Diagnostics that mask other diagnostics](breaking-changes.md#diagnostics-that-mask-other-diagnostics).
 
 If you cannot ship an intermediate 6.x build, the agent prompt handles both sets in one
-pass and reports them separately. It is a worse position to be in, not an equal one.
+pass and reports them separately, though the two sets of diagnostics are harder to
+tell apart this way.
 
 ## The three v6 silent changes, in brief
 

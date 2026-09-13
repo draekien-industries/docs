@@ -37,9 +37,9 @@ Upgrade this solution from Waystone.Monads v1 to v2. Report what you changed.
 
 ## Renamed `Bind` to `Try`
 
-The `Option.Bind` and `Result.Bind` factory methods have been renamed to `Try` to better adhere to functional programming concepts.
+`Option.Bind` and `Result.Bind` are renamed to `Try`.
 
-`Bind` is often associated with `FlatMap`, a way of composing functions together in a pipeline. This renaming removes the confusion.
+`Bind` is often associated with `FlatMap`, a way of composing functions together in a pipeline. The rename removes that confusion.
 
 ```diff
 -Option.Bind(() => CreateSome(), ex => Console.WriteLine(ex));
@@ -51,7 +51,7 @@ The `Option.Bind` and `Result.Bind` factory methods have been renamed to `Try` t
 
 ## Introduced `MonadsGlobalConfig`
 
-This configuration allows the setting of a global error logger that will be invoked whenever an exception is caught and handled by the library.
+`MonadsGlobalConfig` sets a global error logger, invoked whenever the library catches and handles an exception.
 
 ```csharp
 MonadsGlobalConfig.UseExceptionLogger((ex) => {

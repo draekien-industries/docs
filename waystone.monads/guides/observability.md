@@ -55,7 +55,7 @@ It carries two tags:
 | `error.type` | The exception's full type name, such as `System.FormatException` | Which exception. This is the OpenTelemetry attribute of the same name. |
 | `waystone.monads.monad` | `option` or `result` | Whether the exception is gone or survived |
 
-That second tag matters more than it looks. An exception counted as `option` was
+That second tag distinguishes two outcomes that matter differently. An exception counted as `option` was
 discarded — this counter is the only record that it happened. One counted as
 `result` also went into the `Err`, so your error handling still has it.
 
@@ -246,9 +246,8 @@ public sealed record ConfigurationNotApplied;
 There is nothing useful to put in it. The event's whole meaning is that it fired at
 all, and the read that triggered it was answered from the defaults.
 
-**The signal is held, not spent, while nobody is listening.** If no subscriber is
-attached when the first early read happens, the library keeps the flag set, so a
-subscriber attached later still receives it.
+**If no subscriber is attached when the first early read happens, the library
+keeps the flag set**, so a subscriber attached later still receives it.
 
 **Configuration arriving by any route disarms it** — `UseWaystoneMonads`, the host
 install, or a plain `MonadOptions.Configure` call — whether or not the event was ever

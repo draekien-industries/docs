@@ -41,10 +41,10 @@ in the repository — every descriptor is declared there in one file.
 {% endhint %}
 
 {% hint style="warning" %}
-Do you build with `TreatWarningsAsErrors`? Then a `WM1xxx` rule that fires breaks
-your build after you upgrade. We chose that on purpose. Every one of these rules
-marks code that throws or returns the wrong value at run time. Read the rule before
-you suppress it.
+Building with `TreatWarningsAsErrors` means a `WM1xxx` rule that fires breaks your
+build after you upgrade. That is deliberate. Every one of these rules marks code
+that throws or returns the wrong value at run time. Read the rule before you
+suppress it.
 {% endhint %}
 
 ## Every rule

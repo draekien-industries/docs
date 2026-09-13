@@ -92,7 +92,7 @@ each rule means.
 
 {% hint style="info" %}
 **Update it the way you update a package.** The skill describes the library at a
-point in time, so a stale copy will teach an API that has moved on. Run
+point in time, so a stale copy teaches an outdated API. Run
 `npx skills update` for a standalone install, or
 `/plugin update waystone-dotnet` inside Claude Code — that one names the plugin
 and needs a restart to take effect.

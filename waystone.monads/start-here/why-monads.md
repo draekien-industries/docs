@@ -6,9 +6,8 @@ icon: diamond-half-stroke
 # Why monads
 
 You already have ways to say "no value" and "it failed". C# gives you `null` and
-it gives you exceptions. So why add a library?
-
-Because neither one shows up where you read it: the method signature.
+it gives you exceptions. Neither one shows up where you read it: the method
+signature.
 
 ## What goes wrong today
 
@@ -89,9 +88,10 @@ SpellEffect effect = CastSpell(10); // an effect, or a thrown exception
 string message = effect?.Message ?? "Something went wrong"; // the error is gone
 ```
 
-Count what is actually happening. Two of those branches are business rules
-wearing an exception costume. The caller still cannot tell success from failure,
-and the reason for the failure was thrown away on the last line.
+Count what is actually happening. Two of those branches use a thrown exception
+to represent a normal business outcome, not a genuine failure. The caller still
+cannot tell success from failure, and the reason for the failure was thrown away
+on the last line.
 
 Now the same thing with monads:
 

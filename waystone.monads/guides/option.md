@@ -26,8 +26,7 @@ compiler will still happily let you dereference it.
 
 `Option<T>` says the absence out loud, in the signature, where you already look.
 
-There is a second difference that matters more than it sounds. `None` is not an
-error. When you write:
+`None` is not an error, which is a second difference from `null`. When you write:
 
 ```csharp
 Option<Character> FindCharacter(string name);
