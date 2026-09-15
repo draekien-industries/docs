@@ -35,6 +35,9 @@ write it. You see them in your IDE, and they stay out of your build.
 | [`WM2022`](#wm2022) | A `Task`-returning method group passed to `AndThenAsync` or `OrElseAsync`, whose step returns a `ValueTask` | Wrap it in an async lambda |
 | [`WM2023`](#wm2023) | An `Option` bound as state by `With`, leaving the delegate to unwrap it and the absent case to be forgotten | None |
 | [`WM2024`](#wm2024) | A delegate whose body is already built, passed to `AndThen`, `OrElse`, `UnwrapOrElse`, `MapOrElse` or `OkOrElse`, so nothing is deferred | The eager sibling |
+| [`WM2025`](#wm2025) | A chain call inside another chain's delegate, past a depth you set, so the step it performs has no name of its own | None |
+| [`WM2026`](#wm2026) | An `AndThen` whose delegate wraps its result rather than producing one, so it binds where it projects | `Map` |
+| [`WM2027`](#wm2027) | A delegate passed to a projecting member that mutates state declared outside it, so the effect runs on one branch only | None |
 
 There is no `WM2014`. It shipped in 5.4.0 as a `FlatMap` rename aid and was
 removed in 6.0.0. `WM2010` is listed above because build output from 6.x still
@@ -698,4 +701,192 @@ to move to, and `UnwrapOr(0)` is what you want there.
 
 **A block body**, where the expression sits inside a `return`. Lifting it out
 would drop any statement standing beside it.
+
+## WM2025
+
+**A chain inside another chain's delegate has no name of its own.** The step it
+performs cannot be called, tested or reused without the call wrapped around it,
+and reading either chain means holding both.
+
+<!-- snippet: idioms-wm2025-nested -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<string> label = reward.AndThen(
+    static gold => TierOf(gold).Map(tier => tier.ToUpperInvariant()));
+```
+<!-- endSnippet -->
+
+Give the inner chain a name and the outer one becomes one step again.
+
+<!-- snippet: idioms-wm2025-extracted -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<string> label = reward.AndThen(TierLabel);
+```
+<!-- endSnippet -->
+
+**Quick fix:** none. Your IDE already has extract-method, and it knows better
+than we do what the method should be called and where it should live.
+
+### How deep is too deep
+
+Depth is the call itself plus every monad delegate it sits inside. A chain at
+statement level is depth 1. The same chain inside one `AndThen` delegate is
+depth 2, and 2 is where the rule starts reporting.
+
+Move it if you want more room:
+
+```ini
+[*.cs]
+dotnet_code_quality.WM2025.max_chain_depth = 3
+```
+
+Anything the rule cannot read as a positive number falls back to 2 rather than
+failing your build. This is the only rule in the package with an option of its
+own; every other one is configured by severity alone.
+
+### Only a monad's own delegate counts
+
+A chain inside a `Select` lambda, an event handler, or any other delegate that
+is not a monad's, is depth 1. The rule counts the nesting this library caused,
+not nesting in general.
+
+### One report per pyramid
+
+Three chains inside one another are one problem, so the rule reports the
+shallowest call that qualifies and stays quiet on everything under it. Extract
+that one and the nesting below it goes with it, into a method where the count
+starts again.
+
+### Query syntax is left alone
+
+A `from … in …` query over
+[`Waystone.Monads.Linq`](../packages/linq.md) compiles to a `SelectMany` inside
+another `SelectMany`'s delegate. That is nesting the compiler wrote, so it is
+never reported.
+
+## WM2026
+
+**`AndThen` is for a step that can be absent.** Where the delegate wraps its
+result with `Option.Some` or `Result.Ok` instead of producing one, the step
+always succeeds, and the signature promises a branch that never happens.
+
+<!-- snippet: idioms-wm2026-lifted -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> doubled = reward.AndThen(
+    static gold => Option.Some(gold * 2));
+```
+<!-- endSnippet -->
+
+`Map` takes the projection and wraps it for you.
+
+<!-- snippet: idioms-wm2026-projected -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> doubled = reward.Map(static gold => gold * 2);
+```
+<!-- endSnippet -->
+
+**Quick fix:** `Map`, with the wrap removed.
+
+### What counts as a wrap
+
+`Option.Some` and `Result.Ok`, given one argument, as the delegate's only
+returned expression.
+
+`Option.FromNullable` and `Option.Try` are not wraps. Both produce the absent
+case for some inputs, so the step really can be absent and `AndThen` is the
+right member. A delegate that returns from more than one place is left alone
+for the same reason — one of those returns may well be a `None`.
+
+A delegate that does work before its return is also left alone. The rewrite
+would have to carry the statements standing beside it.
+
+### A null projection still throws
+
+Both forms reject a null projection with `ArgumentNullException`, so the
+rewrite does not hand you a `None` where you used to get an exception. Only the
+message moves: `Map` names the delegate and points at `AndThen` with
+`Option.FromNullable`, which is the more useful of the two. `Option.Some`
+guards null alone, so nothing changes for a value type either — `Option.Some(0)`
+is `Some(0)` before and after.
+
+### It sits opposite WM2005
+
+[`WM2005`](#wm2005) reports `Map` followed by `Flatten` and sends you to
+`AndThen`. This one sends you back to `Map` over a different shape. They cannot
+both fire on one call: `WM2005` reads a projection that returns an option,
+this reads a bind whose delegate returns a wrapped value.
+
+### Where the fix declines
+
+An anonymous method — `delegate(int gold) { return Option.Some(gold * 2); }` —
+is reported and left alone. It has no `=>` to rewrite around, so the edit would
+be a larger rearrangement than a quick fix should make on your behalf.
+
+## WM2027
+
+**A projection runs on one branch only.** `Map` runs on `Some` and not on
+`None`, `Filter` runs on the value and not on the absence. An effect inside one
+runs on that schedule too, and nothing at the call site says so.
+
+<!-- snippet: idioms-wm2027-mutating -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> doubled = reward.Map(
+    gold =>
+    {
+        _counted++;
+
+        return gold * 2;
+    });
+```
+<!-- endSnippet -->
+
+That counts the rewards that turned up, not the calls you made. `Inspect` runs
+the effect and hands the monad on, so the projection goes back to projecting.
+
+<!-- snippet: idioms-wm2027-inspected -->
+<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+```csharp
+Option<int> doubled = reward
+    .Inspect(_ => _counted++)
+    .Map(static gold => gold * 2);
+```
+<!-- endSnippet -->
+
+**Quick fix:** none. Moving the effect changes when it runs — `Inspect` runs
+before the projection, and on a `Filter` it runs whether the predicate passes
+or not — so where it belongs is yours to decide.
+
+### What counts as mutation
+
+An assignment, a compound assignment, `??=`, `++` or `--`, or a call to a
+mutating `ICollection<T>` member — `Add`, `AddRange`, `Clear`, `Insert`,
+`Remove`, `RemoveAll`, `RemoveAt` — where the target comes from outside the
+delegate. A captured local, a parameter of the enclosing method, a field, a
+static.
+
+A local declared inside the delegate is yours, and mutating it is never
+reported.
+
+### It never claims a method is pure
+
+`reward.Map(gold => _pricing.Recalculate(gold))` is silent, whatever
+`Recalculate` does. The rule reports mutation it can see in the delegate's own
+body and makes no claim about anything it calls.
+
+### The effect members are silent
+
+`Inspect`, `InspectErr` and the `Action` overloads of `Match` are what you use
+to run an effect, so nothing in them is reported.
+
+### An expression-bodied Match delegate is reported
+
+`reward.Match(gold => _counted = gold, () => _counted = 0)` is a report rather
+than an exception to the rule above. An assignment is an expression, so both
+delegates return a value and the call binds to the `Func` overload — the one
+that projects. Give them block bodies and the `Action` overload is chosen,
+which is the one you meant and is also silent.
 
