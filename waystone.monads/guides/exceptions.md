@@ -43,7 +43,7 @@ same reasons.
 
 ### What to write instead
 
-Nine times out of ten you wanted one of these:
+Most of the time you wanted one of these:
 
 | Instead of | Write | Because |
 | --- | --- | --- |

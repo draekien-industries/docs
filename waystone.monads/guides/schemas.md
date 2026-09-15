@@ -46,10 +46,10 @@ public static Registration? Register(
 
 Nothing in there is wrong. It is how most of us write it.
 
-But look at the null-forgiving operators in that final `return`. They are the tell. The
+The null-forgiving operators in that final `return` show the problem: the
 compiler has no idea those checks ran, so nothing stops that line moving above them,
 and nothing stops it being written against a field nobody checked. The checks and the
-construction are two separate things that happen to be next to each other.
+construction are two separate steps that happen to sit next to each other.
 
 ## Parse, don't validate
 

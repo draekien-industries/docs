@@ -21,7 +21,7 @@ because that is the one you read most.
 
 ## Why not just throw?
 
-Exceptions are control flow with a bomb strapped to it.
+Exceptions have four problems as control flow.
 
 * They are invisible in a signature. `Reward ClaimReward(Quest)` looks total.
 * They are easy to forget. Nothing makes you handle one.
@@ -31,8 +31,8 @@ Exceptions are control flow with a bomb strapped to it.
 You cannot tell which methods throw without reading their source. A `Result` puts
 the failure in the return type, where you were already looking.
 
-There is a second point, and it matters more. **`Err` is not an emergency.** When
-you write:
+**`Err` is not an emergency**, which is the more important point. When you
+write:
 
 ```csharp
 Result<Character, Error> FindCharacter(string name);

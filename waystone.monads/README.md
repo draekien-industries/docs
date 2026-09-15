@@ -32,8 +32,8 @@ you about the cases you used to find at runtime.
 
 ## Who this is for
 
-You are writing C# and you are tired of two things: `null` reaching places it
-should not, and exceptions being used for outcomes that are not exceptional.
+This library is for C# code where `null` reaches places it should not, and
+exceptions are used for outcomes that are not exceptional.
 
 The library replaces both with values you can return, pass around, and compose.
 Absence and failure stop being surprises hidden inside a method body, and start

@@ -38,7 +38,7 @@ Upgrade this solution from Waystone.Monads v4 to v5. Report what you changed.
 
 </details>
 
-Simplified the API for chaining async extension methods on `Option<T>` and `Result<TOk, TErr>` , removing support for async lambdas that returned a `ValueTask<T>`. Additionally, optimized the return type of specific extensions that would return either a synchronous value or a Task to have a type of `ValueTask`.
+Simplified the API for chaining async extension methods on `Option<T>` and `Result<TOk, TErr>`, removing support for async lambdas that return a `ValueTask<T>`. Changed the return type of extensions that previously returned either a synchronous value or a `Task` to return `ValueTask` instead.
 
 ```diff
 -Task<string> output = result.MatchAsync(async x => await doWork(x), e => e.ToString());

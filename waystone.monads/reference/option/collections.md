@@ -64,8 +64,8 @@ IEnumerable<string> values = collection.Flatten();
 //                  ^? ["Hello", "World"]
 ```
 
-**Lazy.** It walks the source once and composes with the rest of LINQ as you would
-expect. Nothing runs until you enumerate the result.
+**Lazy.** It walks the source once and composes with the rest of LINQ. Nothing runs
+until you enumerate the result.
 
 {% hint style="info" %}
 This is the sequence version. The `Flatten` that collapses a single nested

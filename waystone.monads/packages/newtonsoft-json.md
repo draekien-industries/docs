@@ -215,7 +215,7 @@ closed type and caches it. Only the first monad of a given type costs any
 reflection. Nothing reflects per call.
 
 {% hint style="warning" %}
-**Publishing with `PublishAot`? Use
+**Publishing with `PublishAot`: use
 [`Waystone.Monads.SystemTextJson`](system-text-json.md) instead.**
 
 That first construction is the one that fails under NativeAOT for a value-type

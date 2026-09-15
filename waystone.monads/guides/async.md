@@ -13,8 +13,6 @@ the [bottom of this page](#the-full-surface).
 
 ## The receiver is the task, not the monad
 
-This is the part worth understanding, and it is not obvious.
-
 Most async methods are extension methods on the **task that wraps the monad**,
 not on the monad itself. They extend `Task<Option<T>>`, `ValueTask<Option<T>>`,
 `Task<Result<T, E>>` and `ValueTask<Result<T, E>>`.

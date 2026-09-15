@@ -93,9 +93,7 @@ Result<Adventurer, string> result = Result.Try(
 **On `null`:** `onError` runs too, passed an `ArgumentNullException` naming the
 `factory` argument. Nothing is logged, because nothing threw.
 
-That last case is the one place a `null` does not throw. `Try` exists so you can
-hand over a delegate and learn whether a workable value came back without wrapping
-the call yourself — so it turns the `null` into an `Err` for you.
+That last case is the one place a `null` does not throw.
 
 {% hint style="warning" %}
 **A cancellation is not caught.** `Try` and `TryAsync` let an

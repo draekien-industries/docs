@@ -28,7 +28,7 @@ Reach for [`Map`](transform.md#map) instead if you want to *change* the value.
 There is no `InspectNone`. Use [`Match`](consume.md#match) when both branches need
 to do something.
 
-## Why not just ToString it?
+## ToString does not show the value
 
 **`ToString()` never shows the wrapped value.** You get the state and nothing
 else:

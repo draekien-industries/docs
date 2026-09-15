@@ -220,7 +220,7 @@ for `FromException`, which is unaffected.
 
 ## Error Code and Message Fallbacks
 
-There may be exception circumstances which cause the `string` used to create the `ErrorCode` or the message of the `Error` classes to be null or white-space. In these situations, a set of fallbacks are used. These fallbacks can be configured.
+Some call sites pass a null or white-space `string` for the `ErrorCode` value or the `Error` message. In that case, a configurable fallback is used instead.
 
 <!-- snippet: configuration-fallbacks -->
 <!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Core.Sample/Guides/Configuration.cs -->

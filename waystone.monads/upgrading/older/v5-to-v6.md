@@ -221,8 +221,8 @@ In v6, only `null` is rejected. `Option.Some(0)` gives you a `Some` holding `0`,
 and so does `Option<int> x = 0;`.
 
 We made this change because `Option<int>` could not represent part of its own
-domain. Zero is an ordinary integer. `Option<bool>` was close to useless, because
-`false` is an ordinary bool.
+domain: zero is an ordinary integer. The same applied to `Option<bool>`, which
+could never hold `false` in a `Some`, because `false` is an ordinary bool.
 
 ### The expressions that flip
 
@@ -280,8 +280,8 @@ Option.None<int>().UnwrapOrDefault();  // 0, because there is no value
 Option.Some(0).UnwrapOrDefault();      // 0, because the value is 0
 ```
 
-You cannot tell them apart. This is not new in kind, since `Result` has always been in
-this position, but it now applies to every `Option` over a value type.
+You cannot tell them apart. `Result` has always had this ambiguity; it now applies to
+every `Option` over a value type too.
 
 Use `UnwrapOrNull` and `MapOrNull`, shipped in 5.4.0, when you need to
 distinguish:

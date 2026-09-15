@@ -111,7 +111,7 @@ Waystone.Monads.FluentValidation, covered below. A field, property or return typ
 spelled `Result<T, ValidationErr>` is a declaration error, so the bodies that call
 `Validate` stay quiet until you change the signature.
 
-Build, fix, and build again. Twice is not paranoia here.
+Build, fix, and build again. A second build is necessary here, not optional.
 
 ## Waystone.Monads.FluentValidation
 

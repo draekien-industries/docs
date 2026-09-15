@@ -35,8 +35,7 @@ Each of the seven upgrade pages opens with a collapsed block holding a prompt fo
 hop, ready to copy into Claude Code or a similar tool. It is collapsed by default, so
 a reader doing the upgrade by hand scrolls past one line.
 
-Three rules apply to every one of them. They are in each prompt, and they are worth
-knowing before you run one:
+Three rules apply to every one of them:
 
 * Never suppress a diagnostic, add a pragma to disable one, or add a null-forgiving
   `!` to make an error go away. Every diagnostic in an upgrade has a real fix.

@@ -16,8 +16,8 @@ layout:
 
 # Quickstart
 
-Ready to stop writing `null` checks and stop catching exceptions you expected?
-Here is the whole setup.
+This page installs the package and gets `Option<T>` and `Result<T, E>` working,
+so you stop writing `null` checks and catching exceptions you expected.
 
 ## Install
 

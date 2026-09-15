@@ -10,7 +10,7 @@ icon: shield-check
 `Waystone.Monads.Schemas` — a parser that hands back a `Result`.
 
 {% hint style="info" %}
-**New to this? Start with the [Schemas guide](../guides/schemas.md).** It builds one
+**Start with the [Schemas guide](../guides/schemas.md) first.** It builds one
 schema end to end and explains why you would want to. This page is the reference.
 {% endhint %}
 
@@ -23,7 +23,7 @@ input passed.
 Reach for it at the edge — a request body, a message off a queue, a row from a file.
 Skip it inside your domain, where the types already say what is true.
 
-Comparing it against [FluentValidation](fluent-validation.md)? That one checks the
+Against [FluentValidation](fluent-validation.md): that one checks the
 object you built. This one builds it.
 
 ## Write the checks once
