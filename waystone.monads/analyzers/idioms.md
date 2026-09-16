@@ -311,7 +311,7 @@ local or a parameter from the enclosing method allocates a display class every
 time the call site runs.
 
 <!-- snippet: idioms-wm2017-capture -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> share = reward.Map(gold => gold / partySize);
 ```
@@ -321,7 +321,7 @@ Bind the data to the receiver instead. `With` hands it to the delegate as an
 argument, so the delegate closes over nothing and the compiler caches it.
 
 <!-- snippet: idioms-wm2017-bound -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> share = reward
     .With(partySize)
@@ -574,7 +574,7 @@ unconstrained, so the compiler takes an `Option<T>` as readily as an `int`, and
 nothing in the signature says the pairing is a mistake.
 
 <!-- snippet: idioms-wm2023-bound -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> haul = reward
     .With(bonus)
@@ -590,7 +590,7 @@ to handle — above, a missing bonus quietly becomes zero.
 is absent, so the case cannot be forgotten.
 
 <!-- snippet: idioms-wm2023-zipped -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> haul = reward.ZipWith(
     bonus,
@@ -636,7 +636,7 @@ branch that needs it.** Hand one a value you already have and nothing is
 deferred — it was built before the delegate was.
 
 <!-- snippet: idioms-wm2024-deferred -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 int gold = reward.UnwrapOrElse(() => 100);
 ```
@@ -646,7 +646,7 @@ The call allocates a delegate for no gain, and it tells whoever reads it that
 the fallback is costly when it is not. The eager sibling takes the value.
 
 <!-- snippet: idioms-wm2024-direct -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 int gold = reward.UnwrapOr(100);
 ```
@@ -709,7 +709,7 @@ performs cannot be called, tested or reused without the call wrapped around it,
 and reading either chain means holding both.
 
 <!-- snippet: idioms-wm2025-nested -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<string> label = reward.AndThen(
     static gold => TierOf(gold).Map(tier => tier.ToUpperInvariant()));
@@ -719,7 +719,7 @@ Option<string> label = reward.AndThen(
 Give the inner chain a name and the outer one becomes one step again.
 
 <!-- snippet: idioms-wm2025-extracted -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<string> label = reward.AndThen(TierLabel);
 ```
@@ -772,7 +772,7 @@ result with `Option.Some` or `Result.Ok` instead of producing one, the step
 always succeeds, and the signature promises a branch that never happens.
 
 <!-- snippet: idioms-wm2026-lifted -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> doubled = reward.AndThen(
     static gold => Option.Some(gold * 2));
@@ -782,7 +782,7 @@ Option<int> doubled = reward.AndThen(
 `Map` takes the projection and wraps it for you.
 
 <!-- snippet: idioms-wm2026-projected -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> doubled = reward.Map(static gold => gold * 2);
 ```
@@ -832,7 +832,7 @@ be a larger rearrangement than a quick fix should make on your behalf.
 runs on that schedule too, and nothing at the call site says so.
 
 <!-- snippet: idioms-wm2027-mutating -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> doubled = reward.Map(
     gold =>
@@ -848,7 +848,7 @@ That counts the rewards that turned up, not the calls you made. `Inspect` runs
 the effect and hands the monad on, so the projection goes back to projecting.
 
 <!-- snippet: idioms-wm2027-inspected -->
-<!-- source: sample/Waystone.Monads.Analyzers.Sample/Idioms.cs -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Analyzers.Sample/Idioms.cs -->
 ```csharp
 Option<int> doubled = reward
     .Inspect(_ => _counted++)
