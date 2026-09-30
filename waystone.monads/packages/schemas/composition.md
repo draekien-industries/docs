@@ -122,6 +122,30 @@ you passed to the non-`Result` overload returns `null`, the parse reports a
 `Malformed` violation at that path and carries on gathering. It does not throw. Reach
 for the `Result` overload anyway when a conversion can fail — it lets you say *why*.
 
+Text that should become a number, a date or a UUID does not need a transform. Use
+one of the [text conversions](primitives.md#reading-text) instead.
+
+## Pipe
+
+`Pipe` passes what one schema produces into another schema you already have. Use it
+when the type you convert to already has a schema, so its rules stay in one place.
+
+<!-- snippet: schema-composition-pipe -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Composition.cs -->
+```csharp
+// QuestId is already declared as Schema.Uuid.NotEmpty(). Pipe reuses it
+// instead of repeating its rules on the text.
+public static readonly Schema<string, Guid> QuestIdFromRoute =
+    Schema.Text.Trim().ToUuid().Pipe(PrimitivesPage.QuestId);
+```
+<!-- endSnippet -->
+
+* The second schema runs only when the first one produced a value. If `ToUuid` cannot
+  read the text, the parse reports that and `QuestId` does not run.
+* If the first schema kept its value but reported a violation, the second schema
+  still runs. The parse reports the first schema's violations, then the second's.
+* Both schemas report at the same path.
+
 ## Not
 
 `Not` inverts a schema you already have.

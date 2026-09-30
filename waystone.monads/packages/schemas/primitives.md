@@ -220,6 +220,66 @@ public static readonly Schema<DateOnly, DateOnly> ClosesOn =
 Inclusivity is in the name here too. `Before` and `After` exclude the bound;
 `OnOrBefore` and `OnOrAfter` include it, which is what a closing date means.
 
+## Reading text
+
+A value that arrives as text, such as a route segment or a query string, starts at
+`Schema.Text` and converts to its type with one of these.
+
+<!-- snippet: schema-primitives-from-text -->
+<!-- source: sample/Waystone.Monads.Docs/Waystone.Monads.Docs.Schemas.Sample/Primitives.cs -->
+```csharp
+// Each conversion reads text in the invariant culture unless you pass one.
+public static readonly Schema<string, int> PartySizeFromText =
+    Schema.Text.ToInt32().Pipe(PartySize);
+
+public static readonly Schema<string, decimal> Bounty =
+    Schema.Text.ToDecimal(CultureInfo.GetCultureInfo("de-DE"));
+
+// Text with no offset takes the server's time zone.
+public static readonly Schema<string, DateTimeOffset> PostedAt =
+    Schema.Text.ToTimestamp();
+
+public static readonly Schema<string, DateOnly> FoundedOn =
+    Schema.Text.ToDate().Pipe(Founded);
+```
+<!-- endSnippet -->
+
+| Conversion | Produces | Accepts |
+| --- | --- | --- |
+| `ToUuid()` | `Guid` | Any of the five `Guid` formats: `D`, `N`, `B`, `P` and `X` |
+| `ToBool()` | `bool` | What `bool.TryParse` accepts |
+| `ToInt32()`, `ToInt64()` | `int`, `long` | A whole number with an optional sign. No decimal point, no thousands separator |
+| `ToDecimal()` | `decimal` | A number with thousands separators and a decimal point. No exponent |
+| `ToDouble()` | `double` | A number with an exponent. `"NaN"` and `"Infinity"` are accepted too |
+| `ToTimestamp()` | `DateTimeOffset` | A date and time. Text with no offset takes the server's time zone |
+| `ToDate()` | `DateOnly` | A date. Not available on `netstandard2.0` |
+
+Text a conversion cannot read reports `schema_violation.malformed`, and the chain
+after it stops, as it does after a failed [transform](composition.md#transform):
+
+```
+Expected dueAt to be a date, but got abc.
+```
+
+To apply the rules of a schema you already declared, follow the conversion with
+[`Pipe`](composition.md#pipe), as `PartySizeFromText` and `FoundedOn` do above.
+
+### Culture
+
+The number and date conversions read text in the invariant culture. Each has an
+overload that takes an `IFormatProvider`. Pass one when a person typed the text.
+
+| Text | `ToDate()` | `ToDate(CultureInfo.GetCultureInfo("en-AU"))` |
+| --- | --- | --- |
+| `"01/10/2026"` | 10 January 2026 | 1 October 2026 |
+| `"2026-10-01"` | 1 October 2026 | 1 October 2026 |
+
+The invariant culture reads `"1,5"` as `15`, because the comma is its thousands
+separator.
+
+`ToDate()` accepts `"2026-10-01T09:00:00"` and discards the time. Use
+`ToTimestamp()` when the time of day matters.
+
 ## Booleans
 
 <!-- snippet: schema-primitives-booleans -->
