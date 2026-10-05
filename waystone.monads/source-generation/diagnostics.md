@@ -100,6 +100,7 @@ See [Schemas](../packages/schemas.md) for the package itself.
 | [`WMSC0007`](#wmsc0007) | Warning | A field-set call the generator did not recognise |
 | [`WMSC0008`](#wmsc0008) | Warning | A field path taken from an expression, not a name |
 | [`WMSC0009`](#wmsc0009) | Suggestion | `Schema.For<T>()` where a named schema exists |
+| [`WMSC0010`](#wmsc0010) | Suggestion | `Schema.Fields(...)` where `Fields(...)` works |
 
 ### WMSC0001
 
@@ -146,15 +147,16 @@ The compiler reports this collision too, but against the generated file — whic
 a file anyone can edit.
 
 `Schema` and `FieldSet` are only checked where the generator is actually writing those
-members. A
-schema that never calls `Schema.Fields` may keep a member of either name.
+members. `Schema` is checked where you call `Schema.Fields(...)`, and `FieldSet` where
+you call `Fields(...)` either way. A schema that only calls `Fields(...)` may keep a
+member named `Schema`, and one that calls neither may keep both.
 
 ### WMSC0004
 
 **The generated `Into` takes one parameter per field**, so a lambda of any other arity
 cannot bind to it.
 
-Three fields in `Schema.Fields` and `.Into((a, b) => …)` is a mismatch. Give the lambda
+Three fields in `Fields` and `.Into((a, b) => …)` is a mismatch. Give the lambda
 one parameter per field, in the order the fields are listed.
 
 The compiler rejects this too, but as a delegate conversion failure against a
@@ -173,7 +175,7 @@ That is the right shape for `Schema.Forbidden` and `Schema.Extend`, which yield
 parses something somebody expected to find on the result.
 
 `Refine(Schema.Required(subject.Email, Guild.Email))` checks the email and throws it
-away. List it in `Schema.Fields` instead, so it reaches the `Into` lambda.
+away. List it in `Fields` instead, so it reaches the `Into` lambda.
 
 **Unless you meant it.** Gating on a value without keeping it is legitimate — a
 confirmation field that has to be a well-formed email but is never stored is the
@@ -207,9 +209,11 @@ The schema holding it is fine, and so is every other rule in the chain.
 
 ### WMSC0007
 
-**Write the receiver as `Schema`.** An alias, a renamed import, or a call with no
-receiver at all leaves the generator nothing to match, so it generates nothing.
-Qualify `Schema` with its containing type if you need to.
+**Call `Fields(...)` with no receiver.** The generator reads the call before anything
+binds, so it matches it by name. It recognises `Fields(...)`, and the deprecated
+`Schema.Fields(...)` — see [`WMSC0010`](#wmsc0010). Any other receiver, such as
+`this.Fields(...)` or `subject.Fields(...)`, gets nothing generated, so the call binds
+to nothing.
 
 **A known false positive.** The generator matches the receiver by name, so this fires
 on *any* unbound call to a member named `Fields` — including one that has nothing to do
@@ -266,3 +270,32 @@ which checks membership rather than aliasing `For`.
 This one comes from an analyzer rather than from the generator, because a schema is
 usually declared in a shared static field and a generator only ever sees a `Configure`
 body. It ships in the same package.
+
+### WMSC0010
+
+**`Schema.Fields(...)` is deprecated and is removed in 8.0.0.** Call `Fields(...)` with
+no receiver instead.
+
+| | Call |
+| --- | --- |
+| ✗ | `Schema.Fields(Schema.Required(subject.Title, Schema.Text))` |
+| ✓ | `Fields(Schema.Required(subject.Title, Schema.Text))` |
+
+`Schema.Fields(...)` binds to a class the generator nests inside your schema. That
+class is called `Schema` and derives from the library's `Schema`, so every other
+`Schema.Text` or `Schema.Required` in the same body reaches the library through it.
+Rider reports each of those calls as `AccessToStaticMemberViaDerivedType`.
+
+`Fields(...)` binds to a private method the generator writes onto your schema instead.
+Once no call in the schema uses `Schema.Fields(...)`, the generator stops writing the
+nested class, and `Schema` means the library's own type again.
+
+The code fix deletes the receiver, `Schema.` or `QuestSchema.Schema.`, and keeps the
+rest of the call as it was. Apply it to every call in a document, project or solution
+at once.
+
+**This suggests rather than warns**, so a build never fails on it. `Schema.Fields(...)`
+keeps working until 8.0.0.
+
+The rule stays silent where your schema has its own member called `Fields`. Without
+the receiver, the call would bind to that member instead.

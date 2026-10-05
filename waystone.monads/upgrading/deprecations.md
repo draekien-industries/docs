@@ -11,7 +11,9 @@ icon: ban
 
 We deprecate before we delete. Anything on its way out is marked `[Obsolete]`
 first, so your build reports a `CS0618` warning naming the replacement and the
-version that removes it. We only delete in a major release.
+version that removes it. A member a generator writes into your own code is the exception:
+the generator reports its deprecation as a suggestion instead. We only delete
+in a major release.
 
 Everything under *Pending removal* is marked now and goes in the release named.
 Everything under *Removed in* has already gone.
@@ -21,9 +23,50 @@ Packages in the Waystone family share one version number, so a v6.0.0 of
 `Waystone.Monads` means a v6.0.0 of every package.
 {% endhint %}
 
-**Nothing is pending removal today.** `7.0.0` carries no `[Obsolete]` member at
-all — everything that was marked in 6.x has now gone, and nothing new has been marked
-for 8.0.0. The next thing to appear on this page will be marked in a 7.x minor.
+## Pending removal in 8.0.0
+
+### Calling `Fields` through the generated `Schema` class
+
+**Deprecated in:** 7.6.0 · **Removed in:** 8.0.0 · **Replacement:** `Fields(...)` with
+no receiver
+
+| Deprecated | Replacement |
+| --- | --- |
+| `Schema.Fields(...)` inside a `SchemaConfig` | `Fields(...)` |
+| `QuestSchema.Schema.Fields(...)` | `Fields(...)` |
+
+{% hint style="info" %}
+**This one is not marked `[Obsolete]`.** `Schema.Fields` is generated into your own
+schema, and `[Obsolete]` would turn every call into a `CS0618` warning — a failed build
+under `TreatWarningsAsErrors`, on a minor release. The schema generator reports it as
+[`WMSC0010`](../source-generation/diagnostics.md#wmsc0010) instead, a suggestion that
+never fails a build.
+{% endhint %}
+
+#### How to migrate
+
+Delete the `Schema.` in front of `Fields`. The rest of the call stays as it is.
+
+```diff
+-Schema.Fields(Schema.Required(subject.Title, Schema.Text))
++Fields(Schema.Required(subject.Title, Schema.Text))
+     .Into(title => new Quest(title));
+```
+
+`WMSC0010` comes with a code fix that makes the same edit. Apply it to the whole
+solution at once.
+
+#### Why this changed
+
+`Schema.Fields(...)` binds to a class the generator nests inside your schema, called
+`Schema` and derived from the library's `Schema`. Every other `Schema.Text` or
+`Schema.Required` in that schema then reaches the library through the nested class,
+and Rider reports each one as `AccessToStaticMemberViaDerivedType`
+([#304](https://github.com/draekien-industries/waystone-dotnet/issues/304)).
+
+`Fields(...)` binds to a private method on your schema instead. When no call uses
+`Schema.Fields(...)`, the generator stops writing the nested class, and `Schema` means
+the library's own type again.
 
 ## Removed in 7.0.0
 

@@ -140,20 +140,20 @@ public partial class RegistrationSchema
 {
     protected override Result<Registration, SchemaViolation> Configure(
         RegistrationDto subject) =>
-        Schema.Fields(
-                   Schema.Required(subject.Email, Registrations.Email),
-                   Schema.Required(subject.DisplayName, Registrations.DisplayName),
-                   Schema.Optional(subject.Age, Registrations.Age))
-              .Refine(Schema.Extend(subject, Registrations.Terms))
-              .Into(
-                   (email, name, age) => new Registration(email, name, age));
+        Fields(
+            Schema.Required(subject.Email, Registrations.Email),
+            Schema.Required(subject.DisplayName, Registrations.DisplayName),
+            Schema.Optional(subject.Age, Registrations.Age))
+            .Refine(Schema.Extend(subject, Registrations.Terms))
+            .Into(
+                 (email, name, age) => new Registration(email, name, age));
 }
 ```
 <!-- endSnippet -->
 
 Three things are happening there.
 
-* **`Schema.Fields` is written for you**, at exactly the number of fields you passed.
+* **`Fields` is written for you**, at exactly the number of fields you passed.
   So the `Into` lambda is checked when you compile, not when someone posts a
   registration.
 * **`Schema.Optional` gives you `Option<int>`.** An absent age never reaches a rule and
